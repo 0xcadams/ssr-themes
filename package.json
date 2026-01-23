@@ -1,0 +1,40 @@
+{
+  "name": "@ssr-themes/root",
+  "private": true,
+  "workspaces": [
+    "ssr-themes",
+    "examples/*"
+  ],
+  "scripts": {
+    "prepublish": "bun --filter ssr-themes build",
+    "build": "bun --filter '*' build",
+    "start": "bun --filter '*' start",
+    "dev": "bun --filter '*' dev",
+    "test": "bun --filter '*' test",
+    "test:e2e": "bunx playwright test",
+    "clean": "rm -rf node_modules .next dist coverage playwright-report test-results && bun --filter '*' clean",
+    "format": "prettier . --write"
+  },
+  "devDependencies": {
+    "@rocicorp/prettier-config": "^0.4.0",
+    "@playwright/test": "^1.58.0",
+    "@testing-library/react": "^16.3.2",
+    "@types/node": "25.0.10",
+    "@types/react": "^19.2.9",
+    "@types/react-dom": "19.2.3",
+    "jsdom": "^27.4.0",
+    "prettier": "^3.2.5",
+    "tsup": "^8.3.5",
+    "typescript": "^5.4.2",
+    "vitest": "^4.0.18"
+  },
+  "prettier": "@rocicorp/prettier-config",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/0xcadams/ssr-themes.git"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "packageManager": "bun@1.3.6"
+}

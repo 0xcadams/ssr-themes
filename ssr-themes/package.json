@@ -1,0 +1,45 @@
+{
+  "name": "ssr-themes",
+  "version": "0.0.1",
+  "license": "Apache-2.0",
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist",
+    "LICENSE.md",
+    "package.json"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "react-server": "./dist/server.mjs",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js"
+    },
+    "./server": {
+      "types": "./dist/server.d.ts",
+      "import": "./dist/server.mjs",
+      "require": "./dist/server.js"
+    }
+  },
+  "scripts": {
+    "prepublish": "bun run build",
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "test": "vitest run __tests__",
+    "clean": "rm -rf dist node_modules"
+  },
+  "peerDependencies": {
+    "react": "^19.2.3",
+    "react-dom": "^19.2.3"
+  },
+  "devDependencies": {
+    "react": "^19.2.3",
+    "react-dom": "^19.2.3"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/0xcadams/ssr-themes.git"
+  }
+}

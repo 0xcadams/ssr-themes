@@ -1,0 +1,25 @@
+{
+  "name": "@ssr-themes/next",
+  "private": true,
+  "scripts": {
+    "dev": "next dev --port 4041",
+    "build": "next build",
+    "start": "next start",
+    "clean": "rm -rf node_modules .next"
+  },
+  "dependencies": {
+    "next": "^16.1.4",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "ssr-themes": "workspace:*"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4.1.18",
+    "@types/node": "^25.0.10",
+    "@types/react": "^19.2.0",
+    "@types/react-dom": "^19.2.0",
+    "postcss": "^8.4.41",
+    "tailwindcss": "^4.1.18",
+    "typescript": "^5.7.2"
+  }
+}
