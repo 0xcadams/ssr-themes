@@ -6,7 +6,7 @@ import {ThemeProvider, type SystemTheme} from 'ssr-themes';
 type ProvidersProps = {
   children: ReactNode;
   forcedTheme?: SystemTheme;
-  initialTheme?: SystemTheme | 'system';
+  initialTheme?: SystemTheme;
 };
 
 export default function Providers({
