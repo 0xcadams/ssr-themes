@@ -15,7 +15,7 @@ export default async function RootLayout({children}: {children: ReactNode}) {
   const themeCookie = cookieStore.get('theme')?.value;
   const theme =
     themeCookie === 'dark' || themeCookie === 'light' ? themeCookie : undefined;
-  const themeProps = registerTheme({theme});
+  const themeProps = registerTheme({theme, attribute: 'data-theme'});
 
   return (
     <html suppressHydrationWarning {...themeProps}>

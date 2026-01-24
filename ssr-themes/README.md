@@ -79,12 +79,14 @@ export const Route = createRootRoute({
 
 `ssr-themes` uses cookies to set the theme, so the server can use `registerTheme` to read cookies and apply the right value directly to `<html>`. The inline script will reuse that value and skip cookie reads when the theme attribute/class is already present on the `<html>` element.
 
+If you render theme-dependent UI before hydration, pass the same value to `ThemeProvider` as `initialTheme` so `useTheme()` reflects it on the server.
+
 ```tsx
 import {registerTheme, ThemeProvider} from 'ssr-themes';
 import {cookies} from 'next/headers';
 
 const cookieStore = await cookies();
-const theme = cookieStore.get('theme'); // 'dark' | 'light' | undefined
+const theme = cookieStore.get('theme')?.value; // 'dark' | 'light' | undefined
 const htmlProps = registerTheme({
   theme,
   attribute: 'class',
@@ -93,7 +95,9 @@ const htmlProps = registerTheme({
 return (
   <html suppressHydrationWarning {...htmlProps}>
     <body>
-      <ThemeProvider attribute="class">{children}</ThemeProvider>
+      <ThemeProvider attribute="class" initialTheme={theme}>
+        {children}
+      </ThemeProvider>
     </body>
   </html>
 );
@@ -151,6 +155,7 @@ Let's dig into the details.
 All your theme configuration is passed to ThemeProvider.
 
 - `cookie = { name: 'theme', path: '/', maxAge: 31536000, sameSite: 'lax' }`: Cookie configuration for the theme cookie
+- `initialTheme`: Theme name to use during server rendering when you already know the theme
 - `defaultTheme = 'system'`: Default theme name (for v0.0.12 and lower the default was `light`). If `enableSystem` is false, the default theme is `light`
 - `forcedTheme`: Forced theme name for the current page (does not modify saved theme settings)
 - `enableSystem = true`: Whether to switch between `dark` and `light` based on `prefers-color-scheme`

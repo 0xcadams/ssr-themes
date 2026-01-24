@@ -91,6 +91,8 @@ export interface ThemeProviderProps<
   enableColorScheme?: boolean | undefined;
   /** Cookie configuration used to store theme preference */
   cookie?: CookieConfig | undefined;
+  /** Theme name to use for server rendering */
+  initialTheme?: ThemeName<TThemes> | undefined;
   /** Default theme name (for v0.0.12 and lower the default was light). If `enableSystem` is false, the default theme is light */
   defaultTheme?: ThemeName<TThemes> | undefined;
   /** HTML attribute modified based on the active theme. Accepts `class`, `data-*` (meaning any data attribute, `data-mode`, `data-color`, etc.), or an array which could include both */

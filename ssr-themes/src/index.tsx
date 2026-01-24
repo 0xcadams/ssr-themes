@@ -115,6 +115,7 @@ const Theme = <TThemes extends readonly string[] = SystemThemeDefinition>({
   enableSystem = true,
   enableColorScheme = true,
   cookie,
+  initialTheme,
   themes = defaultThemes as unknown as TThemes,
   defaultTheme = enableSystem ? 'system' : 'light',
   attribute = 'class',
@@ -125,10 +126,10 @@ const Theme = <TThemes extends readonly string[] = SystemThemeDefinition>({
 }: ThemeProviderProps<TThemes>) => {
   const cookieName = getCookieName(cookie);
   const [theme, setThemeState] = React.useState(() =>
-    getTheme(cookieName, defaultTheme, attribute, value, themes),
+    getTheme(cookieName, defaultTheme, attribute, value, themes, initialTheme),
   );
   const [resolvedTheme, setResolvedTheme] = React.useState(() =>
-    theme === 'system' ? getSystemTheme() : theme,
+    theme === 'system' && !isServer ? getSystemTheme() : theme,
   );
   const attrs = !value ? themes : Object.values(value);
   const broadcastRef = React.useRef<BroadcastChannel | null>(null);
@@ -394,8 +395,9 @@ function getTheme<TThemes extends readonly string[]>(
   attribute: Attribute | Attribute[],
   value: Record<string, string> | undefined,
   themes: TThemes,
+  initialTheme: ThemeName<TThemes> | undefined,
 ) {
-  if (isServer) return undefined;
+  if (isServer) return initialTheme;
 
   const domTheme = getThemeFromDOM(attribute, value, themes);
   if (domTheme) return domTheme;

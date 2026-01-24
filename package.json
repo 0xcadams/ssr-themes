@@ -3,7 +3,8 @@
   "private": true,
   "workspaces": [
     "ssr-themes",
-    "examples/*"
+    "examples/*",
+    "landing"
   ],
   "scripts": {
     "prepublish": "bun --filter ssr-themes build",
