@@ -1,0 +1,5 @@
+{
+  "name": "ssr-themes",
+  "installCommand": "bun --cwd .. install",
+  "buildCommand": "bun --cwd .. --filter ssr-themes build && bun run build"
+}
