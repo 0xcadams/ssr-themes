@@ -172,44 +172,69 @@ function IndexPage() {
               </span>{' '}
               hook.
             </p>
-            <div className="flex flex-wrap items-center gap-3">
-              <ToggleGroup
-                type="single"
-                value={packageManager}
-                onValueChange={(value: string) => {
-                  if (value) setPackageManager(value as PackageManager);
-                }}
-                variant="outline"
-                size="sm"
-                className="bg-card/70 backdrop-blur"
-              >
-                {packageManagers.map(manager => (
-                  <ToggleGroupItem
-                    key={manager.value}
-                    value={manager.value}
-                    className="text-[0.7rem] font-medium"
+            <div className="space-y-3">
+              <div className="flex flex-wrap items-center gap-3">
+                <ToggleGroup
+                  type="single"
+                  value={packageManager}
+                  onValueChange={(value: string) => {
+                    if (value) setPackageManager(value as PackageManager);
+                  }}
+                  variant="outline"
+                  size="sm"
+                  className="bg-card/70 backdrop-blur"
+                >
+                  {packageManagers.map(manager => (
+                    <ToggleGroupItem
+                      key={manager.value}
+                      value={manager.value}
+                      className="text-[0.7rem] font-medium"
+                    >
+                      {manager.label}
+                    </ToggleGroupItem>
+                  ))}
+                </ToggleGroup>
+                <div className="flex items-center gap-2 rounded-md border border-border/70 bg-card/70 px-3 py-2 shadow-xs">
+                  <span className="font-mono text-[0.75rem] text-foreground/80">
+                    {installCommand}
+                  </span>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon-xs"
+                    onClick={handleCopy}
+                    aria-label="Copy install command"
+                    title={copied ? 'Copied' : 'Copy'}
                   >
-                    {manager.label}
-                  </ToggleGroupItem>
-                ))}
-              </ToggleGroup>
-              <div className="flex items-center gap-2 rounded-md border border-border/70 bg-card/70 px-3 py-2 shadow-xs">
-                <span className="font-mono text-[0.75rem] text-foreground/80">
-                  {installCommand}
+                    {copied ? (
+                      <Check className="size-3.5" />
+                    ) : (
+                      <Copy className="size-3.5" />
+                    )}
+                  </Button>
+                </div>
+              </div>
+              <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+                <span className="text-[0.7rem] uppercase tracking-[0.2em] text-muted-foreground/80">
+                  Live demos
                 </span>
                 <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon-xs"
-                  onClick={handleCopy}
-                  aria-label="Copy install command"
-                  title={copied ? 'Copied' : 'Copy'}
+                  asChild
+                  variant="outline"
+                  size="xs"
+                  className="bg-card/70 backdrop-blur"
                 >
-                  {copied ? (
-                    <Check className="size-3.5" />
-                  ) : (
-                    <Copy className="size-3.5" />
-                  )}
+                  <a href="https://start.ssr-themes.cadams.io">
+                    TanStack Start
+                  </a>
+                </Button>
+                <Button
+                  asChild
+                  variant="outline"
+                  size="xs"
+                  className="bg-card/70 backdrop-blur"
+                >
+                  <a href="https://next.ssr-themes.cadams.io">Next.js</a>
                 </Button>
               </div>
             </div>
