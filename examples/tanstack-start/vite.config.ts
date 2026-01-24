@@ -10,7 +10,7 @@ const config = defineConfig({
     port: 4040,
   },
   plugins: [
-    nitro({preset: 'vercel', vercel: {entryFormat: 'node'}}),
+    nitro({preset: 'vercel'}),
     // this is the plugin that enables path aliases
     viteTsConfigPaths({
       projects: ['./tsconfig.json'],
