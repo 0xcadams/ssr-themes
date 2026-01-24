@@ -1,5 +1,6 @@
 {
   "name": "ssr-themes-next",
+  "framework": "nextjs",
   "installCommand": "bun install --cwd ../..",
   "buildCommand": "bun --cwd ../.. --filter ssr-themes build && bun run build"
 }
