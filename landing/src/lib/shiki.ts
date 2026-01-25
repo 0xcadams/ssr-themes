@@ -30,7 +30,12 @@ export default function RootLayout({children}: {children: ReactNode}) {
   return (
     <html suppressHydrationWarning {...registerTheme({theme})}>
       <body>
-        <ThemeProvider initialTheme={theme}>{children}</ThemeProvider>
+        <ThemeProvider
+          initialTheme={theme}
+          themes={["light", "dark", "quartz", "abyss"]}
+        >
+          {children}
+        </ThemeProvider>
       </body>
     </html>
   );

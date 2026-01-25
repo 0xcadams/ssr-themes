@@ -3,5 +3,13 @@
   "singleQuote": true,
   "trailingComma": "none",
   "arrowParens": "avoid",
-  "printWidth": 100
+  "printWidth": 100,
+  "overrides": [
+    {
+      "files": "**/*.md",
+      "options": {
+        "printWidth": 55
+      }
+    }
+  ]
 }
