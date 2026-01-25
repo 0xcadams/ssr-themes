@@ -20,18 +20,55 @@ export function RootLayout({children}) {
   );
 }`;
 
+const nextRscExampleCode = `import {cookies} from "next/headers";
+import type {ReactNode} from "react";
+import {registerTheme} from "ssr-themes";
+import Providers from "./providers";
+
+export default async function RootLayout({
+  children,
+}: {
+  children: ReactNode;
+}) {
+  const cookieStore = await cookies();
+  const themeCookie = cookieStore.get("theme")?.value;
+  const theme =
+    themeCookie === "dark" || themeCookie === "light" ? themeCookie : undefined;
+  const themeProps = registerTheme({theme, attribute: "data-theme"});
+
+  return (
+    <html suppressHydrationWarning {...themeProps}>
+      <body>
+        <Providers initialTheme={theme}>{children}</Providers>
+      </body>
+    </html>
+  );
+}`;
+
 let cachedHighlight: Promise<string> | null = null;
+let cachedNextRscHighlight: Promise<string> | null = null;
+
+const highlightCode = (code: string) =>
+  codeToHtml(code, {
+    lang: 'tsx',
+    themes: {
+      light: 'vitesse-light',
+      dark: 'vitesse-dark',
+    },
+  });
 
 export const getHighlightedCode = async () => {
   if (!cachedHighlight) {
-    cachedHighlight = codeToHtml(exampleCode, {
-      lang: 'tsx',
-      themes: {
-        light: 'vitesse-light',
-        dark: 'vitesse-dark',
-      },
-    });
+    cachedHighlight = highlightCode(exampleCode);
   }
 
   return cachedHighlight;
+};
+
+export const getHighlightedNextRscCode = async () => {
+  if (!cachedNextRscHighlight) {
+    cachedNextRscHighlight = highlightCode(nextRscExampleCode);
+  }
+
+  return cachedNextRscHighlight;
 };

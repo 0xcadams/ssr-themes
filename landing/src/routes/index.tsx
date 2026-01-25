@@ -11,7 +11,7 @@ import {
 } from '@/components/ui/card';
 import {ToggleGroup, ToggleGroupItem} from '@/components/ui/toggle-group';
 import {Check, Copy, Github, ShieldCheck} from 'lucide-react';
-import {getHighlightedCode} from '@/lib/shiki';
+import {getHighlightedCode, getHighlightedNextRscCode} from '@/lib/shiki';
 
 type ThemeOption = {
   value: 'system' | 'light' | 'dark' | 'quartz' | 'abyss';
@@ -106,7 +106,7 @@ function IndexPage() {
   const [mounted, setMounted] = useState(false);
   const [packageManager, setPackageManager] = useState<PackageManager>('bun');
   const [copied, setCopied] = useState(false);
-  const {codeHtml} = Route.useLoaderData();
+  const {codeHtml, nextRscCodeHtml} = Route.useLoaderData();
 
   useEffect(() => setMounted(true), []);
   useEffect(() => {
@@ -214,14 +214,14 @@ function IndexPage() {
                   </Button>
                 </div>
               </div>
-              <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+              <div className="flex flex-wrap items-center gap-2">
                 <span className="text-[0.7rem] uppercase tracking-[0.2em] text-muted-foreground/80">
                   Live demos
                 </span>
                 <Button
                   asChild
                   variant="outline"
-                  size="xs"
+                  size="sm"
                   className="bg-card/70 backdrop-blur"
                 >
                   <a href="https://start.ssr-themes.cadams.io">
@@ -231,7 +231,7 @@ function IndexPage() {
                 <Button
                   asChild
                   variant="outline"
-                  size="xs"
+                  size="sm"
                   className="bg-card/70 backdrop-blur"
                 >
                   <a href="https://next.ssr-themes.cadams.io">Next.js</a>
@@ -291,6 +291,21 @@ function IndexPage() {
                 />
               </CardContent>
             </Card>
+
+            <Card className="min-w-0 border-border/60 bg-card/70 backdrop-blur">
+              <CardHeader>
+                <CardTitle className="text-base">Next.js RSC example</CardTitle>
+                <CardDescription>
+                  Read cookies on the server and hydrate the initial theme.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="code-block min-w-0 pt-0">
+                <div
+                  className="max-w-full overflow-x-auto"
+                  dangerouslySetInnerHTML={{__html: nextRscCodeHtml}}
+                />
+              </CardContent>
+            </Card>
           </section>
         </main>
       </div>
@@ -301,6 +316,7 @@ function IndexPage() {
 export const Route = createFileRoute('/')({
   loader: async () => ({
     codeHtml: await getHighlightedCode(),
+    nextRscCodeHtml: await getHighlightedNextRscCode(),
   }),
   component: IndexPage,
 });
