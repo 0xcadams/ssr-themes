@@ -22,8 +22,7 @@ export function RootLayout({children}) {
 
 const nextRscExampleCode = `import {cookies} from "next/headers";
 import type {ReactNode} from "react";
-import {registerTheme} from "ssr-themes";
-import Providers from "./providers";
+import {registerTheme, ThemeProvider} from "ssr-themes";
 
 export default function RootLayout({children}: {children: ReactNode}) {
   const theme = cookies().get("theme")?.value;
@@ -31,7 +30,7 @@ export default function RootLayout({children}: {children: ReactNode}) {
   return (
     <html suppressHydrationWarning {...registerTheme({theme})}>
       <body>
-        <Providers initialTheme={theme}>{children}</Providers>
+        <ThemeProvider initialTheme={theme}>{children}</ThemeProvider>
       </body>
     </html>
   );
