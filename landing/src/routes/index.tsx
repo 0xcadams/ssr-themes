@@ -294,7 +294,9 @@ function IndexPage() {
 
             <Card className="min-w-0 border-border/60 bg-card/70 backdrop-blur">
               <CardHeader>
-                <CardTitle className="text-base">Next.js RSC example</CardTitle>
+                <CardTitle className="text-base">
+                  First-class RSC support
+                </CardTitle>
                 <CardDescription>
                   Read cookies on the server and hydrate the initial theme.
                 </CardDescription>
