@@ -14,7 +14,7 @@ export function ThemePreview() {
 
 export function RootLayout({children}) {
   return (
-    <ThemeProvider attribute="class" themes={["light", "dark", "quartz", "abyss"]}>
+    <ThemeProvider themes={["light", "dark", "quartz", "abyss"]}>
       {children}
     </ThemeProvider>
   );
@@ -25,19 +25,11 @@ import type {ReactNode} from "react";
 import {registerTheme} from "ssr-themes";
 import Providers from "./providers";
 
-export default async function RootLayout({
-  children,
-}: {
-  children: ReactNode;
-}) {
-  const cookieStore = await cookies();
-  const themeCookie = cookieStore.get("theme")?.value;
-  const theme =
-    themeCookie === "dark" || themeCookie === "light" ? themeCookie : undefined;
-  const themeProps = registerTheme({theme, attribute: "data-theme"});
+export default function RootLayout({children}: {children: ReactNode}) {
+  const theme = cookies().get("theme")?.value;
 
   return (
-    <html suppressHydrationWarning {...themeProps}>
+    <html suppressHydrationWarning {...registerTheme({theme})}>
       <body>
         <Providers initialTheme={theme}>{children}</Providers>
       </body>
