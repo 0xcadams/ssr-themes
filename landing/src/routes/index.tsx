@@ -165,7 +165,7 @@ function IndexPage() {
               Theming for any React framework, with no SSR flash
             </h1>
             <p className="max-w-xl text-lg text-muted-foreground">
-              SSR-first theming for React using cookies, system preference,
+              SSR-first theming for React using cookies — system preference,
               custom palettes, and a simple{' '}
               <span className="rounded-md border border-primary/20 bg-primary/10 px-1.5 py-0.5 font-mono text-[0.75rem] text-primary/90">
                 useTheme
