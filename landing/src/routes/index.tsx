@@ -162,11 +162,11 @@ function IndexPage() {
         <main className="mt-16 grid flex-1 items-start gap-14 lg:grid-cols-[1.05fr_0.95fr] lg:gap-20 lg:items-center">
           <section className="min-w-0 space-y-6 animate-rise animate-delay-2">
             <h1 className="font-display text-4xl leading-tight text-foreground sm:text-5xl">
-              Dark mode for any React framework, with no SSR flash
+              Theming for any React framework, with no SSR flash
             </h1>
             <p className="max-w-xl text-lg text-muted-foreground">
-              SSR-safe theming for React with system preference, custom
-              palettes, and a simple{' '}
+              SSR-first theming for React using cookies, system preference,
+              custom palettes, and a simple{' '}
               <span className="rounded-md border border-primary/20 bg-primary/10 px-1.5 py-0.5 font-mono text-[0.75rem] text-primary/90">
                 useTheme
               </span>{' '}
