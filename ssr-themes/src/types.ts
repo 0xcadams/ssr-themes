@@ -74,6 +74,10 @@ export interface RegisterThemeOptions<
   value?: ValueObject | undefined;
   /** Whether to indicate to browsers which color scheme is used */
   enableColorScheme?: boolean | undefined;
+  /** Optional class name to merge with the theme class */
+  className?: string | undefined;
+  /** Optional style object to merge with color-scheme */
+  style?: React.CSSProperties | undefined;
 }
 
 export interface ThemeProviderProps<

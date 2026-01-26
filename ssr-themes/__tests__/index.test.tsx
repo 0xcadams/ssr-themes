@@ -228,7 +228,7 @@ describe('custom cookie name', () => {
 
 describe('html theme precedence', () => {
   test('should prefer existing html theme when attribute is present', () => {
-    document.documentElement.setAttribute('data-theme', 'dark');
+    document.documentElement.classList.add('dark');
     setCookieValue('theme', 'light');
 
     const {result} = renderHook(() => useTheme(), {
@@ -240,7 +240,7 @@ describe('html theme precedence', () => {
 });
 
 describe('custom attribute', () => {
-  test('should use data-theme attribute when using default', () => {
+  test('should use class attribute when using default', () => {
     act(() => {
       render(
         <ThemeProvider>
@@ -249,7 +249,7 @@ describe('custom attribute', () => {
       );
     });
 
-    expect(document.documentElement.getAttribute('data-theme')).toBe('light');
+    expect(document.documentElement.classList.contains('light')).toBeTruthy();
   });
 
   test('should use class attribute (CSS-class) when attribute="class"', () => {
@@ -307,9 +307,9 @@ describe('custom value-mapping', () => {
       );
     });
 
-    expect(document.documentElement.getAttribute('data-theme')).toBe(
-      'my-pink-theme',
-    );
+    expect(
+      document.documentElement.classList.contains('my-pink-theme'),
+    ).toBeTruthy();
     expect(getCookieValue('theme')).toBe('pink');
   });
 
@@ -322,7 +322,7 @@ describe('custom value-mapping', () => {
       );
     });
 
-    expect(document.documentElement.hasAttribute('data-theme')).toBeFalsy();
+    expect(document.documentElement.className).toBe('');
   });
 
   test('should allow missing values (class)', () => {
@@ -452,7 +452,7 @@ describe('color-scheme', () => {
       );
     });
 
-    expect(document.documentElement.getAttribute('data-theme')).toBe('light');
+    expect(document.documentElement.classList.contains('light')).toBeTruthy();
     expect(document.documentElement.style.colorScheme).toBe('light');
   });
 
@@ -465,7 +465,7 @@ describe('color-scheme', () => {
       );
     });
 
-    expect(document.documentElement.getAttribute('data-theme')).toBe('dark');
+    expect(document.documentElement.classList.contains('dark')).toBeTruthy();
     expect(document.documentElement.style.colorScheme).toBe('dark');
   });
 });

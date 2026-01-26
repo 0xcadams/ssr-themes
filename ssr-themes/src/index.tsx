@@ -140,7 +140,7 @@ const Theme = <TThemes extends readonly string[] = SystemThemeDefinition>({
       if (!resolved) return;
 
       // If theme is system, resolve it before setting theme
-      if (theme === 'system' && enableSystem) {
+      if (resolved === 'system' && enableSystem) {
         resolved = getSystemTheme();
       }
 
@@ -168,19 +168,22 @@ const Theme = <TThemes extends readonly string[] = SystemThemeDefinition>({
       }
 
       if (enableColorScheme) {
-        const fallback = colorSchemes.includes(defaultTheme)
-          ? defaultTheme
-          : null;
-        const colorScheme = colorSchemes.includes(resolved)
-          ? resolved
-          : fallback;
+        const colorScheme = colorSchemes.includes(resolved) ? resolved : '';
         // @ts-ignore
         d.style.colorScheme = colorScheme;
       }
 
       enable?.();
     },
-    [nonce],
+    [
+      attribute,
+      attrs,
+      disableTransitionOnChange,
+      enableColorScheme,
+      enableSystem,
+      nonce,
+      value,
+    ],
   );
 
   const broadcastTheme = React.useCallback(
@@ -219,7 +222,7 @@ const Theme = <TThemes extends readonly string[] = SystemThemeDefinition>({
         applyTheme('system');
       }
     },
-    [theme, forcedTheme],
+    [applyTheme, enableSystem, forcedTheme, theme],
   );
 
   // Always listen to System preference
@@ -274,20 +277,32 @@ const Theme = <TThemes extends readonly string[] = SystemThemeDefinition>({
   // Whenever theme or forcedTheme changes, apply it
   React.useEffect(() => {
     applyTheme(forcedTheme ?? theme);
-  }, [forcedTheme, theme]);
+  }, [applyTheme, forcedTheme, theme]);
+
+  const appliedTheme = forcedTheme ?? theme;
+  const resolved =
+    appliedTheme === 'system' && enableSystem ? resolvedTheme : appliedTheme;
 
   const providerValue = React.useMemo(
     () => ({
       theme,
       setTheme,
       forcedTheme,
-      resolvedTheme: theme === 'system' ? resolvedTheme : theme,
+      resolvedTheme: resolved,
       themes: enableSystem ? [...themes, 'system'] : themes,
       systemTheme: (enableSystem ? resolvedTheme : undefined) as
         | SystemTheme
         | undefined,
     }),
-    [theme, setTheme, forcedTheme, resolvedTheme, enableSystem, themes],
+    [
+      theme,
+      setTheme,
+      forcedTheme,
+      resolved,
+      resolvedTheme,
+      enableSystem,
+      themes,
+    ],
   );
 
   return (

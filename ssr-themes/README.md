@@ -105,7 +105,7 @@ return (
 
 ### HTML & CSS
 
-That's it, your app fully supports dark mode, including System preference with `prefers-color-scheme`. The theme is also immediately synced between tabs. By default, ssr-themes modifies the `data-theme` attribute on the `html` element, which you can easily use to style your app:
+That's it, your app fully supports dark mode, including System preference with `prefers-color-scheme`. The theme is also immediately synced between tabs. By default, ssr-themes modifies the `class` attribute on the `html` element, so you can style your app like this:
 
 ```css
 :root {
@@ -114,13 +114,13 @@ That's it, your app fully supports dark mode, including System preference with `
   --foreground: black;
 }
 
-[data-theme='dark'] {
+:root.dark {
   --background: black;
   --foreground: white;
 }
 ```
 
-> **Note!** If you set the attribute of your Theme Provider to class for Tailwind ssr-themes will modify the `class` attribute on the `html` element. See [With TailwindCSS](#with-tailwindcss).
+> **Note!** If you want to use a data attribute instead of the default `class`, set `attribute` to a `data-*` value.
 
 ### useTheme
 
@@ -142,7 +142,7 @@ const ThemeChanger = () => {
 };
 ```
 
-> **Warning!** The above code is hydration _unsafe_ and will throw a hydration mismatch warning when rendering with SSG or SSR. This is because we cannot know the `theme` on the server, so it will always be `undefined` until mounted on the client.
+> The above code is hydration _unsafe_ and will throw a hydration mismatch warning when rendering with SSR. Use `registerTheme` on the server to have SSR populate the correct theme.
 >
 > You should delay rendering any theme toggling UI until mounted on the client. See the [example](#avoid-hydration-mismatch).
 
@@ -162,8 +162,8 @@ All your theme configuration is passed to ThemeProvider.
 - `enableColorScheme = true`: Whether to indicate to browsers which color scheme is used (dark or light) for built-in UI like inputs and buttons
 - `disableTransitionOnChange = false`: Optionally disable all CSS transitions when switching themes ([example](#disable-transitions-on-theme-change))
 - `themes = ['light', 'dark']`: List of theme names
-- `attribute = 'data-theme'`: HTML attribute modified based on the active theme
-  - accepts `class` and `data-*` (meaning any data attribute, `data-mode`, `data-color`, etc.) ([example](#class-instead-of-data-attribute))
+- `attribute = 'class'`: HTML attribute modified based on the active theme
+  - accepts `class` and `data-*` (meaning any data attribute, `data-mode`, `data-color`, etc.) ([example](#class-attribute-default))
 - `value`: Optional mapping of theme name to attribute value
   - value is an `object` where key is the theme name and value is the attribute value ([example](#differing-dom-attribute-and-theme-name))
 - `nonce`: Optional nonce passed to the injected `script` tag, used to allow-list the ssr-themes script in your CSP
@@ -215,9 +215,9 @@ If you don't want a System theme, disable it via `enableSystem`:
 <ThemeProvider enableSystem={false}>
 ```
 
-### Class instead of data attribute
+### Class attribute (default)
 
-If your app uses a class to style the page based on the theme, change the attribute prop to `class`:
+If your app uses a class to style the page based on the theme, you can be explicit about the default:
 
 ```jsx
 <ThemeProvider attribute="class">
@@ -275,9 +275,9 @@ To enable this behavior, pass the `disableTransitionOnChange` prop:
 
 ### Differing DOM attribute and theme name
 
-The name of the active theme is used as both the cookie value and the value of the DOM attribute. If the theme name is "pink", the cookie will contain `theme=pink` and the DOM will be `data-theme="pink"`. You **cannot** modify the cookie value, but you **can** modify the DOM value.
+The name of the active theme is used as both the cookie value and the value of the DOM attribute. If the theme name is "pink", the cookie will contain `theme=pink` and the DOM will be `class="pink"`. You **cannot** modify the cookie value, but you **can** modify the DOM value.
 
-If we want the DOM to instead render `data-theme="my-pink-theme"` when the theme is "pink", pass the `value` prop:
+If we want the DOM to instead render `class="my-pink-theme"` when the theme is "pink", pass the `value` prop:
 
 ```jsx
 <ThemeProvider value={{ pink: 'my-pink-theme' }}>
@@ -292,7 +292,7 @@ const {theme} = useTheme();
 document.cookie;
 // => "theme=pink"
 
-document.documentElement.getAttribute('data-theme');
+document.documentElement.className;
 // => "my-pink-theme"
 ```
 
@@ -331,8 +331,8 @@ body {
   background: #fff;
 }
 
-[data-theme='dark'],
-[data-theme='dark'] body {
+html.dark,
+html.dark body {
   color: #fff;
   background: #000;
 }
@@ -355,7 +355,7 @@ const GlobalStyle = createGlobalStyle`
     --bg: #fff;
   }
 
-  [data-theme="dark"] {
+  :root.dark {
     --fg: #fff;
     --bg: #000;
   }
@@ -508,8 +508,8 @@ export default ThemedImage;
 ```
 
 ```css
-[data-theme='dark'] [data-hide-on-theme='dark'],
-[data-theme='light'] [data-hide-on-theme='light'] {
+:root.dark [data-hide-on-theme='dark'],
+:root.light [data-hide-on-theme='light'] {
   display: none;
 }
 ```

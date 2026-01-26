@@ -23,8 +23,14 @@ export const script = <TThemes extends readonly string[]>(
   const classList = themeValues.map(entry => entry.value);
 
   const getCookie = (name: string) => {
-    const match = document.cookie.match(new RegExp(`(?:^|; )${name}=([^;]*)`));
-    return match ? decodeURIComponent(match[1]) : undefined;
+    const cookies = document.cookie ? document.cookie.split('; ') : [];
+    for (const cookie of cookies) {
+      const [cookieName, ...rest] = cookie.split('=');
+      if (cookieName === name) {
+        return decodeURIComponent(rest.join('='));
+      }
+    }
+    return undefined;
   };
 
   const getThemeFromDOM = () => {
@@ -67,8 +73,12 @@ export const script = <TThemes extends readonly string[]>(
         }
       }
     }
-    if (enableColorScheme && (theme === 'light' || theme === 'dark')) {
-      el.style.colorScheme = theme;
+    if (enableColorScheme) {
+      if (theme === 'light' || theme === 'dark') {
+        el.style.colorScheme = theme;
+      } else {
+        el.style.colorScheme = '';
+      }
     }
   }
 
