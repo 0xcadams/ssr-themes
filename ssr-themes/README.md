@@ -83,7 +83,7 @@ export const Route = createRootRoute({
 });
 ```
 
-> **Note!** If you do not add [suppressHydrationWarning](https://reactjs.org/docs/dom-elements.html#suppresshydrationwarning:~:text=It%20only%20works%20one%20level%20deep) to your `<html>` you will get warnings because `ssr-themes` updates that element. This property only applies one level deep, so it won't block hydration warnings on other elements.
+> If you do not add [suppressHydrationWarning](https://reactjs.org/docs/dom-elements.html#suppresshydrationwarning:~:text=It%20only%20works%20one%20level%20deep) to your `<html>` you will get warnings because `ssr-themes` updates that element. This property only applies one level deep, so it won't block hydration warnings on other elements.
 
 ### SSR / RSC
 
@@ -164,7 +164,7 @@ That's it, your app fully supports dark mode, including System preference with `
 }
 ```
 
-> **Note!** If you want to use a data attribute instead of the default `class`, set `attribute` to a `data-*` value.
+> If you want to use a data attribute instead of the default `class`, set `attribute` to a `data-*` value.
 
 ### useTheme
 
@@ -330,12 +330,14 @@ const disabled = !!forcedTheme;
 
 ### Disable transitions on theme change
 
-I wrote about [this technique here](https://paco.sh/blog/disable-theme-transitions). We can forcefully disable all CSS transitions before the theme is changed, and re-enable them immediately afterwards. This ensures your UI with different transition durations won't feel inconsistent when changing the theme.
+I wrote about [this technique here](https://paco.sh/blog/disable-theme-transitions). We temporarily disable CSS transitions while the theme attribute is being updated, then immediately re-enable them. This avoids a "half-transitioned" look when your UI has a mix of transition durations.
 
-To enable this behavior, pass the `disableTransitionOnChange` prop:
+This behavior is enabled by default. To opt out, set `disableTransitionOnChange={false}`:
 
 ```jsx
-<ThemeProvider disableTransitionOnChange>
+<ThemeProvider disableTransitionOnChange={false}>
+  {children}
+</ThemeProvider>
 ```
 
 ### Differing DOM attribute and theme name
@@ -369,7 +371,7 @@ ssr-themes is designed to support any number of themes! Simply pass a list of th
 <ThemeProvider themes={['pink', 'red', 'blue']}>
 ```
 
-> **Note!** When you pass `themes`, the default set of themes ("light" and "dark") are overridden. Make sure you include those if you still want your light and dark themes:
+> When you pass `themes`, the default set of themes ("light" and "dark") are overridden. Make sure you include those if you still want your light and dark themes:
 
 ```jsx
 <ThemeProvider themes={['pink', 'red', 'blue', 'light', 'dark']}>
