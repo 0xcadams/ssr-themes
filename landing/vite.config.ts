@@ -17,9 +17,6 @@ const config = defineConfig({
     nitro({
       preset: nitroPreset,
       traceDeps: ['typescript'],
-      vercel: {
-        entryFormat: 'node',
-      },
     }),
     viteTsConfigPaths({
       projects: ['./tsconfig.json'],

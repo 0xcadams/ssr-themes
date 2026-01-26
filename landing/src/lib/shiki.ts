@@ -52,7 +52,25 @@ export default async function RootLayout({
   );
 }`;
 
+const ensureNodeRequire = async () => {
+  if (!import.meta.env.SSR) {
+    return;
+  }
+
+  if (typeof globalThis.require === 'function') {
+    return;
+  }
+
+  if (!process?.versions?.node) {
+    return;
+  }
+
+  const {createRequire} = await import('node:module');
+  globalThis.require = createRequire(import.meta.url);
+};
+
 const getTwoslashTransformers = async () => {
+  await ensureNodeRequire();
   const [{transformerTwoslash}, {JsxEmit}] =
     await Promise.all([
       import('@shikijs/twoslash'),
