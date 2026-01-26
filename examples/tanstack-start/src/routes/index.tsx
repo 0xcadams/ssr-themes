@@ -19,7 +19,9 @@ function IndexPage() {
           id="theme-selector"
           className="rounded border border-current bg-transparent px-3 py-2 text-xl"
           value={theme}
-          onChange={event => setTheme(event.target.value)}
+          onChange={event =>
+            setTheme(event.target.value as 'light' | 'dark' | 'system')
+          }
           data-test-id="theme-selector"
         >
           <option value="system">System</option>

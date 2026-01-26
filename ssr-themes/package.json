@@ -1,6 +1,6 @@
 {
   "name": "ssr-themes",
-  "version": "0.0.1-alpha.1",
+  "version": "0.0.1-alpha.2",
   "license": "Apache-2.0",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
@@ -8,6 +8,7 @@
   "files": [
     "dist",
     "LICENSE.md",
+    "README.md",
     "package.json"
   ],
   "exports": {
@@ -27,7 +28,7 @@
     "prepublish": "bun run build",
     "build": "tsup",
     "dev": "tsup --watch",
-    "test": "vitest run __tests__",
+    "test": "vitest run tests",
     "clean": "rm -rf dist node_modules"
   },
   "peerDependencies": {

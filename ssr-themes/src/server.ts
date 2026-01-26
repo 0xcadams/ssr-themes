@@ -1,10 +1,14 @@
+export {themeScript} from './theme-script';
+export {themeFromCookieHeader} from './header';
 export {registerTheme} from './register-theme';
 export type {
   Attribute,
-  CookieConfig,
   CookieOptions,
   RegisterThemeOptions,
+  ThemeName,
+  ThemeScriptOptions,
   ThemeHtmlProps,
+  ThemeOptions,
   ThemeProviderProps,
   UseThemeProps,
   SystemTheme,

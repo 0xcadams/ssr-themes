@@ -5,7 +5,8 @@ import {
   createRootRoute,
 } from '@tanstack/react-router';
 import * as React from 'react';
-import {ThemeProvider} from 'ssr-themes';
+import {ThemeProvider, themeScript} from 'ssr-themes';
+import faviconUrl from '../assets/favicon.svg?url';
 import appCss from '../styles.css?url';
 
 function RootDocument({children}: {children: React.ReactNode}) {
@@ -16,10 +17,7 @@ function RootDocument({children}: {children: React.ReactNode}) {
       </head>
       <body className="min-h-screen bg-background text-foreground antialiased">
         <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          enableSystem
-          enableColorScheme={false}
+          disableTransitionOnChange
           themes={['light', 'dark', 'quartz', 'abyss']}
         >
           {children}
@@ -50,10 +48,11 @@ export const Route = createRootRoute({
       {
         name: 'description',
         content:
-          'SSR-ready themes with zero flash, flexible tokens, and instant system sync.',
+          'SSR-friendly theming for React using cookies - with system preference, cross-tab sync, no flash, and a strongly typed useTheme hook.',
       },
     ],
     links: [
+      {rel: 'icon', type: 'image/svg+xml', href: faviconUrl},
       {rel: 'stylesheet', href: appCss},
       {rel: 'preconnect', href: 'https://fonts.googleapis.com'},
       {
@@ -63,7 +62,12 @@ export const Route = createRootRoute({
       },
       {
         rel: 'stylesheet',
-        href: 'https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap',
+        href: 'https://fonts.googleapis.com/css2?family=Fira+Mono:wght@400;500;700&display=swap',
+      },
+    ],
+    scripts: [
+      {
+        children: themeScript(),
       },
     ],
   }),

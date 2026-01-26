@@ -1,19 +1,13 @@
-import type {
-  RegisterThemeOptions,
-  SystemThemeDefinition,
-  ThemeHtmlProps,
-} from './types';
+import type {RegisterThemeOptions, SystemTheme, ThemeHtmlProps} from './types';
 
-export const registerTheme = <
-  TThemes extends readonly string[] = SystemThemeDefinition,
->({
+export const registerTheme = <TTheme extends string = SystemTheme>({
   theme,
   attribute = 'class',
   value,
   enableColorScheme = true,
   className,
   style,
-}: RegisterThemeOptions<TThemes> = {}): ThemeHtmlProps => {
+}: RegisterThemeOptions<TTheme> = {}): ThemeHtmlProps => {
   const props: ThemeHtmlProps = {};
   if (className) {
     props.className = className;

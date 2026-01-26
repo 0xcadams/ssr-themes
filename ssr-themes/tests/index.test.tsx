@@ -16,6 +16,7 @@ import {
 import {cleanup} from '@testing-library/react';
 
 import {ThemeProvider, useTheme} from '../src/index';
+import {themeScript} from '../src/server';
 import {ThemeProviderProps} from '../src/types';
 
 let originalCookieDescriptor: PropertyDescriptor | undefined;
@@ -27,8 +28,8 @@ const serializeCookies = () =>
     .join('; ');
 
 const setMockCookie = (cookie: string) => {
-  const [pair] = cookie.split(';');
-  const [rawName, ...rawValueParts] = pair.split('=');
+  const [pair = ''] = cookie.split(';');
+  const [rawName = '', ...rawValueParts] = pair.split('=');
   const name = rawName.trim();
   if (!name) return;
   const value = rawValueParts.join('=').trim();
@@ -50,7 +51,10 @@ const setCookieValue = (name: string, value: string) => {
 
 // HelperComponent to render the theme inside a paragraph-tag and setting a theme via the forceSetTheme prop
 const HelperComponent = ({forceSetTheme}: {forceSetTheme?: string}) => {
-  const {setTheme, theme, forcedTheme, resolvedTheme, systemTheme} = useTheme();
+  const {setTheme, theme, forcedTheme, resolvedTheme, systemTheme} = useTheme<
+    string,
+    boolean
+  >();
 
   React.useEffect(() => {
     if (forceSetTheme) {
@@ -121,7 +125,7 @@ afterAll(() => {
   }
 });
 
-function makeWrapper(props: ThemeProviderProps) {
+function makeWrapper(props: ThemeProviderProps<string, boolean>) {
   return ({children}: {children: React.ReactNode}) => (
     <ThemeProvider {...props}>{children}</ThemeProvider>
   );
@@ -383,6 +387,30 @@ describe('forcedTheme', () => {
     expect(result.current.theme).toBe('dark');
     expect(result.current.forcedTheme).toBe('light');
   });
+
+  test('should restore theme after forcedTheme unmounts', () => {
+    setCookieValue('theme', 'dark');
+
+    const {unmount} = render(
+      <ThemeProvider forcedTheme="light">
+        <HelperComponent />
+      </ThemeProvider>,
+    );
+
+    expect(document.documentElement.classList.contains('light')).toBeTruthy();
+
+    unmount();
+
+    render(
+      <ThemeProvider>
+        <HelperComponent />
+      </ThemeProvider>,
+    );
+
+    expect(document.documentElement.classList.contains('dark')).toBeTruthy();
+    expect(screen.getByTestId('forcedTheme').textContent).toBe('');
+    expect(screen.getByTestId('theme').textContent).toBe('dark');
+  });
 });
 
 describe('system theme', () => {
@@ -427,6 +455,19 @@ describe('system theme', () => {
     expect(result.current.systemTheme).toBeUndefined();
     expect(result.current.resolvedTheme).toBe('light');
     expect(result.current.forcedTheme).toBeUndefined();
+  });
+
+  test('should keep system theme when dom is resolved', () => {
+    setDeviceTheme('dark');
+    setCookieValue('theme', 'system');
+    document.documentElement.classList.add('dark');
+
+    const {result} = renderHook(() => useTheme(), {
+      wrapper: makeWrapper({}),
+    });
+
+    expect(result.current.theme).toBe('system');
+    expect(result.current.resolvedTheme).toBe('dark');
   });
 });
 
@@ -541,16 +582,17 @@ describe('setTheme', () => {
   });
 });
 
-describe('inline script', () => {
-  test('should pass props to script', () => {
-    act(() => {
-      render(
-        <ThemeProvider defaultTheme="light" scriptProps={{'data-test': '1234'}}>
-          <HelperComponent />
-        </ThemeProvider>,
-      );
+describe('bootstrap script', () => {
+  test('themeScript sets the html theme', () => {
+    setCookieValue('theme', 'dark');
+
+    const scriptContent = themeScript({
+      attribute: 'class',
+      defaultTheme: 'light',
     });
 
-    expect(document.querySelector('script[data-test="1234"]')).toBeTruthy();
+    Function(scriptContent)();
+
+    expect(document.documentElement.classList.contains('dark')).toBeTruthy();
   });
 });

@@ -1,27 +1,26 @@
 'use client';
 
 import * as React from 'react';
-import {script} from './script';
 import type {
   Attribute,
-  CookieConfig,
   CookieOptions,
   SystemTheme,
   SystemThemeDefinition,
   ThemeName,
+  ThemeOptions,
   ThemeProviderProps,
   UseThemeProps,
 } from './types';
 
-export {registerTheme} from './register-theme';
-
 const colorSchemes = ['light', 'dark'];
 const MEDIA = '(prefers-color-scheme: dark)';
 const isServer = typeof window === 'undefined';
-const ThemeContext = React.createContext<UseThemeProps | undefined>(undefined);
-const defaultContext: UseThemeProps = {
+const ThemeContext = React.createContext<
+  UseThemeProps<string, boolean> | undefined
+>(undefined);
+const defaultContext: UseThemeProps<SystemTheme, true> = {
   setTheme: _ => {},
-  themes: [] as unknown as SystemThemeDefinition,
+  themes: [] as ThemeName<SystemTheme, true>[],
 };
 
 const defaultCookieOptions: CookieOptions = {
@@ -30,7 +29,7 @@ const defaultCookieOptions: CookieOptions = {
   sameSite: 'lax',
 };
 
-const getCookieName = (cookie?: CookieConfig) => cookie?.name ?? 'theme';
+const getCookieName = (cookie?: CookieOptions) => cookie?.name ?? 'theme';
 
 const getCookieValue = (key: string) => {
   if (isServer) return undefined;
@@ -90,16 +89,24 @@ const saveToCookie = (
   }
 };
 
-export const useTheme = () => React.useContext(ThemeContext) ?? defaultContext;
+export const useTheme = <
+  TTheme extends string = SystemTheme,
+  TEnableSystem extends boolean = true,
+>() =>
+  (React.useContext(ThemeContext) ?? defaultContext) as UseThemeProps<
+    TTheme,
+    TEnableSystem
+  >;
 
 export const ThemeProvider = <
-  TThemes extends readonly string[] = SystemThemeDefinition,
+  TTheme extends string = SystemTheme,
+  TEnableSystem extends boolean = true,
 >(
-  props: ThemeProviderProps<TThemes>,
+  props: ThemeProviderProps<TTheme, TEnableSystem>,
 ) => {
   const context = React.useContext(ThemeContext);
 
-  // Ignore nested context providers, just passthrough children
+  // Ignore nested context providers
   if (context) return <>{props.children}</>;
   return <Theme {...props} />;
 };
@@ -109,42 +116,71 @@ const defaultThemes = [
   'light',
 ] as const satisfies SystemThemeDefinition;
 
-const Theme = <TThemes extends readonly string[] = SystemThemeDefinition>({
+const Theme = <
+  TTheme extends string = SystemTheme,
+  TEnableSystem extends boolean = true,
+>({
   forcedTheme,
   disableTransitionOnChange = false,
-  enableSystem = true,
   enableColorScheme = true,
   cookie,
   initialTheme,
-  themes = defaultThemes as unknown as TThemes,
-  defaultTheme = enableSystem ? 'system' : 'light',
+  themes = defaultThemes as unknown as readonly TTheme[],
+  defaultTheme,
   attribute = 'class',
   value,
   children,
   nonce,
-  scriptProps,
-}: ThemeProviderProps<TThemes>) => {
+  enableSystem,
+}: ThemeProviderProps<TTheme, TEnableSystem>) => {
+  const enableSystemValue = (enableSystem ?? true) as TEnableSystem;
+  const resolvedDefaultTheme =
+    defaultTheme ??
+    ((enableSystemValue ? 'system' : 'light') as ThemeName<
+      TTheme,
+      TEnableSystem
+    >);
   const cookieName = getCookieName(cookie);
-  const [theme, setThemeState] = React.useState(() =>
-    getTheme(cookieName, defaultTheme, attribute, value, themes, initialTheme),
+  const [theme, setThemeState] = React.useState<
+    ThemeName<TTheme, TEnableSystem> | undefined
+  >(() =>
+    getTheme(
+      cookieName,
+      resolvedDefaultTheme,
+      attribute,
+      value,
+      themes,
+      initialTheme,
+    ),
   );
-  const [resolvedTheme, setResolvedTheme] = React.useState(() =>
-    theme === 'system' && !isServer ? getSystemTheme() : theme,
+  const [resolvedTheme, setResolvedTheme] = React.useState<TTheme | undefined>(
+    () =>
+      theme === 'system' && !isServer
+        ? (getSystemTheme() as TTheme)
+        : (theme as TTheme),
   );
-  const attrs = !value ? themes : Object.values(value);
+  const attrs = (!value ? themes : Object.values(value)) as readonly string[];
   const broadcastRef = React.useRef<BroadcastChannel | null>(null);
+  const themeRef = React.useRef(theme);
+
+  React.useEffect(() => {
+    themeRef.current = theme;
+  }, [theme]);
 
   const applyTheme = React.useCallback(
-    (theme): ThemeName<TThemes> => {
+    (
+      theme: ThemeName<TTheme, TEnableSystem> | undefined,
+    ): ThemeName<TTheme, TEnableSystem> | undefined => {
       let resolved = theme;
-      if (!resolved) return;
+      if (!resolved) return undefined;
 
       // If theme is system, resolve it before setting theme
-      if (resolved === 'system' && enableSystem) {
-        resolved = getSystemTheme();
+      if (resolved === 'system' && enableSystemValue) {
+        resolved = getSystemTheme() as TTheme;
       }
 
-      const name = value ? value[resolved] : resolved;
+      const resolvedTheme = resolved as TTheme;
+      const name = value ? value[resolvedTheme] : resolvedTheme;
       const enable = disableTransitionOnChange ? disableAnimation(nonce) : null;
       const d = document.documentElement;
 
@@ -168,19 +204,21 @@ const Theme = <TThemes extends readonly string[] = SystemThemeDefinition>({
       }
 
       if (enableColorScheme) {
-        const colorScheme = colorSchemes.includes(resolved) ? resolved : '';
-        // @ts-ignore
+        const colorScheme = colorSchemes.includes(resolvedTheme)
+          ? resolvedTheme
+          : '';
         d.style.colorScheme = colorScheme;
       }
 
       enable?.();
+      return resolved;
     },
     [
       attribute,
       attrs,
       disableTransitionOnChange,
       enableColorScheme,
-      enableSystem,
+      enableSystemValue,
       nonce,
       value,
     ],
@@ -194,10 +232,14 @@ const Theme = <TThemes extends readonly string[] = SystemThemeDefinition>({
   );
 
   const setTheme = React.useCallback(
-    (value: ThemeName<TThemes> | React.SetStateAction<ThemeName<TThemes>>) => {
+    (
+      value:
+        | ThemeName<TTheme, TEnableSystem>
+        | React.SetStateAction<ThemeName<TTheme, TEnableSystem>>,
+    ) => {
       if (typeof value === 'function') {
         setThemeState(prevTheme => {
-          const newTheme = value(prevTheme);
+          const newTheme = value(prevTheme as ThemeName<TTheme, TEnableSystem>);
 
           saveToCookie(cookieName, newTheme, cookie);
           broadcastTheme(newTheme);
@@ -215,14 +257,14 @@ const Theme = <TThemes extends readonly string[] = SystemThemeDefinition>({
 
   const handleMediaQuery = React.useCallback(
     (e: MediaQueryListEvent | MediaQueryList) => {
-      const resolved = getSystemTheme(e);
+      const resolved = getSystemTheme(e) as TTheme;
       setResolvedTheme(resolved);
 
-      if (theme === 'system' && enableSystem && !forcedTheme) {
-        applyTheme('system');
+      if (theme === 'system' && enableSystemValue && !forcedTheme) {
+        applyTheme('system' as ThemeName<TTheme, TEnableSystem>);
       }
     },
-    [applyTheme, enableSystem, forcedTheme, theme],
+    [applyTheme, enableSystemValue, forcedTheme, theme],
   );
 
   // Always listen to System preference
@@ -256,11 +298,13 @@ const Theme = <TThemes extends readonly string[] = SystemThemeDefinition>({
       }
 
       if (!event.data.value) {
-        setThemeState(defaultTheme);
+        setThemeState(resolvedDefaultTheme);
         return;
       }
 
-      setThemeState(event.data.value);
+      setThemeState(
+        event.data.value as ThemeName<TTheme, TEnableSystem> | undefined,
+      );
     };
 
     channel.addEventListener('message', handleMessage);
@@ -272,107 +316,67 @@ const Theme = <TThemes extends readonly string[] = SystemThemeDefinition>({
         broadcastRef.current = null;
       }
     };
-  }, [cookieName, defaultTheme]);
+  }, [cookieName, resolvedDefaultTheme]);
 
   // Whenever theme or forcedTheme changes, apply it
   React.useEffect(() => {
     applyTheme(forcedTheme ?? theme);
   }, [applyTheme, forcedTheme, theme]);
 
+  React.useEffect(() => {
+    if (!forcedTheme) return;
+
+    return () => {
+      applyTheme(themeRef.current);
+    };
+  }, [applyTheme, forcedTheme]);
+
   const appliedTheme = forcedTheme ?? theme;
   const resolved =
-    appliedTheme === 'system' && enableSystem ? resolvedTheme : appliedTheme;
+    appliedTheme === 'system' && enableSystemValue
+      ? resolvedTheme
+      : (appliedTheme as TTheme | undefined);
 
   const providerValue = React.useMemo(
-    () => ({
-      theme,
-      setTheme,
-      forcedTheme,
-      resolvedTheme: resolved,
-      themes: enableSystem ? [...themes, 'system'] : themes,
-      systemTheme: (enableSystem ? resolvedTheme : undefined) as
-        | SystemTheme
-        | undefined,
-    }),
+    () =>
+      ({
+        theme,
+        setTheme,
+        forcedTheme,
+        resolvedTheme: resolved,
+        themes: (enableSystemValue
+          ? [...themes, 'system']
+          : themes) as ReadonlyArray<ThemeName<TTheme, TEnableSystem>>,
+        systemTheme: (enableSystemValue
+          ? (resolvedTheme as unknown as SystemTheme)
+          : undefined) as TEnableSystem extends true ? SystemTheme : undefined,
+      }) as UseThemeProps<TTheme, TEnableSystem>,
     [
       theme,
       setTheme,
       forcedTheme,
       resolved,
       resolvedTheme,
-      enableSystem,
+      enableSystemValue,
       themes,
     ],
   );
 
   return (
     <ThemeContext.Provider value={providerValue as unknown as UseThemeProps}>
-      <ThemeScript
-        forcedTheme={forcedTheme}
-        cookieName={cookieName}
-        attribute={attribute}
-        enableSystem={enableSystem}
-        enableColorScheme={enableColorScheme}
-        defaultTheme={defaultTheme}
-        value={value}
-        themes={themes}
-        nonce={nonce}
-        scriptProps={scriptProps}
-      />
-
       {children}
     </ThemeContext.Provider>
   );
 };
 
-export const ThemeScript = React.memo(
-  <TThemes extends readonly string[]>({
-    forcedTheme,
-    cookieName,
-    attribute,
-    enableSystem,
-    enableColorScheme,
-    defaultTheme,
-    value,
-    themes,
-    nonce,
-    scriptProps,
-  }: Omit<ThemeProviderProps<TThemes>, 'children' | 'cookie'> & {
-    cookieName: string;
-    defaultTheme: string;
-  }) => {
-    const scriptArgs = JSON.stringify([
-      attribute,
-      cookieName,
-      defaultTheme,
-      forcedTheme,
-      themes,
-      value,
-      enableSystem,
-      enableColorScheme,
-    ]).slice(1, -1);
-
-    return (
-      <script
-        {...scriptProps}
-        suppressHydrationWarning
-        nonce={typeof window === 'undefined' ? nonce : ''}
-        dangerouslySetInnerHTML={{
-          __html: `(${script.toString()})(${scriptArgs})`,
-        }}
-      />
-    );
-  },
-);
-
 // Helpers
-function getThemeFromDOM<TThemes extends readonly string[]>(
+function getThemeFromDOM<TTheme extends string>(
   attribute: Attribute | Attribute[],
-  value: Record<string, string> | undefined,
-  themes: TThemes,
+  value: ThemeOptions<TTheme, boolean>['value'],
+  themes: readonly TTheme[],
 ) {
   const attributes = Array.isArray(attribute) ? attribute : [attribute];
-  const themeValues: Array<{theme: ThemeName<TThemes>; value: string}> = [];
+  const themeValues: Array<{theme: TTheme; value: string}> = [];
 
   for (const theme of themes) {
     const themeValue = value ? value[theme] : theme;
@@ -404,26 +408,27 @@ function getThemeFromDOM<TThemes extends readonly string[]>(
   return undefined;
 }
 
-function getTheme<TThemes extends readonly string[]>(
+function getTheme<TTheme extends string, TEnableSystem extends boolean = true>(
   cookieName: string,
-  fallback: ThemeName<TThemes> | undefined,
+  fallback: ThemeName<TTheme, TEnableSystem> | undefined,
   attribute: Attribute | Attribute[],
-  value: Record<string, string> | undefined,
-  themes: TThemes,
-  initialTheme: ThemeName<TThemes> | undefined,
+  value: ThemeOptions<TTheme, TEnableSystem>['value'],
+  themes: readonly TTheme[],
+  initialTheme: ThemeName<TTheme, TEnableSystem> | undefined,
 ) {
   if (isServer) return initialTheme;
+  let theme: ThemeName<TTheme, TEnableSystem> | undefined;
+  try {
+    theme = getCookieValue(cookieName) as ThemeName<TTheme, TEnableSystem>;
+  } catch (e) {
+    // Unsupported
+  }
+  if (theme) return theme;
 
   const domTheme = getThemeFromDOM(attribute, value, themes);
   if (domTheme) return domTheme;
 
-  let theme: ThemeName<TThemes> | undefined;
-  try {
-    theme = getCookieValue(cookieName);
-  } catch (e) {
-    // Unsupported
-  }
-  return theme || fallback;
+  return fallback;
 }
 
 const disableAnimation = (nonce?: string) => {
@@ -449,7 +454,9 @@ const disableAnimation = (nonce?: string) => {
   };
 };
 
-const getSystemTheme = (e?: MediaQueryList | MediaQueryListEvent) => {
+const getSystemTheme = (
+  e?: MediaQueryList | MediaQueryListEvent,
+): SystemTheme => {
   if (!e) {
     e = window.matchMedia(MEDIA);
   }
@@ -458,14 +465,17 @@ const getSystemTheme = (e?: MediaQueryList | MediaQueryListEvent) => {
   return systemTheme;
 };
 
-// Re-export types
 export type {
   Attribute,
-  CookieConfig,
   CookieOptions,
   RegisterThemeOptions,
   ThemeHtmlProps,
+  ThemeName,
+  ThemeOptions,
   ThemeProviderProps,
+  ThemeScriptOptions,
   UseThemeProps,
   SystemTheme,
 } from './types';
+export {themeScript} from './theme-script';
+export {registerTheme} from './register-theme';

@@ -31,7 +31,7 @@ yarn add ssr-themes
 
 ### With TanStack Start
 
-Add `ThemeProvider` to your root route and render `HeadContent`/`Scripts` in the document:
+Add the bootstrap script in `head()` and render `ThemeProvider` in the document:
 
 ```tsx
 // src/routes/__root.tsx
@@ -43,6 +43,7 @@ import {
 } from '@tanstack/react-router';
 import type {ReactNode} from 'react';
 import {ThemeProvider} from 'ssr-themes';
+import {themeScript} from 'ssr-themes/server';
 import appCss from '../styles.css?url';
 
 function RootDocument({children}: {children: ReactNode}) {
@@ -52,7 +53,7 @@ function RootDocument({children}: {children: ReactNode}) {
         <HeadContent />
       </head>
       <body>
-        <ThemeProvider attribute="class">{children}</ThemeProvider>
+        <ThemeProvider>{children}</ThemeProvider>
         <Scripts />
       </body>
     </html>
@@ -62,6 +63,11 @@ function RootDocument({children}: {children: ReactNode}) {
 export const Route = createRootRoute({
   head: () => ({
     links: [{rel: 'stylesheet', href: appCss}],
+    scripts: [
+      {
+        children: themeScript(),
+      },
+    ],
   }),
   component: function RootComponent() {
     return (
@@ -77,7 +83,27 @@ export const Route = createRootRoute({
 
 ### SSR / RSC
 
-`ssr-themes` uses cookies to set the theme, so the server can use `registerTheme` to read cookies and apply the right value directly to `<html>`. The inline script will reuse that value and skip cookie reads when the theme attribute/class is already present on the `<html>` element.
+`ssr-themes` uses cookies to set the theme, so the server can use `registerTheme` to read cookies and apply the right value directly to `<html>`. Add the bootstrap script explicitly with `themeScript` so the class/attribute is set before hydration.
+
+If you only have a raw cookie header, use `getThemeFromCookieHeader` to extract the theme value.
+
+```tsx
+import {getThemeFromCookieHeader, registerTheme} from 'ssr-themes/server';
+
+const theme = getThemeFromCookieHeader(request.headers.get('cookie'));
+const htmlProps = registerTheme({theme, attribute: 'class'});
+```
+
+For Next.js, inject the bootstrap script with `next/script`:
+
+```tsx
+import Script from 'next/script';
+import {themeScript} from 'ssr-themes/server';
+
+<Script id="ssr-themes" strategy="beforeInteractive">
+  {themeScript()}
+</Script>;
+```
 
 If you render theme-dependent UI before hydration, pass the same value to `ThemeProvider` as `initialTheme` so `useTheme()` reflects it on the server.
 
@@ -166,8 +192,23 @@ All your theme configuration is passed to ThemeProvider.
   - accepts `class` and `data-*` (meaning any data attribute, `data-mode`, `data-color`, etc.) ([example](#class-attribute-default))
 - `value`: Optional mapping of theme name to attribute value
   - value is an `object` where key is the theme name and value is the attribute value ([example](#differing-dom-attribute-and-theme-name))
-- `nonce`: Optional nonce passed to the injected `script` tag, used to allow-list the ssr-themes script in your CSP
-- `scriptProps`: Optional props to pass to the injected `script` tag
+- `nonce`: Optional nonce passed to the inline style element used when `disableTransitionOnChange` is enabled
+
+### themeScript
+
+Use `themeScript` to generate the bootstrap script that reads cookies and sets the theme before hydration. The returned string should be injected with your framework's script mechanism.
+
+```tsx
+const script = themeScript({attribute: 'class'});
+```
+
+### getThemeFromCookieHeader
+
+Use `getThemeFromCookieHeader` when you only have a raw cookie header string and want to extract the theme value.
+
+```tsx
+const theme = getThemeFromCookieHeader(request.headers.get('cookie'));
+```
 
 ### registerTheme
 
@@ -506,7 +547,7 @@ export default ThemedImage;
 
 ### The Flash
 
-ThemeProvider automatically injects a script to update the `html` element with the correct attributes before the rest of your page loads. This means the page will not flash under any circumstances, including forced themes, system theme, multiple themes, and incognito. No `noflash.js` required.
+To prevent flashing, run the bootstrap script before hydration. Use `themeScript` and your framework's script API to inject it early so the `html` element is updated before React renders.
 
 ## FAQ
 
@@ -536,7 +577,7 @@ Nope. If you have a good reason for supporting this feature, please open an issu
 
 ---
 
-**Is the injected script minified?**
+**Is the bootstrap script minified?**
 
 Yes.
 

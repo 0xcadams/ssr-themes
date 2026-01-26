@@ -7,6 +7,7 @@ import {
 } from '@tanstack/react-router';
 import * as React from 'react';
 import {ThemeProvider, type SystemTheme} from 'ssr-themes';
+import {themeScript} from 'ssr-themes/server';
 import appCss from '../styles.css?url';
 
 type ThemeStaticData = {
@@ -26,9 +27,7 @@ function RootDocument({
         <HeadContent />
       </head>
       <body className="min-h-screen bg-white text-black dark:bg-black dark:text-white antialiased font-mono">
-        <ThemeProvider attribute="class" forcedTheme={forcedTheme}>
-          {children}
-        </ThemeProvider>
+        <ThemeProvider forcedTheme={forcedTheme}>{children}</ThemeProvider>
         <Scripts />
       </body>
     </html>
@@ -61,7 +60,24 @@ export const Route = createRootRoute({
       },
       {title: 'ssr-themes example'},
     ],
-    links: [{rel: 'stylesheet', href: appCss}],
+    links: [
+      {rel: 'preconnect', href: 'https://fonts.googleapis.com'},
+      {
+        rel: 'preconnect',
+        href: 'https://fonts.gstatic.com',
+        crossOrigin: 'anonymous',
+      },
+      {
+        rel: 'stylesheet',
+        href: 'https://fonts.googleapis.com/css2?family=Fira+Mono:wght@400;500;700&display=swap',
+      },
+      {rel: 'stylesheet', href: appCss},
+    ],
+    scripts: [
+      {
+        children: themeScript(),
+      },
+    ],
   }),
   component: RootComponent,
 });

@@ -102,7 +102,7 @@ function ThemeTile({
 }
 
 function IndexPage() {
-  const {theme, setTheme, resolvedTheme} = useTheme();
+  const {theme, setTheme, resolvedTheme} = useTheme<ThemeOption['value']>();
   const [mounted, setMounted] = useState(false);
   const [packageManager, setPackageManager] = useState<PackageManager>('bun');
   const [copied, setCopied] = useState(false);
@@ -162,11 +162,11 @@ function IndexPage() {
         <main className="mt-16 grid flex-1 items-start gap-14 max-w-2xl mx-auto lg:gap-20">
           <section className="min-w-0 space-y-6 animate-rise animate-delay-2">
             <h1 className="font-display text-4xl leading-tight text-foreground sm:text-5xl">
-              Theming for any React framework
+              Perfect theming for any React framework
             </h1>
             <p className="max-w-xl text-lg text-muted-foreground">
-              SSR-friendly theming for React using cookies - system preference,
-              no flash, and a simple{' '}
+              SSR-friendly theming for React using cookies - with system
+              preference, cross-tab sync, no flash, and a strongly typed{' '}
               <span className="rounded-md border border-primary/20 bg-primary/10 px-1.5 py-0.5 font-mono text-[0.75rem] text-primary/90">
                 useTheme
               </span>{' '}

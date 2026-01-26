@@ -1,10 +1,10 @@
 @import 'tailwindcss';
+
 @custom-variant dark (&:where(.dark, .dark *));
 @custom-variant quartz (&:where(.quartz, .quartz *));
 @custom-variant abyss (&:where(.abyss, .abyss *));
 
 @theme inline {
-  --font-sans: var(--font-sans);
   --font-mono: var(--font-mono);
   --radius-sm: calc(var(--radius) - 6px);
   --radius-md: calc(var(--radius) - 2px);
@@ -32,9 +32,7 @@
 
 :root {
   --radius: 18px;
-  --font-sans: 'IBM Plex Sans', sans-serif;
-  --font-display: 'Space Grotesk', sans-serif;
-  --font-mono: 'JetBrains Mono', monospace;
+  --font-mono: 'Fira Mono', monospace;
   --background: oklch(0.98 0.02 80);
   --foreground: oklch(0.2 0.03 260);
   --card: oklch(0.99 0.015 80);
@@ -153,7 +151,7 @@ html.abyss {
   }
 
   body {
-    font-family: var(--font-sans);
+    font-family: var(--font-mono);
     letter-spacing: -0.005em;
   }
 
@@ -174,7 +172,7 @@ html.abyss {
 }
 
 .font-display {
-  font-family: var(--font-display);
+  font-family: var(--font-mono);
   letter-spacing: -0.015em;
   font-weight: 600;
 }
@@ -276,7 +274,6 @@ html.abyss {
   position: relative;
   height: 3.25rem;
   border-radius: calc(var(--radius) - 8px);
-  border: 1px solid color-mix(in oklab, var(--border) 60%, transparent);
   background: var(--preview);
   overflow: hidden;
 }

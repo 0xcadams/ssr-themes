@@ -1,18 +1,32 @@
-import type {SystemTheme, ThemeName} from './types';
+import type {SystemTheme, ThemeName, ThemeOptions} from './types';
 
-export const script = <TThemes extends readonly string[]>(
-  attribute: any,
-  cookieName: any,
-  defaultTheme: ThemeName<TThemes>,
-  forcedTheme: any,
-  themes: TThemes,
-  value: any,
-  enableSystem: any,
-  enableColorScheme: any,
+type ScriptOptions<
+  TTheme extends string,
+  TEnableSystem extends boolean,
+> = ThemeOptions<TTheme, TEnableSystem>;
+
+export const script = <
+  TTheme extends string,
+  TEnableSystem extends boolean = true,
+>(
+  attribute: NonNullable<ScriptOptions<TTheme, TEnableSystem>['attribute']>,
+  cookieName: string,
+  defaultTheme: NonNullable<
+    ScriptOptions<TTheme, TEnableSystem>['defaultTheme']
+  >,
+  forcedTheme: ScriptOptions<TTheme, TEnableSystem>['forcedTheme'],
+  themes: NonNullable<ScriptOptions<TTheme, TEnableSystem>['themes']>,
+  value: ScriptOptions<TTheme, TEnableSystem>['value'],
+  enableSystem: NonNullable<
+    ScriptOptions<TTheme, TEnableSystem>['enableSystem']
+  >,
+  enableColorScheme: NonNullable<
+    ScriptOptions<TTheme, TEnableSystem>['enableColorScheme']
+  >,
 ) => {
   const el = document.documentElement;
   const attributes = Array.isArray(attribute) ? attribute : [attribute];
-  const themeValues: Array<{theme: ThemeName<TThemes>; value: string}> = [];
+  const themeValues: Array<{theme: TTheme; value: string}> = [];
 
   for (const theme of themes) {
     const themeValue = value ? value[theme] : theme;
@@ -57,7 +71,7 @@ export const script = <TThemes extends readonly string[]>(
     return undefined;
   };
 
-  function updateDOM(theme: ThemeName<TThemes>) {
+  function updateDOM(theme: TTheme) {
     const name = value ? value[theme] : theme;
     for (const attr of attributes) {
       if (attr === 'class') {
@@ -92,8 +106,10 @@ export const script = <TThemes extends readonly string[]>(
     return;
   }
 
-  const getThemeOrSystem = (themeName: ThemeName<TThemes>) =>
-    enableSystem && themeName === 'system' ? getSystemTheme() : themeName;
+  const getThemeOrSystem = (themeName: ThemeName<TTheme, TEnableSystem>) =>
+    enableSystem && themeName === 'system'
+      ? (getSystemTheme() as TTheme)
+      : (themeName as TTheme);
 
   const themeName = getThemeFromDOM();
   if (themeName) {
@@ -102,7 +118,10 @@ export const script = <TThemes extends readonly string[]>(
   }
 
   try {
-    const themeName = getCookie(cookieName) || defaultTheme;
+    const themeName = (getCookie(cookieName) || defaultTheme) as ThemeName<
+      TTheme,
+      TEnableSystem
+    >;
     updateDOM(getThemeOrSystem(themeName));
   } catch (e) {
     //

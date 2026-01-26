@@ -15,12 +15,7 @@ export default function Providers({
   initialTheme,
 }: ProvidersProps) {
   return (
-    <ThemeProvider
-      attribute="data-theme"
-      forcedTheme={forcedTheme}
-      initialTheme={initialTheme}
-      disableTransitionOnChange
-    >
+    <ThemeProvider forcedTheme={forcedTheme} initialTheme={initialTheme}>
       {children}
     </ThemeProvider>
   );
