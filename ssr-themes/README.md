@@ -156,7 +156,7 @@ All your theme configuration is passed to ThemeProvider.
 
 - `cookie = { name: 'theme', path: '/', maxAge: 31536000, sameSite: 'lax' }`: Cookie configuration for the theme cookie
 - `initialTheme`: Theme name to use during server rendering when you already know the theme
-- `defaultTheme = 'system'`: Default theme name (for v0.0.12 and lower the default was `light`). If `enableSystem` is false, the default theme is `light`
+- `defaultTheme = 'system'`: Default theme name. If `enableSystem` is false, the default theme is `light`
 - `forcedTheme`: Forced theme name for the current page (does not modify saved theme settings)
 - `enableSystem = true`: Whether to switch between `dark` and `light` based on `prefers-color-scheme`
 - `enableColorScheme = true`: Whether to indicate to browsers which color scheme is used (dark or light) for built-in UI like inputs and buttons
@@ -167,7 +167,7 @@ All your theme configuration is passed to ThemeProvider.
 - `value`: Optional mapping of theme name to attribute value
   - value is an `object` where key is the theme name and value is the attribute value ([example](#differing-dom-attribute-and-theme-name))
 - `nonce`: Optional nonce passed to the injected `script` tag, used to allow-list the ssr-themes script in your CSP
-- `scriptProps`: Optional props to pass to the injected `script` tag ([example](#using-with-cloudflare-rocket-loader))
+- `scriptProps`: Optional props to pass to the injected `script` tag
 
 ### registerTheme
 
@@ -201,7 +201,7 @@ The [Live Example](https://ssr-themes-example.vercel.app/) shows ssr-themes in a
 
 ### Use System preference by default
 
-For versions above v0.0.12, the `defaultTheme` is automatically set to "system", so to use System preference you can simply use:
+By default, `defaultTheme` is set to "system", so to use System preference you can simply use:
 
 ```jsx
 <ThemeProvider>
@@ -296,14 +296,6 @@ document.documentElement.className;
 // => "my-pink-theme"
 ```
 
-### Using with Cloudflare Rocket Loader
-
-[Rocket Loader](https://developers.cloudflare.com/fundamentals/speed/rocket-loader/) is a Cloudflare optimization that defers the loading of inline and external scripts to prioritize the website content. Since ssr-themes relies on a script injection to avoid screen flashing on page load, Rocket Loader breaks this functionality. Individual scripts [can be ignored](https://developers.cloudflare.com/fundamentals/speed/rocket-loader/ignore-javascripts/) by adding the `data-cfasync="false"` attribute to the script tag:
-
-```jsx
-<ThemeProvider scriptProps={{ 'data-cfasync': 'false' }}>
-```
-
 ### More than light and dark mode
 
 ssr-themes is designed to support any number of themes! Simply pass a list of themes:
@@ -318,7 +310,7 @@ ssr-themes is designed to support any number of themes! Simply pass a list of th
 <ThemeProvider themes={['pink', 'red', 'blue', 'light', 'dark']}>
 ```
 
-For a starting point, check out `examples/example`.
+For a starting point, check out `examples/next` or `examples/tanstack-start`.
 
 ### Without CSS variables
 
@@ -338,43 +330,39 @@ html.dark body {
 }
 ```
 
-### With Styled Components and any CSS-in-JS
+### With TailwindCSS
 
-SSR Themes is completely CSS independent, it will work with any library. For example, with Styled Components you can wire `createGlobalStyle` in your root route:
+The example in `examples/next` uses Tailwind v4 with a class-based dark mode.
+
+Add the dark variant in your CSS:
+
+```css
+@import 'tailwindcss';
+@custom-variant dark (&:where(.dark, .dark *));
+```
+
+Set the attribute for your Theme Provider to `class`:
 
 ```tsx
-// src/routes/__root.tsx
-import {Outlet, createRootRoute} from '@tanstack/react-router';
-import {createGlobalStyle} from 'styled-components';
-import {ThemeProvider} from 'ssr-themes';
+<ThemeProvider attribute="class">
+```
 
-// Your themeing variables
-const GlobalStyle = createGlobalStyle`
-  :root {
-    --fg: #000;
-    --bg: #fff;
-  }
+When the theme is dark, ssr-themes applies the `dark` class to the `html` element:
 
-  :root.dark {
-    --fg: #fff;
-    --bg: #000;
-  }
-`;
+```html
+<html class="dark">
+  <body>
+    <div class="bg-white dark:bg-black">
+      <!-- ... -->
+    </div>
+  </body>
+</html>
+```
 
-function RootComponent() {
-  return (
-    <>
-      <GlobalStyle />
-      <ThemeProvider>
-        <Outlet />
-      </ThemeProvider>
-    </>
-  );
-}
+That's it! Now you can use dark-mode specific classes:
 
-export const Route = createRootRoute({
-  component: RootComponent,
-});
+```tsx
+<h1 className="text-black dark:text-white">
 ```
 
 ### Avoid Hydration Mismatch
@@ -514,41 +502,6 @@ export default ThemedImage;
 }
 ```
 
-### With TailwindCSS
-
-The example in `examples/example` uses Tailwind v4 with a class-based dark mode.
-
-Add the dark variant in your CSS:
-
-```css
-@import 'tailwindcss';
-@custom-variant dark (&:where(.dark, .dark *));
-```
-
-Set the attribute for your Theme Provider to `class`:
-
-```tsx
-<ThemeProvider attribute="class">
-```
-
-When the theme is dark, ssr-themes applies the `dark` class to the `html` element:
-
-```html
-<html class="dark">
-  <body>
-    <div class="bg-white dark:bg-black">
-      <!-- ... -->
-    </div>
-  </body>
-</html>
-```
-
-That's it! Now you can use dark-mode specific classes:
-
-```tsx
-<h1 className="text-black dark:text-white">
-```
-
 ## Discussion
 
 ### The Flash
@@ -580,12 +533,6 @@ Nope. See the [example](#without-css-variables).
 **Can I set the class or data attribute on the body or another element?**
 
 Nope. If you have a good reason for supporting this feature, please open an issue.
-
----
-
-**Can I use this package with Gatsby or CRA?**
-
-Yes, starting from the 0.3.0 version.
 
 ---
 
