@@ -159,21 +159,21 @@ function IndexPage() {
             </a>
           </Button>
         </div>
-        <main className="mt-16 grid flex-1 items-start gap-14 lg:grid-cols-[1.05fr_0.95fr] lg:gap-20 lg:items-center">
+        <main className="mt-16 grid flex-1 items-start gap-14 max-w-2xl mx-auto lg:gap-20">
           <section className="min-w-0 space-y-6 animate-rise animate-delay-2">
             <h1 className="font-display text-4xl leading-tight text-foreground sm:text-5xl">
-              Theming for any React framework, with no SSR flash
+              Theming for any React framework
             </h1>
             <p className="max-w-xl text-lg text-muted-foreground">
-              SSR-first theming for React using cookies — system preference,
-              custom palettes, and a simple{' '}
+              SSR-friendly theming for React using cookies - system preference,
+              no flash, and a simple{' '}
               <span className="rounded-md border border-primary/20 bg-primary/10 px-1.5 py-0.5 font-mono text-[0.75rem] text-primary/90">
                 useTheme
               </span>{' '}
               hook.
             </p>
-            <div className="space-y-3">
-              <div className="flex flex-wrap items-center gap-3">
+            <div className="space-y-6">
+              <div className="flex flex-col gap-3">
                 <ToggleGroup
                   type="single"
                   value={packageManager}
@@ -194,48 +194,57 @@ function IndexPage() {
                     </ToggleGroupItem>
                   ))}
                 </ToggleGroup>
-                <div className="flex items-center gap-2 rounded-md border border-border/70 bg-card/70 px-3 py-2 shadow-xs">
-                  <span className="font-mono text-[0.75rem] text-foreground/80">
-                    {installCommand}
-                  </span>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon-xs"
-                    onClick={handleCopy}
-                    aria-label="Copy install command"
-                    title={copied ? 'Copied' : 'Copy'}
-                  >
-                    {copied ? (
-                      <Check className="size-3.5" />
-                    ) : (
-                      <Copy className="size-3.5" />
-                    )}
-                  </Button>
+                <div className="flex">
+                  <div className="flex items-center gap-2 rounded-md border border-border/70 bg-card/70 px-3 py-2 shadow-xs">
+                    <span className="font-mono text-[0.75rem] text-foreground/80">
+                      {installCommand}
+                    </span>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon-xs"
+                      onClick={handleCopy}
+                      aria-label="Copy install command"
+                      title={copied ? 'Copied' : 'Copy'}
+                    >
+                      {copied ? (
+                        <Check className="size-3.5" />
+                      ) : (
+                        <Copy className="size-3.5" />
+                      )}
+                    </Button>
+                  </div>
                 </div>
               </div>
-              <div className="flex flex-wrap items-center gap-2">
-                <span className="text-[0.7rem] uppercase tracking-[0.2em] text-muted-foreground/80">
+              <div className="flex flex-col gap-2">
+                <span className="text-[0.7rem] text-muted-foreground/80">
                   Live demos
                 </span>
-                <Button
-                  asChild
-                  variant="outline"
-                  size="sm"
-                  className="bg-card/70 backdrop-blur"
-                >
-                  <a href="https://start.ssr-themes.cadams.io">
-                    TanStack Start
-                  </a>
-                </Button>
-                <Button
-                  asChild
-                  variant="outline"
-                  size="sm"
-                  className="bg-card/70 backdrop-blur"
-                >
-                  <a href="https://next.ssr-themes.cadams.io">Next.js</a>
-                </Button>
+                <div className="flex gap-2">
+                  <Button
+                    asChild
+                    variant="outline"
+                    size="sm"
+                    className="bg-card/70 backdrop-blur"
+                  >
+                    <a
+                      target="_blank"
+                      href="https://start.ssr-themes.cadams.io"
+                    >
+                      TanStack Start
+                    </a>
+                  </Button>
+                  <Button
+                    asChild
+                    variant="outline"
+                    size="sm"
+                    className="bg-card/70 backdrop-blur"
+                  >
+                    <a target="_blank" href="https://next.ssr-themes.cadams.io">
+                      Next.js
+                    </a>
+                  </Button>
+                </div>
               </div>
             </div>
           </section>
