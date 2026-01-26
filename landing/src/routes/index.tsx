@@ -142,7 +142,7 @@ function ThemeTile({
 }
 
 function IndexPage() {
-  const {theme, setTheme, resolvedTheme} =
+  const {theme, setTheme, systemTheme} =
     useTheme<ThemeOption['value']>();
   const [mounted, setMounted] = useState(false);
   const [packageManager, setPackageManager] =
@@ -181,7 +181,7 @@ function IndexPage() {
   const activeTheme =
     mounted && theme ? theme : 'system';
   const systemNote = mounted
-    ? resolvedTheme === 'dark'
+    ? systemTheme === 'dark'
       ? 'Auto dark'
       : 'Auto light'
     : 'Auto';
@@ -214,156 +214,160 @@ function IndexPage() {
         <div className="absolute right-6 top-6 lg:right-8 lg:top-8">
           <Button
             asChild
-            variant="ghost"
+            variant="outline"
             size="icon-sm"
             aria-label="GitHub"
           >
             <a href="https://github.com/0xcadams/ssr-themes">
-              <Github className="size-6" />
+              <Github className="size-4" />
             </a>
           </Button>
         </div>
-        <main className="mt-16 grid flex-1 items-start gap-14 max-w-2xl mx-auto lg:gap-20">
-          <section className="min-w-0 space-y-6 animate-rise animate-delay-2">
-            <h1 className="font-display text-4xl leading-tight text-foreground sm:text-5xl">
-              Perfect theming for any React framework
-            </h1>
-            <p className="max-w-xl text-lg text-muted-foreground">
-              SSR-friendly theming for React using
-              cookies - with system preference,
-              cross-tab sync, no flash, and a strongly
-              typed{' '}
-              <span className="rounded-md border border-primary/20 bg-primary/10 px-1.5 py-0.5 font-mono text-[0.75rem] text-primary/90">
-                useTheme
-              </span>{' '}
-              hook.
-            </p>
-            <div className="space-y-6">
-              <div className="flex flex-col gap-3">
-                <ToggleGroup
-                  type="single"
-                  value={packageManager}
-                  onValueChange={(value: string) => {
-                    if (value)
-                      setPackageManager(
-                        value as PackageManager,
-                      );
-                  }}
-                  variant="outline"
-                  size="sm"
-                  className="bg-card/70 backdrop-blur"
-                >
-                  {packageManagers.map(manager => (
-                    <ToggleGroupItem
-                      key={manager.value}
-                      value={manager.value}
-                      className="text-[0.7rem] font-medium"
-                    >
-                      {manager.label}
-                    </ToggleGroupItem>
-                  ))}
-                </ToggleGroup>
-                <div className="flex">
-                  <div className="flex items-center gap-2 rounded-md border border-border/70 bg-card/70 px-3 py-2 shadow-xs">
-                    <span className="font-mono text-[0.75rem] text-foreground/80">
-                      {installCommand}
-                    </span>
+        <main className="mt-16 flex-1">
+          <div className="grid items-start gap-14 lg:grid-cols-[1.05fr_0.95fr] lg:gap-20">
+            <section className="min-w-0 space-y-6 animate-rise animate-delay-2">
+              <h1 className="font-display text-4xl leading-tight text-foreground sm:text-5xl">
+                Perfect theming for any React framework
+              </h1>
+              <p className="max-w-xl text-lg text-muted-foreground">
+                SSR-friendly theming for React using
+                cookies - with system preference,
+                cross-tab sync, no flash, and a
+                strongly typed{' '}
+                <span className="rounded-md border border-primary/20 bg-primary/10 px-1.5 py-0.5 font-mono text-[0.75rem] text-primary/90">
+                  useTheme
+                </span>{' '}
+                hook.
+              </p>
+              <div className="space-y-6">
+                <div className="flex flex-col gap-3">
+                  <ToggleGroup
+                    type="single"
+                    value={packageManager}
+                    onValueChange={(value: string) => {
+                      if (value)
+                        setPackageManager(
+                          value as PackageManager,
+                        );
+                    }}
+                    variant="outline"
+                    size="sm"
+                    className="bg-card/70 backdrop-blur"
+                  >
+                    {packageManagers.map(manager => (
+                      <ToggleGroupItem
+                        key={manager.value}
+                        value={manager.value}
+                        className="text-[0.7rem] font-medium"
+                      >
+                        {manager.label}
+                      </ToggleGroupItem>
+                    ))}
+                  </ToggleGroup>
+                  <div className="flex">
+                    <div className="flex items-center gap-2 rounded-md border border-border/70 bg-card/70 px-3 py-2 shadow-xs">
+                      <span className="font-mono text-[0.75rem] text-foreground/80">
+                        {installCommand}
+                      </span>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon-xs"
+                        onClick={handleCopy}
+                        aria-label="Copy install command"
+                        title={
+                          copied ? 'Copied' : 'Copy'
+                        }
+                      >
+                        {copied ? (
+                          <Check className="size-3.5" />
+                        ) : (
+                          <Copy className="size-3.5" />
+                        )}
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+                <div className="flex flex-col gap-2">
+                  <span className="text-[0.7rem] text-muted-foreground/80">
+                    Live demos
+                  </span>
+                  <div className="flex gap-2">
                     <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon-xs"
-                      onClick={handleCopy}
-                      aria-label="Copy install command"
-                      title={
-                        copied ? 'Copied' : 'Copy'
-                      }
+                      asChild
+                      variant="outline"
+                      size="sm"
+                      className="bg-card/70 backdrop-blur"
                     >
-                      {copied ? (
-                        <Check className="size-3.5" />
-                      ) : (
-                        <Copy className="size-3.5" />
-                      )}
+                      <a
+                        target="_blank"
+                        href="https://start.ssr-themes.cadams.io"
+                      >
+                        TanStack Start
+                      </a>
+                    </Button>
+                    <Button
+                      asChild
+                      variant="outline"
+                      size="sm"
+                      className="bg-card/70 backdrop-blur"
+                    >
+                      <a
+                        target="_blank"
+                        href="https://next.ssr-themes.cadams.io"
+                      >
+                        Next.js
+                      </a>
                     </Button>
                   </div>
                 </div>
               </div>
-              <div className="flex flex-col gap-2">
-                <span className="text-[0.7rem] text-muted-foreground/80">
-                  Live demos
-                </span>
-                <div className="flex gap-2">
-                  <Button
-                    asChild
-                    variant="outline"
-                    size="sm"
-                    className="bg-card/70 backdrop-blur"
-                  >
-                    <a
-                      target="_blank"
-                      href="https://start.ssr-themes.cadams.io"
-                    >
-                      TanStack Start
-                    </a>
-                  </Button>
-                  <Button
-                    asChild
-                    variant="outline"
-                    size="sm"
-                    className="bg-card/70 backdrop-blur"
-                  >
-                    <a
-                      target="_blank"
-                      href="https://next.ssr-themes.cadams.io"
-                    >
-                      Next.js
-                    </a>
-                  </Button>
-                </div>
-              </div>
-            </div>
-          </section>
+            </section>
 
-          <section className="min-w-0 space-y-6 animate-rise animate-delay-3">
-            <Card className="min-w-0 border-border/60 bg-card/70 backdrop-blur">
-              <CardHeader className="border-b border-border/60">
-                <div className="flex items-start justify-between gap-4">
-                  <div>
-                    <CardTitle className="text-base">
-                      Theme picker
-                    </CardTitle>
-                    <CardDescription>
-                      Pick a palette and the UI updates
-                      instantly.
-                    </CardDescription>
+            <section className="min-w-0 animate-rise animate-delay-3">
+              <Card className="min-w-0 border-border/60 bg-card/70 backdrop-blur">
+                <CardHeader className="border-b border-border/60">
+                  <div className="flex items-start justify-between gap-4">
+                    <div>
+                      <CardTitle className="text-base">
+                        Theme picker
+                      </CardTitle>
+                      <CardDescription>
+                        Pick a palette and the UI
+                        updates instantly.
+                      </CardDescription>
+                    </div>
                   </div>
-                </div>
-              </CardHeader>
-              <CardContent className="pt-5">
-                <div className="grid gap-3 sm:grid-cols-2">
-                  {themeOptions.map(option => (
-                    <ThemeTile
-                      key={option.value}
-                      option={option}
-                      note={
-                        option.value === 'system'
-                          ? systemNote
-                          : option.note
-                      }
-                      isActive={
-                        activeTheme === option.value
-                      }
-                      onSelect={setTheme}
-                    />
-                  ))}
-                </div>
-                <div className="mt-4 flex items-center gap-2 text-xs text-muted-foreground">
-                  <ShieldCheck className="h-3.5 w-3.5 text-primary" />
-                  Hydration-safe changes that sync
-                  across tabs.
-                </div>
-              </CardContent>
-            </Card>
+                </CardHeader>
+                <CardContent className="pt-5">
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    {themeOptions.map(option => (
+                      <ThemeTile
+                        key={option.value}
+                        option={option}
+                        note={
+                          option.value === 'system'
+                            ? systemNote
+                            : option.note
+                        }
+                        isActive={
+                          activeTheme === option.value
+                        }
+                        onSelect={setTheme}
+                      />
+                    ))}
+                  </div>
+                  <div className="mt-4 flex items-center gap-2 text-xs text-muted-foreground">
+                    <ShieldCheck className="h-3.5 w-3.5 text-primary" />
+                    Hydration-safe changes that sync
+                    across tabs.
+                  </div>
+                </CardContent>
+              </Card>
+            </section>
+          </div>
 
+          <div className="mt-14 grid gap-6 text-left animate-rise animate-delay-4 lg:mt-16 max-w-2xl">
             <Card className="min-w-0 border-border/60 bg-card/70 backdrop-blur">
               <CardHeader>
                 <CardTitle className="text-base">
@@ -406,7 +410,7 @@ function IndexPage() {
                 />
               </CardContent>
             </Card>
-          </section>
+          </div>
         </main>
       </div>
     </div>

@@ -208,7 +208,7 @@ All your theme configuration is passed to ThemeProvider.
 - `forcedTheme`: Forced theme name for the current page (does not modify saved theme settings)
 - `enableSystem = true`: Whether to switch between `dark` and `light` based on `prefers-color-scheme`
 - `enableColorScheme = true`: Whether to indicate to browsers which color scheme is used (dark or light) for built-in UI like inputs and buttons
-- `disableTransitionOnChange = false`: Optionally disable all CSS transitions when switching themes ([example](#disable-transitions-on-theme-change))
+- `disableTransitionOnChange = true`: Disable all CSS transitions when switching themes ([example](#disable-transitions-on-theme-change))
 - `themes = ['light', 'dark']`: List of theme names
 - `attribute = 'class'`: HTML attribute modified based on the active theme
   - accepts `class` and `data-*` (meaning any data attribute, `data-mode`, `data-color`, etc.) ([example](#class-attribute-default))

@@ -21,7 +21,6 @@ function RootDocument({
       </head>
       <body className="min-h-screen bg-background text-foreground antialiased">
         <ThemeProvider
-          disableTransitionOnChange
           themes={['light', 'dark', 'quartz', 'abyss']}
         >
           {children}

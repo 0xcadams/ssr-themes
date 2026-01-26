@@ -532,7 +532,14 @@ html.abyss {
   height: 3.25rem;
   border-radius: calc(var(--radius) - 8px);
   background: var(--preview);
+  background-size: 100% 100%;
+  background-position: 50% 50%;
+  transition: background-size 0.25s ease;
   overflow: hidden;
+}
+
+.theme-tile:hover .theme-preview {
+  background-size: 140% 140%;
 }
 
 .theme-preview::after {

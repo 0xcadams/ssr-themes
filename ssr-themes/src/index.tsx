@@ -137,7 +137,7 @@ const Theme = <
   TEnableSystem extends boolean = true,
 >({
   forcedTheme,
-  disableTransitionOnChange = false,
+  disableTransitionOnChange = true,
   enableColorScheme = true,
   cookie,
   initialTheme,
