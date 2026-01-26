@@ -14,7 +14,10 @@ const config = defineConfig({
     port: 4042,
   },
   plugins: [
-    nitro({preset: nitroPreset}),
+    nitro({
+      preset: nitroPreset,
+      traceDeps: ['typescript'],
+    }),
     viteTsConfigPaths({
       projects: ['./tsconfig.json'],
     }),

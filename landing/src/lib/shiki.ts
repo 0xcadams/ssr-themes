@@ -1,6 +1,4 @@
-import {transformerTwoslash} from '@shikijs/twoslash';
 import {codeToHtml} from 'shiki';
-import {JsxEmit} from 'typescript';
 
 const exampleCode = `import {ThemeProvider, useTheme} from 'ssr-themes';
 import type {ReactNode} from 'react';
@@ -54,27 +52,50 @@ export default async function RootLayout({
   );
 }`;
 
-const twoslashTransformer = transformerTwoslash({
-  twoslashOptions: {
-    compilerOptions: {
-      jsx: JsxEmit.ReactJSX,
-    },
-  },
-});
+const getTwoslashTransformers = async () => {
+  const [{transformerTwoslash}, {JsxEmit}] =
+    await Promise.all([
+      import('@shikijs/twoslash'),
+      import('typescript'),
+    ]);
+
+  return [
+    transformerTwoslash({
+      twoslashOptions: {
+        compilerOptions: {
+          jsx: JsxEmit.ReactJSX,
+        },
+      },
+    }),
+  ];
+};
+
+let cachedTwoslashTransformers: ReturnType<
+  typeof getTwoslashTransformers
+> | null = null;
 
 let cachedHighlight: Promise<string> | null = null;
 let cachedNextRscHighlight: Promise<string> | null =
   null;
 
-const highlightCode = (code: string) =>
-  codeToHtml(code, {
+const highlightCode = async (code: string) => {
+  if (!cachedTwoslashTransformers) {
+    cachedTwoslashTransformers =
+      getTwoslashTransformers();
+  }
+
+  const transformers =
+    await cachedTwoslashTransformers;
+
+  return codeToHtml(code, {
     lang: 'tsx',
     themes: {
       light: 'vitesse-light',
       dark: 'vitesse-dark',
     },
-    transformers: [twoslashTransformer],
+    transformers,
   });
+};
 
 export const getHighlightedCode = async () => {
   if (process.env.NODE_ENV === 'development') {
