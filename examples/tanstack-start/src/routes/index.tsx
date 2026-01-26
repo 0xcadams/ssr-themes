@@ -1,4 +1,7 @@
-import {Link, createFileRoute} from '@tanstack/react-router';
+import {
+  Link,
+  createFileRoute,
+} from '@tanstack/react-router';
 import {useTheme} from 'ssr-themes';
 import {useEffect, useState} from 'react';
 
@@ -20,7 +23,12 @@ function IndexPage() {
           className="rounded border border-current bg-transparent px-3 py-2 text-xl"
           value={theme}
           onChange={event =>
-            setTheme(event.target.value as 'light' | 'dark' | 'system')
+            setTheme(
+              event.target.value as
+                | 'light'
+                | 'dark'
+                | 'system',
+            )
           }
           data-test-id="theme-selector"
         >
@@ -34,11 +42,19 @@ function IndexPage() {
         </select>
 
         <div className="text-lg">
-          <Link className="underline underline-offset-4" to="/dark">
+          <Link
+            className="underline underline-offset-4"
+            to="/dark"
+          >
             Forced Dark Page
           </Link>
-          <span className="px-2 text-black/50 dark:text-white/50">•</span>
-          <Link className="underline underline-offset-4" to="/light">
+          <span className="px-2 text-black/50 dark:text-white/50">
+            •
+          </span>
+          <Link
+            className="underline underline-offset-4"
+            to="/light"
+          >
             Forced Light Page
           </Link>
         </div>

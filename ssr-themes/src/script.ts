@@ -1,4 +1,8 @@
-import type {SystemTheme, ThemeName, ThemeOptions} from './types';
+import type {
+  SystemTheme,
+  ThemeName,
+  ThemeOptions,
+} from './types';
 
 type ScriptOptions<
   TTheme extends string,
@@ -9,24 +13,45 @@ export const script = <
   TTheme extends string,
   TEnableSystem extends boolean = true,
 >(
-  attribute: NonNullable<ScriptOptions<TTheme, TEnableSystem>['attribute']>,
+  attribute: NonNullable<
+    ScriptOptions<TTheme, TEnableSystem>['attribute']
+  >,
   cookieName: string,
   defaultTheme: NonNullable<
-    ScriptOptions<TTheme, TEnableSystem>['defaultTheme']
+    ScriptOptions<
+      TTheme,
+      TEnableSystem
+    >['defaultTheme']
   >,
-  forcedTheme: ScriptOptions<TTheme, TEnableSystem>['forcedTheme'],
-  themes: NonNullable<ScriptOptions<TTheme, TEnableSystem>['themes']>,
+  forcedTheme: ScriptOptions<
+    TTheme,
+    TEnableSystem
+  >['forcedTheme'],
+  themes: NonNullable<
+    ScriptOptions<TTheme, TEnableSystem>['themes']
+  >,
   value: ScriptOptions<TTheme, TEnableSystem>['value'],
   enableSystem: NonNullable<
-    ScriptOptions<TTheme, TEnableSystem>['enableSystem']
+    ScriptOptions<
+      TTheme,
+      TEnableSystem
+    >['enableSystem']
   >,
   enableColorScheme: NonNullable<
-    ScriptOptions<TTheme, TEnableSystem>['enableColorScheme']
+    ScriptOptions<
+      TTheme,
+      TEnableSystem
+    >['enableColorScheme']
   >,
 ) => {
   const el = document.documentElement;
-  const attributes = Array.isArray(attribute) ? attribute : [attribute];
-  const themeValues: Array<{theme: TTheme; value: string}> = [];
+  const attributes = Array.isArray(attribute)
+    ? attribute
+    : [attribute];
+  const themeValues: Array<{
+    theme: TTheme;
+    value: string;
+  }> = [];
 
   for (const theme of themes) {
     const themeValue = value ? value[theme] : theme;
@@ -34,10 +59,14 @@ export const script = <
       themeValues.push({theme, value: themeValue});
     }
   }
-  const classList = themeValues.map(entry => entry.value);
+  const classList = themeValues.map(
+    entry => entry.value,
+  );
 
   const getCookie = (name: string) => {
-    const cookies = document.cookie ? document.cookie.split('; ') : [];
+    const cookies = document.cookie
+      ? document.cookie.split('; ')
+      : [];
     for (const cookie of cookies) {
       const [cookieName, ...rest] = cookie.split('=');
       if (cookieName === name) {
@@ -97,7 +126,8 @@ export const script = <
   }
 
   const getSystemTheme = (): SystemTheme =>
-    window.matchMedia('(prefers-color-scheme: dark)').matches
+    window.matchMedia('(prefers-color-scheme: dark)')
+      .matches
       ? 'dark'
       : 'light';
 
@@ -106,7 +136,9 @@ export const script = <
     return;
   }
 
-  const getThemeOrSystem = (themeName: ThemeName<TTheme, TEnableSystem>) =>
+  const getThemeOrSystem = (
+    themeName: ThemeName<TTheme, TEnableSystem>,
+  ) =>
     enableSystem && themeName === 'system'
       ? (getSystemTheme() as TTheme)
       : (themeName as TTheme);
@@ -118,7 +150,8 @@ export const script = <
   }
 
   try {
-    const themeName = (getCookie(cookieName) || defaultTheme) as ThemeName<
+    const themeName = (getCookie(cookieName) ||
+      defaultTheme) as ThemeName<
       TTheme,
       TEnableSystem
     >;

@@ -1,15 +1,8 @@
 {
-  "semi": false,
   "singleQuote": true,
-  "trailingComma": "none",
+  "trailingComma": "all",
   "arrowParens": "avoid",
-  "printWidth": 100,
-  "overrides": [
-    {
-      "files": "**/*.md",
-      "options": {
-        "printWidth": 55
-      }
-    }
-  ]
+  "bracketSpacing": false,
+  "quoteProps": "consistent",
+  "printWidth": 55
 }

@@ -5,7 +5,9 @@ import viteTsConfigPaths from 'vite-tsconfig-paths';
 import tailwindcss from '@tailwindcss/vite';
 import {nitro} from 'nitro/vite';
 
-const nitroPreset = process.env.VERCEL ? 'vercel' : 'bun';
+const nitroPreset = process.env.VERCEL
+  ? 'vercel'
+  : 'bun';
 
 const config = defineConfig({
   server: {

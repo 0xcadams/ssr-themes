@@ -1,6 +1,12 @@
-import type {RegisterThemeOptions, SystemTheme, ThemeHtmlProps} from './types';
+import type {
+  RegisterThemeOptions,
+  SystemTheme,
+  ThemeHtmlProps,
+} from './types';
 
-export const registerTheme = <TTheme extends string = SystemTheme>({
+export const registerTheme = <
+  TTheme extends string = SystemTheme,
+>({
   theme,
   attribute = 'class',
   value,
@@ -20,7 +26,9 @@ export const registerTheme = <TTheme extends string = SystemTheme>({
 
   const name = value ? value[theme] : theme;
   if (!name) return props;
-  const attributes = Array.isArray(attribute) ? attribute : [attribute];
+  const attributes = Array.isArray(attribute)
+    ? attribute
+    : [attribute];
 
   for (const attr of attributes) {
     if (attr === 'class') {
@@ -32,8 +40,14 @@ export const registerTheme = <TTheme extends string = SystemTheme>({
     }
   }
 
-  if (enableColorScheme && (theme === 'light' || theme === 'dark')) {
-    props.style = {...(props.style ?? {}), colorScheme: theme};
+  if (
+    enableColorScheme &&
+    (theme === 'light' || theme === 'dark')
+  ) {
+    props.style = {
+      ...(props.style ?? {}),
+      colorScheme: theme,
+    };
   }
 
   return props;

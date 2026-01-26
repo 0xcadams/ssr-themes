@@ -1,5 +1,9 @@
 import {test, expect} from '@playwright/test';
-import {checkAppliedTheme, checkStoredTheme, makeBrowserContext} from './util';
+import {
+  checkAppliedTheme,
+  checkStoredTheme,
+  makeBrowserContext,
+} from './util';
 
 test.describe('storage-events test-suite', () => {
   test('should switch theme if stored theme value is updated in a different tab', async ({
@@ -22,7 +26,9 @@ test.describe('storage-events test-suite', () => {
     await checkAppliedTheme(page2, 'light');
 
     // Select theme in page2
-    await page2.locator('[data-test-id="theme-selector"]').selectOption('dark');
+    await page2
+      .locator('[data-test-id="theme-selector"]')
+      .selectOption('dark');
     // Expect both pages to have changed theme
     await checkAppliedTheme(page2, 'dark');
     await checkAppliedTheme(page1, 'dark');
@@ -60,7 +66,9 @@ test.describe('storage-events test-suite', () => {
 
     // Navigate to home and check if newly stored theme is now applied
     await page2.locator('text=Go back home').click();
-    await page2.locator('[data-test-id="theme-selector"]').waitFor();
+    await page2
+      .locator('[data-test-id="theme-selector"]')
+      .waitFor();
     expect(page2.url()).toBe(baseURL + '/');
     await checkAppliedTheme(page2, 'light');
   });

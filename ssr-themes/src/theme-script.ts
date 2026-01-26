@@ -15,7 +15,10 @@ export const themeScript = <
   TTheme extends string = SystemTheme,
   TEnableSystem extends boolean = true,
 >(
-  options: ThemeScriptOptions<TTheme, TEnableSystem> = {},
+  options: ThemeScriptOptions<
+    TTheme,
+    TEnableSystem
+  > = {},
 ) => {
   const {
     attribute = 'class',
@@ -28,13 +31,13 @@ export const themeScript = <
     enableSystem,
   } = options;
 
-  const enableSystemValue = (enableSystem ?? true) as TEnableSystem;
+  const enableSystemValue = (enableSystem ??
+    true) as TEnableSystem;
   const resolvedDefaultTheme =
     defaultTheme ??
-    ((enableSystemValue ? 'system' : 'light') as ThemeName<
-      TTheme,
-      TEnableSystem
-    >);
+    ((enableSystemValue
+      ? 'system'
+      : 'light') as ThemeName<TTheme, TEnableSystem>);
   const cookieName = cookie?.name ?? 'theme';
   const scriptArgs = JSON.stringify([
     attribute,

@@ -18,7 +18,10 @@ const isServer = typeof window === 'undefined';
 const ThemeContext = React.createContext<
   UseThemeProps<string, boolean> | undefined
 >(undefined);
-const defaultContext: UseThemeProps<SystemTheme, true> = {
+const defaultContext: UseThemeProps<
+  SystemTheme,
+  true
+> = {
   setTheme: _ => {},
   themes: [] as ThemeName<SystemTheme, true>[],
 };
@@ -29,11 +32,14 @@ const defaultCookieOptions: CookieOptions = {
   sameSite: 'lax',
 };
 
-const getCookieName = (cookie?: CookieOptions) => cookie?.name ?? 'theme';
+const getCookieName = (cookie?: CookieOptions) =>
+  cookie?.name ?? 'theme';
 
 const getCookieValue = (key: string) => {
   if (isServer) return undefined;
-  const cookies = document.cookie ? document.cookie.split('; ') : [];
+  const cookies = document.cookie
+    ? document.cookie.split('; ')
+    : [];
   for (const cookie of cookies) {
     const [name, ...rest] = cookie.split('=');
     if (name === key) {
@@ -43,7 +49,9 @@ const getCookieValue = (key: string) => {
   return undefined;
 };
 
-const formatSameSite = (sameSite?: CookieOptions['sameSite']) => {
+const formatSameSite = (
+  sameSite?: CookieOptions['sameSite'],
+) => {
   if (!sameSite) return undefined;
   return `${sameSite.charAt(0).toUpperCase()}${sameSite.slice(1)}`;
 };
@@ -54,7 +62,10 @@ const saveToCookie = (
   options?: CookieOptions,
 ) => {
   try {
-    const cookieOptions = {...defaultCookieOptions, ...(options ?? {})};
+    const cookieOptions = {
+      ...defaultCookieOptions,
+      ...(options ?? {}),
+    };
     const cookieValue = encodeURIComponent(value);
     const parts = [`${cookieName}=${cookieValue}`];
 
@@ -71,10 +82,14 @@ const saveToCookie = (
     }
 
     if (cookieOptions.expires) {
-      parts.push(`Expires=${cookieOptions.expires.toUTCString()}`);
+      parts.push(
+        `Expires=${cookieOptions.expires.toUTCString()}`,
+      );
     }
 
-    const sameSite = formatSameSite(cookieOptions.sameSite);
+    const sameSite = formatSameSite(
+      cookieOptions.sameSite,
+    );
     if (sameSite) {
       parts.push(`SameSite=${sameSite}`);
     }
@@ -93,7 +108,8 @@ export const useTheme = <
   TTheme extends string = SystemTheme,
   TEnableSystem extends boolean = true,
 >() =>
-  (React.useContext(ThemeContext) ?? defaultContext) as UseThemeProps<
+  (React.useContext(ThemeContext) ??
+    defaultContext) as UseThemeProps<
     TTheme,
     TEnableSystem
   >;
@@ -133,13 +149,13 @@ const Theme = <
   nonce,
   enableSystem,
 }: ThemeProviderProps<TTheme, TEnableSystem>) => {
-  const enableSystemValue = (enableSystem ?? true) as TEnableSystem;
+  const enableSystemValue = (enableSystem ??
+    true) as TEnableSystem;
   const resolvedDefaultTheme =
     defaultTheme ??
-    ((enableSystemValue ? 'system' : 'light') as ThemeName<
-      TTheme,
-      TEnableSystem
-    >);
+    ((enableSystemValue
+      ? 'system'
+      : 'light') as ThemeName<TTheme, TEnableSystem>);
   const cookieName = getCookieName(cookie);
   const [theme, setThemeState] = React.useState<
     ThemeName<TTheme, TEnableSystem> | undefined
@@ -153,14 +169,17 @@ const Theme = <
       initialTheme,
     ),
   );
-  const [resolvedTheme, setResolvedTheme] = React.useState<TTheme | undefined>(
-    () =>
+  const [resolvedTheme, setResolvedTheme] =
+    React.useState<TTheme | undefined>(() =>
       theme === 'system' && !isServer
         ? (getSystemTheme() as TTheme)
         : (theme as TTheme),
-  );
-  const attrs = (!value ? themes : Object.values(value)) as readonly string[];
-  const broadcastRef = React.useRef<BroadcastChannel | null>(null);
+    );
+  const attrs = (
+    !value ? themes : Object.values(value)
+  ) as readonly string[];
+  const broadcastRef =
+    React.useRef<BroadcastChannel | null>(null);
   const themeRef = React.useRef(theme);
 
   React.useEffect(() => {
@@ -169,8 +188,12 @@ const Theme = <
 
   const applyTheme = React.useCallback(
     (
-      theme: ThemeName<TTheme, TEnableSystem> | undefined,
-    ): ThemeName<TTheme, TEnableSystem> | undefined => {
+      theme:
+        | ThemeName<TTheme, TEnableSystem>
+        | undefined,
+    ):
+      | ThemeName<TTheme, TEnableSystem>
+      | undefined => {
       let resolved = theme;
       if (!resolved) return undefined;
 
@@ -180,8 +203,12 @@ const Theme = <
       }
 
       const resolvedTheme = resolved as TTheme;
-      const name = value ? value[resolvedTheme] : resolvedTheme;
-      const enable = disableTransitionOnChange ? disableAnimation(nonce) : null;
+      const name = value
+        ? value[resolvedTheme]
+        : resolvedTheme;
+      const enable = disableTransitionOnChange
+        ? disableAnimation(nonce)
+        : null;
       const d = document.documentElement;
 
       const handleAttribute = (attr: Attribute) => {
@@ -204,7 +231,9 @@ const Theme = <
       }
 
       if (enableColorScheme) {
-        const colorScheme = colorSchemes.includes(resolvedTheme)
+        const colorScheme = colorSchemes.includes(
+          resolvedTheme,
+        )
           ? resolvedTheme
           : '';
         d.style.colorScheme = colorScheme;
@@ -226,7 +255,10 @@ const Theme = <
 
   const broadcastTheme = React.useCallback(
     (value: string) => {
-      broadcastRef.current?.postMessage({key: cookieName, value});
+      broadcastRef.current?.postMessage({
+        key: cookieName,
+        value,
+      });
     },
     [cookieName],
   );
@@ -235,11 +267,18 @@ const Theme = <
     (
       value:
         | ThemeName<TTheme, TEnableSystem>
-        | React.SetStateAction<ThemeName<TTheme, TEnableSystem>>,
+        | React.SetStateAction<
+            ThemeName<TTheme, TEnableSystem>
+          >,
     ) => {
       if (typeof value === 'function') {
         setThemeState(prevTheme => {
-          const newTheme = value(prevTheme as ThemeName<TTheme, TEnableSystem>);
+          const newTheme = value(
+            prevTheme as ThemeName<
+              TTheme,
+              TEnableSystem
+            >,
+          );
 
           saveToCookie(cookieName, newTheme, cookie);
           broadcastTheme(newTheme);
@@ -260,11 +299,22 @@ const Theme = <
       const resolved = getSystemTheme(e) as TTheme;
       setResolvedTheme(resolved);
 
-      if (theme === 'system' && enableSystemValue && !forcedTheme) {
-        applyTheme('system' as ThemeName<TTheme, TEnableSystem>);
+      if (
+        theme === 'system' &&
+        enableSystemValue &&
+        !forcedTheme
+      ) {
+        applyTheme(
+          'system' as ThemeName<TTheme, TEnableSystem>,
+        );
       }
     },
-    [applyTheme, enableSystemValue, forcedTheme, theme],
+    [
+      applyTheme,
+      enableSystemValue,
+      forcedTheme,
+      theme,
+    ],
   );
 
   // Always listen to System preference
@@ -275,7 +325,8 @@ const Theme = <
     media.addListener(handleMediaQuery);
     handleMediaQuery(media);
 
-    return () => media.removeListener(handleMediaQuery);
+    return () =>
+      media.removeListener(handleMediaQuery);
   }, [handleMediaQuery]);
 
   // Cross-tab sync via BroadcastChannel
@@ -287,13 +338,21 @@ const Theme = <
       return;
     }
 
-    const channel = new BroadcastChannel(`ssr-themes:${cookieName}`);
+    const channel = new BroadcastChannel(
+      `ssr-themes:${cookieName}`,
+    );
     broadcastRef.current = channel;
 
     const handleMessage = (
-      event: MessageEvent<{key: string; value?: string}>,
+      event: MessageEvent<{
+        key: string;
+        value?: string;
+      }>,
     ) => {
-      if (!event.data || event.data.key !== cookieName) {
+      if (
+        !event.data ||
+        event.data.key !== cookieName
+      ) {
         return;
       }
 
@@ -303,14 +362,19 @@ const Theme = <
       }
 
       setThemeState(
-        event.data.value as ThemeName<TTheme, TEnableSystem> | undefined,
+        event.data.value as
+          | ThemeName<TTheme, TEnableSystem>
+          | undefined,
       );
     };
 
     channel.addEventListener('message', handleMessage);
 
     return () => {
-      channel.removeEventListener('message', handleMessage);
+      channel.removeEventListener(
+        'message',
+        handleMessage,
+      );
       channel.close();
       if (broadcastRef.current === channel) {
         broadcastRef.current = null;
@@ -346,10 +410,14 @@ const Theme = <
         resolvedTheme: resolved,
         themes: (enableSystemValue
           ? [...themes, 'system']
-          : themes) as ReadonlyArray<ThemeName<TTheme, TEnableSystem>>,
+          : themes) as ReadonlyArray<
+          ThemeName<TTheme, TEnableSystem>
+        >,
         systemTheme: (enableSystemValue
           ? (resolvedTheme as unknown as SystemTheme)
-          : undefined) as TEnableSystem extends true ? SystemTheme : undefined,
+          : undefined) as TEnableSystem extends true
+          ? SystemTheme
+          : undefined,
       }) as UseThemeProps<TTheme, TEnableSystem>,
     [
       theme,
@@ -363,7 +431,9 @@ const Theme = <
   );
 
   return (
-    <ThemeContext.Provider value={providerValue as unknown as UseThemeProps}>
+    <ThemeContext.Provider
+      value={providerValue as unknown as UseThemeProps}
+    >
       {children}
     </ThemeContext.Provider>
   );
@@ -375,8 +445,13 @@ function getThemeFromDOM<TTheme extends string>(
   value: ThemeOptions<TTheme, boolean>['value'],
   themes: readonly TTheme[],
 ) {
-  const attributes = Array.isArray(attribute) ? attribute : [attribute];
-  const themeValues: Array<{theme: TTheme; value: string}> = [];
+  const attributes = Array.isArray(attribute)
+    ? attribute
+    : [attribute];
+  const themeValues: Array<{
+    theme: TTheme;
+    value: string;
+  }> = [];
 
   for (const theme of themes) {
     const themeValue = value ? value[theme] : theme;
@@ -388,14 +463,19 @@ function getThemeFromDOM<TTheme extends string>(
   for (const attr of attributes) {
     if (attr === 'class') {
       for (const entry of themeValues) {
-        if (document.documentElement.classList.contains(entry.value)) {
+        if (
+          document.documentElement.classList.contains(
+            entry.value,
+          )
+        ) {
           return entry.theme;
         }
       }
       continue;
     }
 
-    const attrValue = document.documentElement.getAttribute(attr);
+    const attrValue =
+      document.documentElement.getAttribute(attr);
     if (!attrValue) continue;
 
     for (const entry of themeValues) {
@@ -408,24 +488,40 @@ function getThemeFromDOM<TTheme extends string>(
   return undefined;
 }
 
-function getTheme<TTheme extends string, TEnableSystem extends boolean = true>(
+function getTheme<
+  TTheme extends string,
+  TEnableSystem extends boolean = true,
+>(
   cookieName: string,
-  fallback: ThemeName<TTheme, TEnableSystem> | undefined,
+  fallback:
+    | ThemeName<TTheme, TEnableSystem>
+    | undefined,
   attribute: Attribute | Attribute[],
   value: ThemeOptions<TTheme, TEnableSystem>['value'],
   themes: readonly TTheme[],
-  initialTheme: ThemeName<TTheme, TEnableSystem> | undefined,
+  initialTheme:
+    | ThemeName<TTheme, TEnableSystem>
+    | undefined,
 ) {
   if (isServer) return initialTheme;
-  let theme: ThemeName<TTheme, TEnableSystem> | undefined;
+  let theme:
+    | ThemeName<TTheme, TEnableSystem>
+    | undefined;
   try {
-    theme = getCookieValue(cookieName) as ThemeName<TTheme, TEnableSystem>;
+    theme = getCookieValue(cookieName) as ThemeName<
+      TTheme,
+      TEnableSystem
+    >;
   } catch (e) {
     // Unsupported
   }
   if (theme) return theme;
 
-  const domTheme = getThemeFromDOM(attribute, value, themes);
+  const domTheme = getThemeFromDOM(
+    attribute,
+    value,
+    themes,
+  );
   if (domTheme) return domTheme;
 
   return fallback;

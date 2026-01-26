@@ -22,7 +22,9 @@ function ToggleGroup({
   spacing = 0,
   children,
   ...props
-}: React.ComponentProps<typeof ToggleGroupPrimitive.Root> &
+}: React.ComponentProps<
+  typeof ToggleGroupPrimitive.Root
+> &
   VariantProps<typeof toggleVariants> & {
     spacing?: number;
   }) {
@@ -39,7 +41,9 @@ function ToggleGroup({
       )}
       {...props}
     >
-      <ToggleGroupContext.Provider value={{variant, size, spacing}}>
+      <ToggleGroupContext.Provider
+        value={{variant, size, spacing}}
+      >
         {children}
       </ToggleGroupContext.Provider>
     </ToggleGroupPrimitive.Root>
@@ -52,7 +56,9 @@ function ToggleGroupItem({
   variant,
   size,
   ...props
-}: React.ComponentProps<typeof ToggleGroupPrimitive.Item> &
+}: React.ComponentProps<
+  typeof ToggleGroupPrimitive.Item
+> &
   VariantProps<typeof toggleVariants>) {
   const context = React.useContext(ToggleGroupContext);
 

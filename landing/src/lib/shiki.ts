@@ -1,38 +1,20 @@
+import {transformerTwoslash} from '@shikijs/twoslash';
 import {codeToHtml} from 'shiki';
+import {JsxEmit} from 'typescript';
 
-const exampleCode = `import {ThemeProvider, useTheme} from "ssr-themes";
+const exampleCode = `import {ThemeProvider, useTheme} from 'ssr-themes';
+import type {ReactNode} from 'react';
 
-export function ThemePreview() {
-  const {theme, setTheme} = useTheme();
-
+export function RootLayout({
+  children,
+}: {
+  children: ReactNode;
+}) {
   return (
-    <button onClick={() => setTheme(theme === "dark" ? "light" : "dark")}>
-      Toggle theme
-    </button>
-  );
-}
-
-export function RootLayout({children}) {
-  return (
-    <ThemeProvider themes={["light", "dark", "quartz", "abyss"]}>
-      {children}
-    </ThemeProvider>
-  );
-}`;
-
-const nextRscExampleCode = `import {cookies} from "next/headers";
-import type {ReactNode} from "react";
-import {registerTheme, ThemeProvider} from "ssr-themes";
-
-export default function RootLayout({children}: {children: ReactNode}) {
-  const theme = cookies().get("theme")?.value;
-
-  return (
-    <html suppressHydrationWarning {...registerTheme({theme})}>
+    <html suppressHydrationWarning>
       <body>
         <ThemeProvider
-          initialTheme={theme}
-          themes={["light", "dark", "quartz", "abyss"]}
+          themes={['light', 'dark', 'quartz', 'abyss']}
         >
           {children}
         </ThemeProvider>
@@ -41,8 +23,48 @@ export default function RootLayout({children}: {children: ReactNode}) {
   );
 }`;
 
+const nextRscExampleCode = `import {cookies} from 'next/headers';
+import type {ReactNode} from 'react';
+import {
+  registerTheme,
+  ThemeProvider,
+} from 'ssr-themes';
+
+export default async function RootLayout({
+  children,
+}: {
+  children: ReactNode;
+}) {
+  const theme = (await cookies()).get('theme')?.value;
+
+  return (
+    <html
+      suppressHydrationWarning
+      {...registerTheme({theme})}
+    >
+      <body>
+        <ThemeProvider
+          initialTheme={theme}
+          themes={['light', 'dark', 'quartz', 'abyss']}
+        >
+          {children}
+        </ThemeProvider>
+      </body>
+    </html>
+  );
+}`;
+
+const twoslashTransformer = transformerTwoslash({
+  twoslashOptions: {
+    compilerOptions: {
+      jsx: JsxEmit.ReactJSX,
+    },
+  },
+});
+
 let cachedHighlight: Promise<string> | null = null;
-let cachedNextRscHighlight: Promise<string> | null = null;
+let cachedNextRscHighlight: Promise<string> | null =
+  null;
 
 const highlightCode = (code: string) =>
   codeToHtml(code, {
@@ -51,9 +73,14 @@ const highlightCode = (code: string) =>
       light: 'vitesse-light',
       dark: 'vitesse-dark',
     },
+    transformers: [twoslashTransformer],
   });
 
 export const getHighlightedCode = async () => {
+  if (process.env.NODE_ENV === 'development') {
+    return highlightCode(exampleCode);
+  }
+
   if (!cachedHighlight) {
     cachedHighlight = highlightCode(exampleCode);
   }
@@ -62,8 +89,14 @@ export const getHighlightedCode = async () => {
 };
 
 export const getHighlightedNextRscCode = async () => {
+  if (process.env.NODE_ENV === 'development') {
+    return highlightCode(nextRscExampleCode);
+  }
+
   if (!cachedNextRscHighlight) {
-    cachedNextRscHighlight = highlightCode(nextRscExampleCode);
+    cachedNextRscHighlight = highlightCode(
+      nextRscExampleCode,
+    );
   }
 
   return cachedNextRscHighlight;

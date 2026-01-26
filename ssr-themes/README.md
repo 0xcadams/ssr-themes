@@ -1,6 +1,6 @@
 # ssr-themes ![ssr-themes minzip package size](https://img.shields.io/bundlephobia/minzip/ssr-themes) [![Version](https://img.shields.io/npm/v/ssr-themes.svg?colorB=green)](https://www.npmjs.com/package/ssr-themes)
 
-Themes for your React SSR app.
+Themes for your React app.
 
 - ✅ Perfect dark mode with no flashing
 - ✅ System setting with `prefers-color-scheme`
@@ -46,7 +46,11 @@ import {ThemeProvider} from 'ssr-themes';
 import {themeScript} from 'ssr-themes/server';
 import appCss from '../styles.css?url';
 
-function RootDocument({children}: {children: ReactNode}) {
+function RootDocument({
+  children,
+}: {
+  children: ReactNode;
+}) {
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
@@ -88,10 +92,18 @@ export const Route = createRootRoute({
 If you only have a raw cookie header, use `getThemeFromCookieHeader` to extract the theme value.
 
 ```tsx
-import {getThemeFromCookieHeader, registerTheme} from 'ssr-themes/server';
+import {
+  getThemeFromCookieHeader,
+  registerTheme,
+} from 'ssr-themes/server';
 
-const theme = getThemeFromCookieHeader(request.headers.get('cookie'));
-const htmlProps = registerTheme({theme, attribute: 'class'});
+const theme = getThemeFromCookieHeader(
+  request.headers.get('cookie'),
+);
+const htmlProps = registerTheme({
+  theme,
+  attribute: 'class',
+});
 ```
 
 For Next.js, inject the bootstrap script with `next/script`:
@@ -108,7 +120,10 @@ import {themeScript} from 'ssr-themes/server';
 If you render theme-dependent UI before hydration, pass the same value to `ThemeProvider` as `initialTheme` so `useTheme()` reflects it on the server.
 
 ```tsx
-import {registerTheme, ThemeProvider} from 'ssr-themes';
+import {
+  registerTheme,
+  ThemeProvider,
+} from 'ssr-themes';
 import {cookies} from 'next/headers';
 
 const cookieStore = await cookies();
@@ -121,7 +136,10 @@ const htmlProps = registerTheme({
 return (
   <html suppressHydrationWarning {...htmlProps}>
     <body>
-      <ThemeProvider attribute="class" initialTheme={theme}>
+      <ThemeProvider
+        attribute="class"
+        initialTheme={theme}
+      >
         {children}
       </ThemeProvider>
     </body>
@@ -161,8 +179,12 @@ const ThemeChanger = () => {
   return (
     <div>
       The current theme is: {theme}
-      <button onClick={() => setTheme('light')}>Light Mode</button>
-      <button onClick={() => setTheme('dark')}>Dark Mode</button>
+      <button onClick={() => setTheme('light')}>
+        Light Mode
+      </button>
+      <button onClick={() => setTheme('dark')}>
+        Dark Mode
+      </button>
     </div>
   );
 };
@@ -207,7 +229,9 @@ const script = themeScript({attribute: 'class'});
 Use `getThemeFromCookieHeader` when you only have a raw cookie header string and want to extract the theme value.
 
 ```tsx
-const theme = getThemeFromCookieHeader(request.headers.get('cookie'));
+const theme = getThemeFromCookieHeader(
+  request.headers.get('cookie'),
+);
 ```
 
 ### registerTheme
@@ -420,7 +444,10 @@ const ThemeSwitch = () => {
   const {theme, setTheme} = useTheme();
 
   return (
-    <select value={theme} onChange={e => setTheme(e.target.value)}>
+    <select
+      value={theme}
+      onChange={e => setTheme(e.target.value)}
+    >
       <option value="system">System</option>
       <option value="dark">Dark</option>
       <option value="light">Light</option>
@@ -451,7 +478,10 @@ const ThemeSwitch = () => {
   }
 
   return (
-    <select value={theme} onChange={e => setTheme(e.target.value)}>
+    <select
+      value={theme}
+      onChange={e => setTheme(e.target.value)}
+    >
       <option value="system">System</option>
       <option value="dark">Dark</option>
       <option value="light">Light</option>
@@ -467,7 +497,9 @@ Alternatively, you could lazy load the component on the client side with `React.
 ```jsx
 import {Suspense, lazy} from 'react';
 
-const ThemeSwitch = lazy(() => import('./ThemeSwitch'));
+const ThemeSwitch = lazy(
+  () => import('./ThemeSwitch'),
+);
 
 const ThemePage = () => {
   return (
@@ -506,7 +538,9 @@ function ThemedImage() {
       break;
   }
 
-  return <img src={src} width={400} height={400} alt="" />;
+  return (
+    <img src={src} width={400} height={400} alt="" />
+  );
 }
 
 export default ThemedImage;
@@ -522,12 +556,22 @@ function ThemedImage() {
     <>
       {/* When the theme is dark, hide this div */}
       <div data-hide-on-theme="dark">
-        <img src="light.png" width={400} height={400} alt="" />
+        <img
+          src="light.png"
+          width={400}
+          height={400}
+          alt=""
+        />
       </div>
 
       {/* When the theme is light, hide this div */}
       <div data-hide-on-theme="light">
-        <img src="dark.png" width={400} height={400} alt="" />
+        <img
+          src="dark.png"
+          width={400}
+          height={400}
+          alt=""
+        />
       </div>
     </>
   );

@@ -1,7 +1,12 @@
 // @vitest-environment jsdom
 
 import * as React from 'react';
-import {act, render, renderHook, screen} from '@testing-library/react';
+import {
+  act,
+  render,
+  renderHook,
+  screen,
+} from '@testing-library/react';
 import {
   vi,
   beforeAll,
@@ -19,7 +24,9 @@ import {ThemeProvider, useTheme} from '../src/index';
 import {themeScript} from '../src/server';
 import {ThemeProviderProps} from '../src/types';
 
-let originalCookieDescriptor: PropertyDescriptor | undefined;
+let originalCookieDescriptor:
+  | PropertyDescriptor
+  | undefined;
 let cookieStore: Record<string, string> = {};
 
 const serializeCookies = () =>
@@ -29,7 +36,8 @@ const serializeCookies = () =>
 
 const setMockCookie = (cookie: string) => {
   const [pair = ''] = cookie.split(';');
-  const [rawName = '', ...rawValueParts] = pair.split('=');
+  const [rawName = '', ...rawValueParts] =
+    pair.split('=');
   const name = rawName.trim();
   if (!name) return;
   const value = rawValueParts.join('=').trim();
@@ -45,16 +53,26 @@ const getCookieValue = (name: string) => {
   return value ? decodeURIComponent(value) : null;
 };
 
-const setCookieValue = (name: string, value: string) => {
+const setCookieValue = (
+  name: string,
+  value: string,
+) => {
   document.cookie = `${name}=${encodeURIComponent(value)}`;
 };
 
 // HelperComponent to render the theme inside a paragraph-tag and setting a theme via the forceSetTheme prop
-const HelperComponent = ({forceSetTheme}: {forceSetTheme?: string}) => {
-  const {setTheme, theme, forcedTheme, resolvedTheme, systemTheme} = useTheme<
-    string,
-    boolean
-  >();
+const HelperComponent = ({
+  forceSetTheme,
+}: {
+  forceSetTheme?: string;
+}) => {
+  const {
+    setTheme,
+    theme,
+    forcedTheme,
+    resolvedTheme,
+    systemTheme,
+  } = useTheme<string, boolean>();
 
   React.useEffect(() => {
     if (forceSetTheme) {
@@ -66,7 +84,9 @@ const HelperComponent = ({forceSetTheme}: {forceSetTheme?: string}) => {
     <>
       <p data-testid="theme">{theme}</p>
       <p data-testid="forcedTheme">{forcedTheme}</p>
-      <p data-testid="resolvedTheme">{resolvedTheme}</p>
+      <p data-testid="resolvedTheme">
+        {resolvedTheme}
+      </p>
       <p data-testid="systemTheme">{systemTheme}</p>
     </>
   );
@@ -92,8 +112,14 @@ function setDeviceTheme(theme: 'light' | 'dark') {
 
 beforeAll(() => {
   originalCookieDescriptor =
-    Object.getOwnPropertyDescriptor(document, 'cookie') ??
-    Object.getOwnPropertyDescriptor(Document.prototype, 'cookie');
+    Object.getOwnPropertyDescriptor(
+      document,
+      'cookie',
+    ) ??
+    Object.getOwnPropertyDescriptor(
+      Document.prototype,
+      'cookie',
+    );
 
   Object.defineProperty(document, 'cookie', {
     configurable: true,
@@ -108,7 +134,9 @@ beforeEach(() => {
   // Reset window side-effects
   setDeviceTheme('light');
   document.documentElement.style.colorScheme = '';
-  document.documentElement.removeAttribute('data-theme');
+  document.documentElement.removeAttribute(
+    'data-theme',
+  );
   document.documentElement.removeAttribute('class');
 
   // Clear cookies
@@ -121,13 +149,21 @@ afterEach(() => {
 
 afterAll(() => {
   if (originalCookieDescriptor) {
-    Object.defineProperty(document, 'cookie', originalCookieDescriptor);
+    Object.defineProperty(
+      document,
+      'cookie',
+      originalCookieDescriptor,
+    );
   }
 });
 
-function makeWrapper(props: ThemeProviderProps<string, boolean>) {
+function makeWrapper(
+  props: ThemeProviderProps<string, boolean>,
+) {
   return ({children}: {children: React.ReactNode}) => (
-    <ThemeProvider {...props}>{children}</ThemeProvider>
+    <ThemeProvider {...props}>
+      {children}
+    </ThemeProvider>
   );
 }
 
@@ -175,7 +211,9 @@ describe('provider', () => {
     const {result} = renderHook(() => useTheme(), {
       wrapper: ({children}) => (
         <ThemeProvider defaultTheme="dark">
-          <ThemeProvider defaultTheme="light">{children}</ThemeProvider>
+          <ThemeProvider defaultTheme="light">
+            {children}
+          </ThemeProvider>
         </ThemeProvider>
       ),
     });
@@ -231,7 +269,7 @@ describe('custom cookie name', () => {
 });
 
 describe('html theme precedence', () => {
-  test('should prefer existing html theme when attribute is present', () => {
+  test('should not prefer existing html theme when attribute is present', () => {
     document.documentElement.classList.add('dark');
     setCookieValue('theme', 'light');
 
@@ -239,7 +277,7 @@ describe('html theme precedence', () => {
       wrapper: makeWrapper({}),
     });
 
-    expect(result.current.theme).toBe('dark');
+    expect(result.current.theme).toBe('light');
   });
 });
 
@@ -253,7 +291,11 @@ describe('custom attribute', () => {
       );
     });
 
-    expect(document.documentElement.classList.contains('light')).toBeTruthy();
+    expect(
+      document.documentElement.classList.contains(
+        'light',
+      ),
+    ).toBeTruthy();
   });
 
   test('should use class attribute (CSS-class) when attribute="class"', () => {
@@ -265,7 +307,11 @@ describe('custom attribute', () => {
       );
     });
 
-    expect(document.documentElement.classList.contains('light')).toBeTruthy();
+    expect(
+      document.documentElement.classList.contains(
+        'light',
+      ),
+    ).toBeTruthy();
   });
 
   test('should use "data-example"-attribute when attribute="data-example"', () => {
@@ -277,22 +323,37 @@ describe('custom attribute', () => {
       );
     });
 
-    expect(document.documentElement.getAttribute('data-example')).toBe('light');
+    expect(
+      document.documentElement.getAttribute(
+        'data-example',
+      ),
+    ).toBe('light');
   });
 
   test('supports multiple attributes', () => {
     act(() => {
       render(
-        <ThemeProvider attribute={['data-example', 'data-theme-test']}>
+        <ThemeProvider
+          attribute={[
+            'data-example',
+            'data-theme-test',
+          ]}
+        >
           <HelperComponent forceSetTheme="light" />
         </ThemeProvider>,
       );
     });
 
-    expect(document.documentElement.getAttribute('data-example')).toBe('light');
-    expect(document.documentElement.getAttribute('data-theme-test')).toBe(
-      'light',
-    );
+    expect(
+      document.documentElement.getAttribute(
+        'data-example',
+      ),
+    ).toBe('light');
+    expect(
+      document.documentElement.getAttribute(
+        'data-theme-test',
+      ),
+    ).toBe('light');
   });
 });
 
@@ -312,7 +373,9 @@ describe('custom value-mapping', () => {
     });
 
     expect(
-      document.documentElement.classList.contains('my-pink-theme'),
+      document.documentElement.classList.contains(
+        'my-pink-theme',
+      ),
     ).toBeTruthy();
     expect(getCookieValue('theme')).toBe('pink');
   });
@@ -326,26 +389,38 @@ describe('custom value-mapping', () => {
       );
     });
 
-    expect(document.documentElement.className).toBe('');
+    expect(document.documentElement.className).toBe(
+      '',
+    );
   });
 
   test('should allow missing values (class)', () => {
     act(() => {
       render(
-        <ThemeProvider attribute="class" value={{dark: 'dark-mode'}}>
+        <ThemeProvider
+          attribute="class"
+          value={{dark: 'dark-mode'}}
+        >
           <HelperComponent forceSetTheme="light" />
         </ThemeProvider>,
       );
     });
 
-    expect(document.documentElement.classList.contains('light')).toBeFalsy();
+    expect(
+      document.documentElement.classList.contains(
+        'light',
+      ),
+    ).toBeFalsy();
   });
 
   test('supports multiple attributes', () => {
     act(() => {
       render(
         <ThemeProvider
-          attribute={['data-example', 'data-theme-test']}
+          attribute={[
+            'data-example',
+            'data-theme-test',
+          ]}
           themes={['pink', 'light', 'dark', 'system']}
           value={{pink: 'my-pink-theme'}}
         >
@@ -354,12 +429,16 @@ describe('custom value-mapping', () => {
       );
     });
 
-    expect(document.documentElement.getAttribute('data-example')).toBe(
-      'my-pink-theme',
-    );
-    expect(document.documentElement.getAttribute('data-theme-test')).toBe(
-      'my-pink-theme',
-    );
+    expect(
+      document.documentElement.getAttribute(
+        'data-example',
+      ),
+    ).toBe('my-pink-theme');
+    expect(
+      document.documentElement.getAttribute(
+        'data-theme-test',
+      ),
+    ).toBe('my-pink-theme');
   });
 });
 
@@ -397,7 +476,11 @@ describe('forcedTheme', () => {
       </ThemeProvider>,
     );
 
-    expect(document.documentElement.classList.contains('light')).toBeTruthy();
+    expect(
+      document.documentElement.classList.contains(
+        'light',
+      ),
+    ).toBeTruthy();
 
     unmount();
 
@@ -407,9 +490,17 @@ describe('forcedTheme', () => {
       </ThemeProvider>,
     );
 
-    expect(document.documentElement.classList.contains('dark')).toBeTruthy();
-    expect(screen.getByTestId('forcedTheme').textContent).toBe('');
-    expect(screen.getByTestId('theme').textContent).toBe('dark');
+    expect(
+      document.documentElement.classList.contains(
+        'dark',
+      ),
+    ).toBeTruthy();
+    expect(
+      screen.getByTestId('forcedTheme').textContent,
+    ).toBe('');
+    expect(
+      screen.getByTestId('theme').textContent,
+    ).toBe('dark');
   });
 });
 
@@ -438,17 +529,28 @@ describe('system theme', () => {
       );
     });
 
-    expect(screen.getByTestId('theme').textContent).toBe('light');
-    expect(screen.getByTestId('forcedTheme').textContent).toBe('');
-    expect(screen.getByTestId('resolvedTheme').textContent).toBe('light');
-    expect(screen.getByTestId('systemTheme').textContent).toBe('dark');
+    expect(
+      screen.getByTestId('theme').textContent,
+    ).toBe('light');
+    expect(
+      screen.getByTestId('forcedTheme').textContent,
+    ).toBe('');
+    expect(
+      screen.getByTestId('resolvedTheme').textContent,
+    ).toBe('light');
+    expect(
+      screen.getByTestId('systemTheme').textContent,
+    ).toBe('dark');
   });
 
   test('system theme should not be set if enableSystem is false', () => {
     setDeviceTheme('dark');
 
     const {result} = renderHook(() => useTheme(), {
-      wrapper: makeWrapper({enableSystem: false, defaultTheme: 'light'}),
+      wrapper: makeWrapper({
+        enableSystem: false,
+        defaultTheme: 'light',
+      }),
     });
 
     expect(result.current.theme).toBe('light');
@@ -481,7 +583,9 @@ describe('color-scheme', () => {
       );
     });
 
-    expect(document.documentElement.style.colorScheme).toBe('');
+    expect(
+      document.documentElement.style.colorScheme,
+    ).toBe('');
   });
 
   test('should set color-scheme light when light theme is active', () => {
@@ -493,8 +597,14 @@ describe('color-scheme', () => {
       );
     });
 
-    expect(document.documentElement.classList.contains('light')).toBeTruthy();
-    expect(document.documentElement.style.colorScheme).toBe('light');
+    expect(
+      document.documentElement.classList.contains(
+        'light',
+      ),
+    ).toBeTruthy();
+    expect(
+      document.documentElement.style.colorScheme,
+    ).toBe('light');
   });
 
   test('should set color-scheme dark when dark theme is active', () => {
@@ -506,18 +616,29 @@ describe('color-scheme', () => {
       );
     });
 
-    expect(document.documentElement.classList.contains('dark')).toBeTruthy();
-    expect(document.documentElement.style.colorScheme).toBe('dark');
+    expect(
+      document.documentElement.classList.contains(
+        'dark',
+      ),
+    ).toBeTruthy();
+    expect(
+      document.documentElement.style.colorScheme,
+    ).toBe('dark');
   });
 });
 
 describe('setTheme', () => {
   test('setTheme(<literal>)', () => {
-    const {result, rerender} = renderHook(() => useTheme(), {
-      wrapper: ({children}) => (
-        <ThemeProvider defaultTheme="light">{children}</ThemeProvider>
-      ),
-    });
+    const {result, rerender} = renderHook(
+      () => useTheme(),
+      {
+        wrapper: ({children}) => (
+          <ThemeProvider defaultTheme="light">
+            {children}
+          </ThemeProvider>
+        ),
+      },
+    );
     expect(result.current?.setTheme).toBeDefined();
     expect(result.current.resolvedTheme).toBe('light');
     result.current.setTheme('dark');
@@ -526,11 +647,16 @@ describe('setTheme', () => {
   });
 
   test('setTheme(<function>)', () => {
-    const {result, rerender} = renderHook(() => useTheme(), {
-      wrapper: ({children}) => (
-        <ThemeProvider defaultTheme="light">{children}</ThemeProvider>
-      ),
-    });
+    const {result, rerender} = renderHook(
+      () => useTheme(),
+      {
+        wrapper: ({children}) => (
+          <ThemeProvider defaultTheme="light">
+            {children}
+          </ThemeProvider>
+        ),
+      },
+    );
     expect(result.current?.setTheme).toBeDefined();
     expect(result.current.theme).toBe('light');
     expect(result.current.resolvedTheme).toBe('light');
@@ -555,11 +681,15 @@ describe('setTheme', () => {
   });
 
   test('setTheme(<function>) gets relevant state value', () => {
-    const consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+    const consoleSpy = vi
+      .spyOn(console, 'log')
+      .mockImplementation(() => {});
 
     const {result} = renderHook(() => useTheme(), {
       wrapper: ({children}) => (
-        <ThemeProvider defaultTheme="light">{children}</ThemeProvider>
+        <ThemeProvider defaultTheme="light">
+          {children}
+        </ThemeProvider>
       ),
     });
 
@@ -574,8 +704,14 @@ describe('setTheme', () => {
       });
     });
 
-    expect(consoleSpy).toHaveBeenCalledWith('1', 'light');
-    expect(consoleSpy).toHaveBeenCalledWith('2', 'dark');
+    expect(consoleSpy).toHaveBeenCalledWith(
+      '1',
+      'light',
+    );
+    expect(consoleSpy).toHaveBeenCalledWith(
+      '2',
+      'dark',
+    );
     expect(result.current.theme).toBe('light');
 
     consoleSpy.mockRestore();
@@ -593,6 +729,10 @@ describe('bootstrap script', () => {
 
     Function(scriptContent)();
 
-    expect(document.documentElement.classList.contains('dark')).toBeTruthy();
+    expect(
+      document.documentElement.classList.contains(
+        'dark',
+      ),
+    ).toBeTruthy();
   });
 });

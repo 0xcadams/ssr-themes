@@ -1,7 +1,10 @@
 'use client';
 
 import type {ReactNode} from 'react';
-import {ThemeProvider, type SystemTheme} from 'ssr-themes';
+import {
+  ThemeProvider,
+  type SystemTheme,
+} from 'ssr-themes';
 
 type ProvidersProps = {
   children: ReactNode;
@@ -15,7 +18,10 @@ export default function Providers({
   initialTheme,
 }: ProvidersProps) {
   return (
-    <ThemeProvider forcedTheme={forcedTheme} initialTheme={initialTheme}>
+    <ThemeProvider
+      forcedTheme={forcedTheme}
+      initialTheme={initialTheme}
+    >
       {children}
     </ThemeProvider>
   );

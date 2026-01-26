@@ -14,7 +14,12 @@ export default function ThemeSwitcher() {
       className="rounded border border-current bg-transparent px-3 py-2 text-2xl"
       value={value}
       onChange={event =>
-        setTheme(event.target.value as 'light' | 'dark' | 'system')
+        setTheme(
+          event.target.value as
+            | 'light'
+            | 'dark'
+            | 'system',
+        )
       }
       disabled={disabled}
       aria-label="Theme"

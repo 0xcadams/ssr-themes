@@ -1,5 +1,9 @@
 import {test} from '@playwright/test';
-import {checkAppliedTheme, checkStoredTheme, makeBrowserContext} from './util';
+import {
+  checkAppliedTheme,
+  checkStoredTheme,
+  makeBrowserContext,
+} from './util';
 
 test.describe('system theme test-suite', () => {
   function testSystemTheme(
@@ -11,11 +15,14 @@ test.describe('system theme test-suite', () => {
       browser,
       baseURL,
     }) => {
-      const context = await makeBrowserContext(browser, {
-        colorScheme: preferredColorScheme,
-        baseURL,
-        cookies: [{name: 'theme', value: 'system'}],
-      });
+      const context = await makeBrowserContext(
+        browser,
+        {
+          colorScheme: preferredColorScheme,
+          baseURL,
+          cookies: [{name: 'theme', value: 'system'}],
+        },
+      );
 
       const page = await context.newPage();
       await page.goto(pagePath);

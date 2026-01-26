@@ -1,4 +1,7 @@
-import {PlaywrightTestConfig, devices} from '@playwright/test';
+import {
+  PlaywrightTestConfig,
+  devices,
+} from '@playwright/test';
 
 const config: PlaywrightTestConfig = {
   forbidOnly: !!process.env.CI,

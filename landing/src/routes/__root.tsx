@@ -9,7 +9,11 @@ import {ThemeProvider, themeScript} from 'ssr-themes';
 import faviconUrl from '../assets/favicon.svg?url';
 import appCss from '../styles.css?url';
 
-function RootDocument({children}: {children: React.ReactNode}) {
+function RootDocument({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
@@ -52,9 +56,16 @@ export const Route = createRootRoute({
       },
     ],
     links: [
-      {rel: 'icon', type: 'image/svg+xml', href: faviconUrl},
+      {
+        rel: 'icon',
+        type: 'image/svg+xml',
+        href: faviconUrl,
+      },
       {rel: 'stylesheet', href: appCss},
-      {rel: 'preconnect', href: 'https://fonts.googleapis.com'},
+      {
+        rel: 'preconnect',
+        href: 'https://fonts.googleapis.com',
+      },
       {
         rel: 'preconnect',
         href: 'https://fonts.gstatic.com',

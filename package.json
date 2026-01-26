@@ -29,7 +29,6 @@
     "typescript": "^5.4.2",
     "vitest": "^4.0.18"
   },
-  "prettier": "@rocicorp/prettier-config",
   "repository": {
     "type": "git",
     "url": "https://github.com/0xcadams/ssr-themes.git"

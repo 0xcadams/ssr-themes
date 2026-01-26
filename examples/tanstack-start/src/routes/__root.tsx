@@ -6,7 +6,10 @@ import {
   useMatches,
 } from '@tanstack/react-router';
 import * as React from 'react';
-import {ThemeProvider, type SystemTheme} from 'ssr-themes';
+import {
+  ThemeProvider,
+  type SystemTheme,
+} from 'ssr-themes';
 import {themeScript} from 'ssr-themes/server';
 import appCss from '../styles.css?url';
 
@@ -27,7 +30,9 @@ function RootDocument({
         <HeadContent />
       </head>
       <body className="min-h-screen bg-white text-black dark:bg-black dark:text-white antialiased font-mono">
-        <ThemeProvider forcedTheme={forcedTheme}>{children}</ThemeProvider>
+        <ThemeProvider forcedTheme={forcedTheme}>
+          {children}
+        </ThemeProvider>
         <Scripts />
       </body>
     </html>
@@ -37,10 +42,15 @@ function RootDocument({
 function RootComponent() {
   const matches = useMatches();
   const forcedTheme = React.useMemo(() => {
-    return matches.reduce<SystemTheme | undefined>((theme, match) => {
-      const staticData = match.staticData as ThemeStaticData | undefined;
-      return staticData?.theme ?? theme;
-    }, undefined);
+    return matches.reduce<SystemTheme | undefined>(
+      (theme, match) => {
+        const staticData = match.staticData as
+          | ThemeStaticData
+          | undefined;
+        return staticData?.theme ?? theme;
+      },
+      undefined,
+    );
   }, [matches]);
 
   return (
@@ -61,7 +71,10 @@ export const Route = createRootRoute({
       {title: 'ssr-themes example'},
     ],
     links: [
-      {rel: 'preconnect', href: 'https://fonts.googleapis.com'},
+      {
+        rel: 'preconnect',
+        href: 'https://fonts.googleapis.com',
+      },
       {
         rel: 'preconnect',
         href: 'https://fonts.gstatic.com',

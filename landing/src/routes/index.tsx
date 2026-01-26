@@ -9,12 +9,28 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import {ToggleGroup, ToggleGroupItem} from '@/components/ui/toggle-group';
-import {Check, Copy, Github, ShieldCheck} from 'lucide-react';
-import {getHighlightedCode, getHighlightedNextRscCode} from '@/lib/shiki';
+import {
+  ToggleGroup,
+  ToggleGroupItem,
+} from '@/components/ui/toggle-group';
+import {
+  Check,
+  Copy,
+  Github,
+  ShieldCheck,
+} from 'lucide-react';
+import {
+  getHighlightedCode,
+  getHighlightedNextRscCode,
+} from '@/lib/shiki';
 
 type ThemeOption = {
-  value: 'system' | 'light' | 'dark' | 'quartz' | 'abyss';
+  value:
+    | 'system'
+    | 'light'
+    | 'dark'
+    | 'quartz'
+    | 'abyss';
   label: string;
   note: string;
   caption: string;
@@ -60,15 +76,33 @@ const themeOptions: ThemeOption[] = [
 ];
 
 const packageManagers = [
-  {value: 'bun', label: 'bun', command: 'bun add ssr-themes'},
-  {value: 'pnpm', label: 'pnpm', command: 'pnpm add ssr-themes'},
-  {value: 'npm', label: 'npm', command: 'npm install ssr-themes'},
-  {value: 'yarn', label: 'yarn', command: 'yarn add ssr-themes'},
+  {
+    value: 'bun',
+    label: 'bun',
+    command: 'bun add ssr-themes',
+  },
+  {
+    value: 'pnpm',
+    label: 'pnpm',
+    command: 'pnpm add ssr-themes',
+  },
+  {
+    value: 'npm',
+    label: 'npm',
+    command: 'npm install ssr-themes',
+  },
+  {
+    value: 'yarn',
+    label: 'yarn',
+    command: 'yarn add ssr-themes',
+  },
 ] as const;
 
-type PackageManager = (typeof packageManagers)[number]['value'];
+type PackageManager =
+  (typeof packageManagers)[number]['value'];
 
-const packageManagerStorageKey = 'ssrthemes-package-manager';
+const packageManagerStorageKey =
+  'ssrthemes-package-manager';
 
 function ThemeTile({
   option,
@@ -90,10 +124,16 @@ function ThemeTile({
       onClick={() => onSelect(option.value)}
     >
       <div className="flex items-center justify-between text-sm">
-        <span className="font-medium">{option.label}</span>
-        <span className="text-xs text-muted-foreground">{note}</span>
+        <span className="font-medium">
+          {option.label}
+        </span>
+        <span className="text-xs text-muted-foreground">
+          {note}
+        </span>
       </div>
-      <div className={`theme-preview ${option.previewClass}`} />
+      <div
+        className={`theme-preview ${option.previewClass}`}
+      />
       <div className="flex items-center text-xs text-muted-foreground">
         <span>{option.caption}</span>
       </div>
@@ -102,44 +142,60 @@ function ThemeTile({
 }
 
 function IndexPage() {
-  const {theme, setTheme, resolvedTheme} = useTheme<ThemeOption['value']>();
+  const {theme, setTheme, resolvedTheme} =
+    useTheme<ThemeOption['value']>();
   const [mounted, setMounted] = useState(false);
-  const [packageManager, setPackageManager] = useState<PackageManager>('bun');
+  const [packageManager, setPackageManager] =
+    useState<PackageManager>('bun');
   const [copied, setCopied] = useState(false);
-  const {codeHtml, nextRscCodeHtml} = Route.useLoaderData();
+  const {codeHtml, nextRscCodeHtml} =
+    Route.useLoaderData();
 
   useEffect(() => setMounted(true), []);
   useEffect(() => {
     if (!mounted) return;
-    const storedManager = window.localStorage.getItem(packageManagerStorageKey);
+    const storedManager = window.localStorage.getItem(
+      packageManagerStorageKey,
+    );
 
     if (
       storedManager &&
-      packageManagers.some(manager => manager.value === storedManager)
+      packageManagers.some(
+        manager => manager.value === storedManager,
+      )
     ) {
-      setPackageManager(storedManager as PackageManager);
+      setPackageManager(
+        storedManager as PackageManager,
+      );
     }
   }, [mounted]);
 
   useEffect(() => {
     if (!mounted) return;
-    window.localStorage.setItem(packageManagerStorageKey, packageManager);
+    window.localStorage.setItem(
+      packageManagerStorageKey,
+      packageManager,
+    );
   }, [packageManager, mounted]);
 
-  const activeTheme = mounted && theme ? theme : 'system';
+  const activeTheme =
+    mounted && theme ? theme : 'system';
   const systemNote = mounted
     ? resolvedTheme === 'dark'
       ? 'Auto dark'
       : 'Auto light'
     : 'Auto';
   const activePackageManager =
-    packageManagers.find(manager => manager.value === packageManager) ??
-    packageManagers[0];
+    packageManagers.find(
+      manager => manager.value === packageManager,
+    ) ?? packageManagers[0];
   const installCommand = activePackageManager.command;
 
   const handleCopy = async () => {
     try {
-      await navigator.clipboard.writeText(installCommand);
+      await navigator.clipboard.writeText(
+        installCommand,
+      );
       setCopied(true);
       window.setTimeout(() => setCopied(false), 1500);
     } catch {
@@ -149,13 +205,21 @@ function IndexPage() {
 
   return (
     <div className="page-shell">
-      <div className="page-backdrop" aria-hidden="true" />
+      <div
+        className="page-backdrop"
+        aria-hidden="true"
+      />
       <div className="page-grid" aria-hidden="true" />
       <div className="relative mx-auto flex min-h-screen w-full max-w-6xl flex-col px-6 py-10 lg:py-16">
         <div className="absolute right-6 top-6 lg:right-8 lg:top-8">
-          <Button asChild variant="ghost" size="icon-sm" aria-label="GitHub">
+          <Button
+            asChild
+            variant="ghost"
+            size="icon-sm"
+            aria-label="GitHub"
+          >
             <a href="https://github.com/0xcadams/ssr-themes">
-              <Github className="size-4" />
+              <Github className="size-6" />
             </a>
           </Button>
         </div>
@@ -165,8 +229,10 @@ function IndexPage() {
               Perfect theming for any React framework
             </h1>
             <p className="max-w-xl text-lg text-muted-foreground">
-              SSR-friendly theming for React using cookies - with system
-              preference, cross-tab sync, no flash, and a strongly typed{' '}
+              SSR-friendly theming for React using
+              cookies - with system preference,
+              cross-tab sync, no flash, and a strongly
+              typed{' '}
               <span className="rounded-md border border-primary/20 bg-primary/10 px-1.5 py-0.5 font-mono text-[0.75rem] text-primary/90">
                 useTheme
               </span>{' '}
@@ -178,7 +244,10 @@ function IndexPage() {
                   type="single"
                   value={packageManager}
                   onValueChange={(value: string) => {
-                    if (value) setPackageManager(value as PackageManager);
+                    if (value)
+                      setPackageManager(
+                        value as PackageManager,
+                      );
                   }}
                   variant="outline"
                   size="sm"
@@ -205,7 +274,9 @@ function IndexPage() {
                       size="icon-xs"
                       onClick={handleCopy}
                       aria-label="Copy install command"
-                      title={copied ? 'Copied' : 'Copy'}
+                      title={
+                        copied ? 'Copied' : 'Copy'
+                      }
                     >
                       {copied ? (
                         <Check className="size-3.5" />
@@ -240,7 +311,10 @@ function IndexPage() {
                     size="sm"
                     className="bg-card/70 backdrop-blur"
                   >
-                    <a target="_blank" href="https://next.ssr-themes.cadams.io">
+                    <a
+                      target="_blank"
+                      href="https://next.ssr-themes.cadams.io"
+                    >
                       Next.js
                     </a>
                   </Button>
@@ -254,9 +328,12 @@ function IndexPage() {
               <CardHeader className="border-b border-border/60">
                 <div className="flex items-start justify-between gap-4">
                   <div>
-                    <CardTitle className="text-base">Theme picker</CardTitle>
+                    <CardTitle className="text-base">
+                      Theme picker
+                    </CardTitle>
                     <CardDescription>
-                      Pick a palette and the UI updates instantly.
+                      Pick a palette and the UI updates
+                      instantly.
                     </CardDescription>
                   </div>
                 </div>
@@ -268,23 +345,30 @@ function IndexPage() {
                       key={option.value}
                       option={option}
                       note={
-                        option.value === 'system' ? systemNote : option.note
+                        option.value === 'system'
+                          ? systemNote
+                          : option.note
                       }
-                      isActive={activeTheme === option.value}
+                      isActive={
+                        activeTheme === option.value
+                      }
                       onSelect={setTheme}
                     />
                   ))}
                 </div>
                 <div className="mt-4 flex items-center gap-2 text-xs text-muted-foreground">
                   <ShieldCheck className="h-3.5 w-3.5 text-primary" />
-                  Hydration-safe changes that sync across tabs.
+                  Hydration-safe changes that sync
+                  across tabs.
                 </div>
               </CardContent>
             </Card>
 
             <Card className="min-w-0 border-border/60 bg-card/70 backdrop-blur">
               <CardHeader>
-                <CardTitle className="text-base">Usage example</CardTitle>
+                <CardTitle className="text-base">
+                  Usage example
+                </CardTitle>
                 <CardDescription>
                   Install{' '}
                   <span className="rounded-md border border-primary/20 bg-primary/10 px-1.5 py-0.5 font-mono text-[0.75rem] text-primary/90">
@@ -296,7 +380,9 @@ function IndexPage() {
               <CardContent className="code-block min-w-0 pt-0">
                 <div
                   className="max-w-full overflow-x-auto"
-                  dangerouslySetInnerHTML={{__html: codeHtml}}
+                  dangerouslySetInnerHTML={{
+                    __html: codeHtml,
+                  }}
                 />
               </CardContent>
             </Card>
@@ -307,13 +393,16 @@ function IndexPage() {
                   First-class RSC support
                 </CardTitle>
                 <CardDescription>
-                  Read cookies on the server and hydrate the initial theme.
+                  Read cookies on the server and
+                  hydrate the initial theme.
                 </CardDescription>
               </CardHeader>
               <CardContent className="code-block min-w-0 pt-0">
                 <div
                   className="max-w-full overflow-x-auto"
-                  dangerouslySetInnerHTML={{__html: nextRscCodeHtml}}
+                  dangerouslySetInnerHTML={{
+                    __html: nextRscCodeHtml,
+                  }}
                 />
               </CardContent>
             </Card>

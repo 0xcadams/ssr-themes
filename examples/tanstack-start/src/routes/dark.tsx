@@ -1,4 +1,7 @@
-import {Link, createFileRoute} from '@tanstack/react-router';
+import {
+  Link,
+  createFileRoute,
+} from '@tanstack/react-router';
 
 export const Route = createFileRoute('/dark')({
   staticData: {theme: 'dark'},
@@ -8,7 +11,10 @@ export const Route = createFileRoute('/dark')({
 function DarkPage() {
   return (
     <div className="flex min-h-screen w-full items-center justify-center px-6">
-      <Link className="text-lg underline underline-offset-4" to="/">
+      <Link
+        className="text-lg underline underline-offset-4"
+        to="/"
+      >
         Go back
       </Link>
     </div>

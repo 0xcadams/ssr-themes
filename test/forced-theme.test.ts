@@ -1,5 +1,9 @@
 import {test} from '@playwright/test';
-import {checkAppliedTheme, checkStoredTheme, makeBrowserContext} from './util';
+import {
+  checkAppliedTheme,
+  checkStoredTheme,
+  makeBrowserContext,
+} from './util';
 
 test.describe('forced theme test-suite', async () => {
   function makeForcedThemeTest(
@@ -11,10 +15,15 @@ test.describe('forced theme test-suite', async () => {
       browser,
       baseURL,
     }) => {
-      const context = await makeBrowserContext(browser, {
-        baseURL,
-        cookies: [{name: 'theme', value: storedTheme}],
-      });
+      const context = await makeBrowserContext(
+        browser,
+        {
+          baseURL,
+          cookies: [
+            {name: 'theme', value: storedTheme},
+          ],
+        },
+      );
       const page = await context.newPage();
       await page.goto(pageUrl);
 
