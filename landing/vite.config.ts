@@ -16,7 +16,6 @@ const config = defineConfig({
   plugins: [
     nitro({
       preset: nitroPreset,
-      traceDeps: ['typescript'],
     }),
     viteTsConfigPaths({
       projects: ['./tsconfig.json'],

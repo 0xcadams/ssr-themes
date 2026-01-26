@@ -52,68 +52,18 @@ export default async function RootLayout({
   );
 }`;
 
-const ensureNodeRequire = async () => {
-  if (!import.meta.env.SSR) {
-    return;
-  }
-
-  if (typeof globalThis.require === 'function') {
-    return;
-  }
-
-  if (!process?.versions?.node) {
-    return;
-  }
-
-  const {createRequire} = await import('node:module');
-  globalThis.require = createRequire(import.meta.url);
-};
-
-const getTwoslashTransformers = async () => {
-  await ensureNodeRequire();
-  const [{transformerTwoslash}, {JsxEmit}] =
-    await Promise.all([
-      import('@shikijs/twoslash'),
-      import('typescript'),
-    ]);
-
-  return [
-    transformerTwoslash({
-      twoslashOptions: {
-        compilerOptions: {
-          jsx: JsxEmit.ReactJSX,
-        },
-      },
-    }),
-  ];
-};
-
-let cachedTwoslashTransformers: ReturnType<
-  typeof getTwoslashTransformers
-> | null = null;
-
 let cachedHighlight: Promise<string> | null = null;
 let cachedNextRscHighlight: Promise<string> | null =
   null;
 
-const highlightCode = async (code: string) => {
-  if (!cachedTwoslashTransformers) {
-    cachedTwoslashTransformers =
-      getTwoslashTransformers();
-  }
-
-  const transformers =
-    await cachedTwoslashTransformers;
-
-  return codeToHtml(code, {
+const highlightCode = (code: string) =>
+  codeToHtml(code, {
     lang: 'tsx',
     themes: {
       light: 'vitesse-light',
       dark: 'vitesse-dark',
     },
-    transformers,
   });
-};
 
 export const getHighlightedCode = async () => {
   if (process.env.NODE_ENV === 'development') {
