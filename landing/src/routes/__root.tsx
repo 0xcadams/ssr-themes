@@ -5,7 +5,8 @@ import {
   createRootRoute,
 } from '@tanstack/react-router';
 import * as React from 'react';
-import {ThemeProvider, themeScript} from 'ssr-themes';
+import {ThemeProvider} from 'ssr-themes';
+import {themeScript} from 'ssr-themes/server';
 import faviconUrl from '../assets/favicon.svg?url';
 import appCss from '../styles.css?url';
 
@@ -77,7 +78,9 @@ export const Route = createRootRoute({
     ],
     scripts: [
       {
-        children: themeScript(),
+        children: themeScript({
+          themes: ['light', 'dark', 'quartz', 'abyss'],
+        }),
       },
     ],
   }),

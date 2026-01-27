@@ -19,10 +19,7 @@ import {
   Github,
   ShieldCheck,
 } from 'lucide-react';
-import {
-  getHighlightedCode,
-  getHighlightedNextRscCode,
-} from '@/lib/shiki';
+import {getHighlightedFrameworkSnippets} from '@/lib/shiki';
 
 type ThemeOption = {
   value:
@@ -104,6 +101,34 @@ type PackageManager =
 const packageManagerStorageKey =
   'ssrthemes-package-manager';
 
+const frameworks = [
+  {
+    value: 'next',
+    label: 'Next.js',
+    secondaryTitle: 'SSR / RSC support',
+    secondaryDescription:
+      'Read cookies on the server and hydrate the initial theme.',
+  },
+  {
+    value: 'tanstack',
+    label: 'TanStack Start',
+    secondaryTitle: 'Forced theme routes',
+    secondaryDescription:
+      'Use route staticData to force a theme per route.',
+  },
+  {
+    value: 'other',
+    label: 'Other',
+    secondaryTitle: 'SSR cookie parsing',
+    secondaryDescription:
+      'Parse a raw Cookie header and pre-set the <html> theme.',
+  },
+] as const;
+
+type Framework = (typeof frameworks)[number]['value'];
+
+const frameworkStorageKey = 'ssrthemes-framework';
+
 function ThemeTile({
   option,
   note,
@@ -145,11 +170,12 @@ function IndexPage() {
   const {theme, setTheme, systemTheme} =
     useTheme<ThemeOption['value']>();
   const [mounted, setMounted] = useState(false);
+  const [framework, setFramework] =
+    useState<Framework>('next');
   const [packageManager, setPackageManager] =
     useState<PackageManager>('bun');
   const [copied, setCopied] = useState(false);
-  const {codeHtml, nextRscCodeHtml} =
-    Route.useLoaderData();
+  const {frameworkSnippets} = Route.useLoaderData();
 
   useEffect(() => setMounted(true), []);
   useEffect(() => {
@@ -157,6 +183,9 @@ function IndexPage() {
     const storedManager = window.localStorage.getItem(
       packageManagerStorageKey,
     );
+
+    const storedFramework =
+      window.localStorage.getItem(frameworkStorageKey);
 
     if (
       storedManager &&
@@ -168,6 +197,16 @@ function IndexPage() {
         storedManager as PackageManager,
       );
     }
+
+    if (
+      storedFramework &&
+      frameworks.some(
+        candidate =>
+          candidate.value === storedFramework,
+      )
+    ) {
+      setFramework(storedFramework as Framework);
+    }
   }, [mounted]);
 
   useEffect(() => {
@@ -177,6 +216,14 @@ function IndexPage() {
       packageManager,
     );
   }, [packageManager, mounted]);
+
+  useEffect(() => {
+    if (!mounted) return;
+    window.localStorage.setItem(
+      frameworkStorageKey,
+      framework,
+    );
+  }, [framework, mounted]);
 
   const activeTheme =
     mounted && theme ? theme : 'system';
@@ -190,6 +237,18 @@ function IndexPage() {
       manager => manager.value === packageManager,
     ) ?? packageManagers[0];
   const installCommand = activePackageManager.command;
+
+  const activeFrameworkValue = mounted
+    ? framework
+    : ('next' satisfies Framework);
+  const activeFramework =
+    frameworks.find(
+      candidate =>
+        candidate.value === activeFrameworkValue,
+    ) ?? frameworks[0];
+  const activeSnippet =
+    frameworkSnippets[activeFrameworkValue] ??
+    frameworkSnippets.next;
 
   const handleCopy = async () => {
     try {
@@ -368,24 +427,52 @@ function IndexPage() {
           </div>
 
           <div className="mt-14 grid gap-6 text-left animate-rise animate-delay-4 lg:mt-16 max-w-2xl">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-end">
+              <ToggleGroup
+                type="single"
+                value={framework}
+                onValueChange={(value: string) => {
+                  if (value) {
+                    setFramework(value as Framework);
+                  }
+                }}
+                variant="outline"
+                size="sm"
+                className="bg-card/70 backdrop-blur"
+              >
+                {frameworks.map(option => (
+                  <ToggleGroupItem
+                    key={option.value}
+                    value={option.value}
+                    className="text-[0.7rem] font-medium"
+                  >
+                    {option.label}
+                  </ToggleGroupItem>
+                ))}
+              </ToggleGroup>
+            </div>
             <Card className="min-w-0 border-border/60 bg-card/70 backdrop-blur">
               <CardHeader>
                 <CardTitle className="text-base">
                   Usage example
                 </CardTitle>
                 <CardDescription>
-                  Install{' '}
+                  Drop in{' '}
                   <span className="rounded-md border border-primary/20 bg-primary/10 px-1.5 py-0.5 font-mono text-[0.75rem] text-primary/90">
-                    ssr-themes
+                    themeScript()
                   </span>{' '}
-                  in a couple lines of code.
+                  +{' '}
+                  <span className="rounded-md border border-primary/20 bg-primary/10 px-1.5 py-0.5 font-mono text-[0.75rem] text-primary/90">
+                    ThemeProvider
+                  </span>{' '}
+                  to get no-flash theming.
                 </CardDescription>
               </CardHeader>
               <CardContent className="code-block min-w-0 pt-0">
                 <div
                   className="max-w-full overflow-x-auto"
                   dangerouslySetInnerHTML={{
-                    __html: codeHtml,
+                    __html: activeSnippet.primaryHtml,
                   }}
                 />
               </CardContent>
@@ -394,18 +481,20 @@ function IndexPage() {
             <Card className="min-w-0 border-border/60 bg-card/70 backdrop-blur">
               <CardHeader>
                 <CardTitle className="text-base">
-                  First-class RSC support
+                  {activeFramework.secondaryTitle}
                 </CardTitle>
                 <CardDescription>
-                  Read cookies on the server and
-                  hydrate the initial theme.
+                  {
+                    activeFramework.secondaryDescription
+                  }
                 </CardDescription>
               </CardHeader>
               <CardContent className="code-block min-w-0 pt-0">
                 <div
                   className="max-w-full overflow-x-auto"
                   dangerouslySetInnerHTML={{
-                    __html: nextRscCodeHtml,
+                    __html:
+                      activeSnippet.secondaryHtml,
                   }}
                 />
               </CardContent>
@@ -419,8 +508,8 @@ function IndexPage() {
 
 export const Route = createFileRoute('/')({
   loader: async () => ({
-    codeHtml: await getHighlightedCode(),
-    nextRscCodeHtml: await getHighlightedNextRscCode(),
+    frameworkSnippets:
+      await getHighlightedFrameworkSnippets(),
   }),
   component: IndexPage,
 });
