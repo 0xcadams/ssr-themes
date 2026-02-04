@@ -1,20 +1,16 @@
 import {
   HeadContent,
   Outlet,
+  ScriptOnce,
   Scripts,
   createRootRoute,
 } from '@tanstack/react-router';
-import * as React from 'react';
 import {ThemeProvider} from 'ssr-themes';
 import {themeScript} from 'ssr-themes/server';
 import faviconUrl from '../assets/favicon.svg?url';
 import appCss from '../styles.css?url';
 
-function RootDocument({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+function RootComponent() {
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
@@ -24,19 +20,21 @@ function RootDocument({
         <ThemeProvider
           themes={['light', 'dark', 'quartz', 'abyss']}
         >
-          {children}
+          <ScriptOnce
+            children={themeScript({
+              themes: [
+                'light',
+                'dark',
+                'quartz',
+                'abyss',
+              ],
+            })}
+          />
+          <Outlet />
         </ThemeProvider>
         <Scripts />
       </body>
     </html>
-  );
-}
-
-function RootComponent() {
-  return (
-    <RootDocument>
-      <Outlet />
-    </RootDocument>
   );
 }
 
@@ -74,13 +72,6 @@ export const Route = createRootRoute({
       {
         rel: 'stylesheet',
         href: 'https://fonts.googleapis.com/css2?family=Fira+Mono:wght@400;500;700&display=swap',
-      },
-    ],
-    scripts: [
-      {
-        children: themeScript({
-          themes: ['light', 'dark', 'quartz', 'abyss'],
-        }),
       },
     ],
   }),
