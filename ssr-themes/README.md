@@ -8,7 +8,7 @@ Themes for your React app.
 - SSR friendly (cookie based)
 - Sync theme across tabs
 - Typed `useTheme` hook
-- 2.37 kB minified and brotlied
+- 1.74 kB hydrated client bundle + 537 B inline theme bootstrap, minified and brotlied
 
 Live demos:
 

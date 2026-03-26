@@ -40,7 +40,8 @@
   "size-limit": [
     {
       "name": "client",
-      "path": "dist/index.mjs"
+      "path": "dist/index.mjs",
+      "import": "{ ThemeProvider, useTheme }"
     }
   ],
   "peerDependencies": {
