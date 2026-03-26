@@ -8,12 +8,12 @@
   ],
   "scripts": {
     "prepublish": "bun --filter ssr-themes build",
-    "build": "bun --filter '*' build",
+    "build": "bun --filter ssr-themes build && bun --filter @ssr-themes/next build && bun --filter @ssr-themes/tanstack-start build && bun --filter @ssr-themes/landing build",
     "start": "bun --filter '*' start",
     "dev": "bun --filter '*' dev",
     "test": "bun --filter '*' test",
     "test:e2e": "bun --filter ssr-themes build && bunx playwright test",
-    "clean": "rm -rf node_modules .next dist coverage playwright-report test-results && bun --filter '*' clean",
+    "clean": "rm -rf .next dist coverage playwright-report test-results && bun --filter '*' clean",
     "format": "prettier . --write"
   },
   "devDependencies": {
@@ -25,6 +25,8 @@
     "@types/react-dom": "19.2.3",
     "jsdom": "^29.0.1",
     "prettier": "^3.2.5",
+    "react": "^19.2.4",
+    "react-dom": "^19.2.4",
     "tsup": "^8.3.5",
     "typescript": "^6.0.2",
     "vitest": "^4.1.1"

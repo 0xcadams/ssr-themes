@@ -6,7 +6,7 @@
     "dev": "vite dev",
     "build": "vite build",
     "preview": "vite preview",
-    "clean": "rm -rf node_modules"
+    "clean": "rm -rf .vercel"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.2.2",

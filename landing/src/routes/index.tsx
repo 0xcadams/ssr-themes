@@ -14,9 +14,9 @@ import {
   ToggleGroupItem,
 } from '@/components/ui/toggle-group';
 import {
+  ArrowUpRight,
   Check,
   Copy,
-  Github,
   ShieldCheck,
 } from 'lucide-react';
 import {getHighlightedFrameworkSnippets} from '@/lib/shiki';
@@ -278,7 +278,7 @@ function IndexPage() {
             aria-label="GitHub"
           >
             <a href="https://github.com/0xcadams/ssr-themes">
-              <Github className="size-4" />
+              <ArrowUpRight className="size-4" />
             </a>
           </Button>
         </div>
