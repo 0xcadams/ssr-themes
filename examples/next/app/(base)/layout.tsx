@@ -1,6 +1,6 @@
 import {cookies} from 'next/headers';
 import type {ReactNode} from 'react';
-import Providers from '../providers';
+import {ThemeProvider} from 'ssr-themes/client';
 
 export default async function BaseLayout({
   children,
@@ -17,8 +17,8 @@ export default async function BaseLayout({
       : undefined;
 
   return (
-    <Providers initialTheme={initialTheme}>
+    <ThemeProvider initialTheme={initialTheme}>
       {children}
-    </Providers>
+    </ThemeProvider>
   );
 }

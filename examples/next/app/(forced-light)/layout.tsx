@@ -1,5 +1,5 @@
 import type {ReactNode} from 'react';
-import Providers from '../providers';
+import {ThemeProvider} from 'ssr-themes/client';
 
 export default function ForcedLightLayout({
   children,
@@ -7,8 +7,8 @@ export default function ForcedLightLayout({
   children: ReactNode;
 }) {
   return (
-    <Providers forcedTheme="light">
+    <ThemeProvider forcedTheme="light">
       {children}
-    </Providers>
+    </ThemeProvider>
   );
 }
