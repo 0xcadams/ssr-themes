@@ -22,9 +22,15 @@ export default async function RootLayout({
 }) {
   const cookieStore = await cookies();
   const themeCookie = cookieStore.get('theme')?.value;
-  const theme =
-    themeCookie === 'dark' || themeCookie === 'light'
+  const initialTheme =
+    themeCookie === 'dark' ||
+    themeCookie === 'light' ||
+    themeCookie === 'system'
       ? themeCookie
+      : undefined;
+  const theme =
+    initialTheme === 'dark' || initialTheme === 'light'
+      ? initialTheme
       : undefined;
 
   return (

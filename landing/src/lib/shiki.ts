@@ -62,14 +62,20 @@ export default async function RootLayout({
 }) {
   const themeCookie = (await cookies()).get('theme')?.value;
   const initialTheme =
-    themeCookie === 'dark' || themeCookie === 'light'
+    themeCookie === 'dark' ||
+    themeCookie === 'light' ||
+    themeCookie === 'system'
       ? themeCookie
+      : undefined;
+  const theme =
+    initialTheme === 'dark' || initialTheme === 'light'
+      ? initialTheme
       : undefined;
 
   return (
     <html
       suppressHydrationWarning
-      {...registerTheme({theme: initialTheme})}
+      {...registerTheme({theme})}
     >
       <head>
         <Script id="ssr-themes" strategy="beforeInteractive">
@@ -88,6 +94,8 @@ export default async function RootLayout({
   },
   tanstack: {
     primary: `// src/routes/__root.tsx
+import {createServerFn} from '@tanstack/react-start';
+import {getRequestHeader} from '@tanstack/react-start/server';
 import {
   HeadContent,
   Outlet,
@@ -96,23 +104,44 @@ import {
   createRootRoute,
 } from '@tanstack/react-router';
 import {ThemeProvider} from 'ssr-themes';
-import {themeScript} from 'ssr-themes/server';
+import {
+  registerTheme,
+  themeFromCookieHeader,
+  themeScript,
+} from 'ssr-themes/server';
 
-export const Route = createRootRoute({
-  component: () => (
-    <html suppressHydrationWarning>
+const getInitialTheme = createServerFn({method: 'GET'}).handler(
+  () => themeFromCookieHeader(getRequestHeader('cookie')),
+);
+
+function RootComponent() {
+  const {initialTheme} = Route.useLoaderData();
+  const theme =
+    initialTheme && initialTheme !== 'system'
+      ? initialTheme
+      : undefined;
+
+  return (
+    <html suppressHydrationWarning {...registerTheme({theme})}>
       <head>
         <HeadContent />
       </head>
       <body>
-        <ThemeProvider>
+        <ThemeProvider initialTheme={initialTheme}>
           <ScriptOnce children={themeScript()} />
           <Outlet />
         </ThemeProvider>
         <Scripts />
       </body>
     </html>
-  ),
+  );
+}
+
+export const Route = createRootRoute({
+  loader: async () => ({
+    initialTheme: await getInitialTheme(),
+  }),
+  component: RootComponent,
 });
 `,
     secondary: `// src/routes/dark.tsx

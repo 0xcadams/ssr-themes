@@ -6,32 +6,62 @@ import {
   createRootRoute,
   useMatches,
 } from '@tanstack/react-router';
+import {createServerFn} from '@tanstack/react-start';
+import {getRequestHeader} from '@tanstack/react-start/server';
 import * as React from 'react';
 import {
   ThemeProvider,
   type SystemTheme,
+  type ThemeName,
 } from 'ssr-themes';
-import {themeScript} from 'ssr-themes/server';
+import {
+  registerTheme,
+  themeFromCookieHeader,
+  themeScript,
+} from 'ssr-themes/server';
 import appCss from '../styles.css?url';
 
 type ThemeStaticData = {
   theme?: SystemTheme;
 };
 
+type InitialTheme = ThemeName<SystemTheme>;
+
+const getInitialTheme = createServerFn({
+  method: 'GET',
+}).handler(() =>
+  themeFromCookieHeader<SystemTheme>(
+    getRequestHeader('cookie'),
+  ),
+);
+
 function RootDocument({
   children,
   forcedTheme,
+  initialTheme,
 }: {
   children: React.ReactNode;
   forcedTheme?: SystemTheme;
+  initialTheme?: InitialTheme;
 }) {
+  const theme: SystemTheme | undefined =
+    initialTheme && initialTheme !== 'system'
+      ? initialTheme
+      : undefined;
+
   return (
-    <html suppressHydrationWarning>
+    <html
+      suppressHydrationWarning
+      {...registerTheme({theme})}
+    >
       <head>
         <HeadContent />
       </head>
       <body className="min-h-screen bg-white text-black dark:bg-black dark:text-white antialiased font-mono">
-        <ThemeProvider forcedTheme={forcedTheme}>
+        <ThemeProvider
+          forcedTheme={forcedTheme}
+          initialTheme={initialTheme}
+        >
           <ScriptOnce children={themeScript()} />
           {children}
         </ThemeProvider>
@@ -43,6 +73,7 @@ function RootDocument({
 
 function RootComponent() {
   const matches = useMatches();
+  const {initialTheme} = Route.useLoaderData();
   const forcedTheme = React.useMemo(() => {
     return matches.reduce<SystemTheme | undefined>(
       (theme, match) => {
@@ -56,13 +87,19 @@ function RootComponent() {
   }, [matches]);
 
   return (
-    <RootDocument forcedTheme={forcedTheme}>
+    <RootDocument
+      forcedTheme={forcedTheme}
+      initialTheme={initialTheme}
+    >
       <Outlet />
     </RootDocument>
   );
 }
 
 export const Route = createRootRoute({
+  loader: async () => ({
+    initialTheme: await getInitialTheme(),
+  }),
   head: () => ({
     meta: [
       {charSet: 'utf-8'},
