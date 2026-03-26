@@ -51,17 +51,50 @@ import {
   Scripts,
   createRootRoute,
 } from '@tanstack/react-router';
-import {ThemeProvider} from 'ssr-themes';
-import {themeScript} from 'ssr-themes/server';
+import {createServerFn} from '@tanstack/react-start';
+import {getRequestHeader} from '@tanstack/react-start/server';
+import {
+  ThemeProvider,
+  type ThemeName,
+  type SystemTheme,
+} from 'ssr-themes';
+import {
+  registerTheme,
+  themeFromCookieHeader,
+  themeScript,
+} from 'ssr-themes/server';
+
+type InitialTheme = ThemeName<SystemTheme>;
+
+const getInitialTheme = createServerFn({
+  method: 'GET',
+}).handler(() =>
+  themeFromCookieHeader<SystemTheme>(
+    getRequestHeader('cookie'),
+  ),
+);
 
 function RootComponent() {
+  const {initialTheme} = Route.useLoaderData();
+  const theme =
+    initialTheme && initialTheme !== 'system'
+      ? initialTheme
+      : undefined;
+
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html
+      lang="en"
+      suppressHydrationWarning
+      {...registerTheme({theme})}
+    >
       <head>
         <HeadContent />
       </head>
       <body>
-        <ThemeProvider attribute="class">
+        <ThemeProvider
+          attribute="class"
+          initialTheme={initialTheme as InitialTheme}
+        >
           <ScriptOnce
             children={themeScript({
               attribute: 'class',
@@ -76,6 +109,9 @@ function RootComponent() {
 }
 
 export const Route = createRootRoute({
+  loader: async () => ({
+    initialTheme: await getInitialTheme(),
+  }),
   component: RootComponent,
 });
 ```
@@ -105,9 +141,15 @@ export default async function RootLayout({
 }) {
   const cookieStore = await cookies();
   const themeCookie = cookieStore.get('theme')?.value;
-  const theme =
-    themeCookie === 'dark' || themeCookie === 'light'
+  const initialTheme =
+    themeCookie === 'dark' ||
+    themeCookie === 'light' ||
+    themeCookie === 'system'
       ? themeCookie
+      : undefined;
+  const theme =
+    initialTheme === 'dark' || initialTheme === 'light'
+      ? initialTheme
       : undefined;
 
   return (
@@ -124,7 +166,7 @@ export default async function RootLayout({
         </Script>
       </head>
       <body>
-        <ThemeProvider initialTheme={theme}>
+        <ThemeProvider initialTheme={initialTheme}>
           {children}
         </ThemeProvider>
       </body>
@@ -133,10 +175,10 @@ export default async function RootLayout({
 }
 ```
 
-If you render theme-dependent UI during SSR, pass the resolved theme from cookies to:
+If you render theme-dependent UI during SSR, pass the cookie theme to `initialTheme` and the resolved non-`system` theme to:
 
 - `registerTheme({theme})` on `<html>`
-- `initialTheme={theme}` on `<ThemeProvider />`
+- `initialTheme={initialTheme}` on `<ThemeProvider />`
 
 ## Styling
 

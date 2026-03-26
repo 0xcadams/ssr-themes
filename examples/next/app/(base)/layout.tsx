@@ -10,7 +10,9 @@ export default async function BaseLayout({
   const cookieStore = await cookies();
   const themeCookie = cookieStore.get('theme')?.value;
   const initialTheme =
-    themeCookie === 'dark' || themeCookie === 'light'
+    themeCookie === 'dark' ||
+    themeCookie === 'light' ||
+    themeCookie === 'system'
       ? themeCookie
       : undefined;
 

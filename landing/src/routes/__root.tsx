@@ -5,29 +5,63 @@ import {
   Scripts,
   createRootRoute,
 } from '@tanstack/react-router';
-import {ThemeProvider} from 'ssr-themes';
-import {themeScript} from 'ssr-themes/server';
+import {createServerFn} from '@tanstack/react-start';
+import {getRequestHeader} from '@tanstack/react-start/server';
+import {
+  ThemeProvider,
+  type ThemeName,
+} from 'ssr-themes';
+import {
+  registerTheme,
+  themeFromCookieHeader,
+  themeScript,
+} from 'ssr-themes/server';
 import faviconUrl from '../assets/favicon.svg?url';
 import appCss from '../styles.css?url';
 
+const themes = [
+  'light',
+  'dark',
+  'quartz',
+  'abyss',
+] as const;
+
+type AppTheme = (typeof themes)[number];
+type InitialTheme = ThemeName<AppTheme>;
+
+const getInitialTheme = createServerFn({
+  method: 'GET',
+}).handler(() =>
+  themeFromCookieHeader<AppTheme>(
+    getRequestHeader('cookie'),
+    {themes},
+  ),
+);
+
 function RootComponent() {
+  const {initialTheme} = Route.useLoaderData();
+  const theme: AppTheme | undefined =
+    initialTheme && initialTheme !== 'system'
+      ? initialTheme
+      : undefined;
+
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html
+      lang="en"
+      suppressHydrationWarning
+      {...registerTheme({theme})}
+    >
       <head>
         <HeadContent />
       </head>
       <body className="min-h-screen bg-background text-foreground antialiased">
         <ThemeProvider
-          themes={['light', 'dark', 'quartz', 'abyss']}
+          themes={themes}
+          initialTheme={initialTheme as InitialTheme}
         >
           <ScriptOnce
             children={themeScript({
-              themes: [
-                'light',
-                'dark',
-                'quartz',
-                'abyss',
-              ],
+              themes,
             })}
           />
           <Outlet />
@@ -39,6 +73,9 @@ function RootComponent() {
 }
 
 export const Route = createRootRoute({
+  loader: async () => ({
+    initialTheme: await getInitialTheme(),
+  }),
   head: () => ({
     meta: [
       {charSet: 'utf-8'},
