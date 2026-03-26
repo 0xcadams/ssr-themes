@@ -4,20 +4,26 @@ export async function checkAppliedTheme(
   page: Page,
   theme: string,
 ) {
-  expect(
-    await page.evaluate(
-      currentTheme =>
-        document.documentElement.classList.contains(
-          currentTheme,
-        ),
-      theme,
-    ),
-  ).toBe(true);
-  expect(
-    await page.evaluate(
-      () => document.documentElement.style.colorScheme,
-    ),
-  ).toBe(theme);
+  await expect
+    .poll(async () => {
+      return await page.evaluate(
+        currentTheme =>
+          document.documentElement.classList.contains(
+            currentTheme,
+          ),
+        theme,
+      );
+    })
+    .toBe(true);
+
+  await expect
+    .poll(async () => {
+      return await page.evaluate(
+        () =>
+          document.documentElement.style.colorScheme,
+      );
+    })
+    .toBe(theme);
 }
 
 export async function checkStoredTheme(
@@ -25,19 +31,22 @@ export async function checkStoredTheme(
   expectedTheme: string,
   storageKey = 'theme',
 ) {
-  const storedTheme = await page.evaluate(key => {
-    const cookies = document.cookie
-      ? document.cookie.split('; ')
-      : [];
-    for (const cookie of cookies) {
-      const [name, ...rest] = cookie.split('=');
-      if (name === key) {
-        return decodeURIComponent(rest.join('='));
-      }
-    }
-    return null;
-  }, storageKey);
-  expect(storedTheme).toBe(expectedTheme);
+  await expect
+    .poll(async () => {
+      return await page.evaluate(key => {
+        const cookies = document.cookie
+          ? document.cookie.split('; ')
+          : [];
+        for (const cookie of cookies) {
+          const [name, ...rest] = cookie.split('=');
+          if (name === key) {
+            return decodeURIComponent(rest.join('='));
+          }
+        }
+        return null;
+      }, storageKey);
+    })
+    .toBe(expectedTheme);
 }
 
 type MakeBrowserContextOptions = {

@@ -4,9 +4,8 @@ import Script from 'next/script';
 import type {ReactNode} from 'react';
 import {
   registerTheme,
-  type ThemeOptions,
-} from 'ssr-themes';
-import {themeScript} from 'ssr-themes/server';
+  themeScript,
+} from 'ssr-themes/server';
 
 import './globals.css';
 
