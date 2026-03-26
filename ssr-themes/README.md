@@ -1,13 +1,14 @@
-# ssr-themes ![ssr-themes minzip package size](https://img.shields.io/bundlephobia/minzip/ssr-themes) [![Version](https://img.shields.io/npm/v/ssr-themes.svg?colorB=green)](https://www.npmjs.com/package/ssr-themes)
+# ssr-themes [![Version](https://img.shields.io/npm/v/ssr-themes.svg?colorB=green)](https://www.npmjs.com/package/ssr-themes)
 
 Themes for your React app.
 
-- ✅ Perfect dark mode with no flashing
-- ✅ System setting with `prefers-color-scheme`
-- ✅ Themed browser UI with `color-scheme`
-- ✅ SSR friendly (cookie based)
-- ✅ Sync theme across tabs
-- ✅ Typed `useTheme` hook
+- Perfect dark mode with no flashing
+- System setting with `prefers-color-scheme`
+- Themed browser UI with `color-scheme`
+- SSR friendly (cookie based)
+- Sync theme across tabs
+- Typed `useTheme` hook
+- 2.37 kB minified and brotlied
 
 Live demos:
 

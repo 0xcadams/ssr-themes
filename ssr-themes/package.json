@@ -33,9 +33,16 @@
     "prepublish": "bun run build",
     "build": "tsup",
     "dev": "tsup --watch",
+    "size": "bun run build && size-limit",
     "test": "vitest run tests",
     "clean": "rm -rf dist node_modules"
   },
+  "size-limit": [
+    {
+      "name": "client",
+      "path": "dist/index.mjs"
+    }
+  ],
   "peerDependencies": {
     "react": "^19.2.4",
     "react-dom": "^19.2.4"
