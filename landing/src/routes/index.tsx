@@ -26,7 +26,7 @@ function IndexPage() {
     useTheme<ThemeValue>();
   const [mounted, setMounted] = useState(false);
   const [framework, setFramework] =
-    useState<Framework>('next');
+    useState<Framework>('tanstack');
   const [packageManager, setPackageManager] =
     useState<PackageManager>('bun');
   const {frameworkSnippets} = Route.useLoaderData();
@@ -96,7 +96,7 @@ function IndexPage() {
 
   const activeFrameworkValue: Framework = mounted
     ? framework
-    : 'next';
+    : 'tanstack';
   const activeFramework =
     frameworks.find(
       candidate =>
@@ -104,7 +104,7 @@ function IndexPage() {
     ) ?? frameworks[0];
   const activeSnippet =
     frameworkSnippets[activeFrameworkValue] ??
-    frameworkSnippets.next;
+    frameworkSnippets.tanstack;
 
   return (
     <div className="page-shell">

@@ -55,5 +55,6 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/0xcadams/ssr-themes.git"
-  }
+  },
+  "homepage": "https://ssr-themes.cadams.io/"
 }

@@ -84,18 +84,18 @@ export const packageManagerStorageKey =
 
 export const frameworks = [
   {
-    value: 'next',
-    label: 'Next.js',
-    secondaryTitle: 'SSR / RSC support',
-    secondaryDescription:
-      'Read cookies on the server and hydrate the initial theme.',
-  },
-  {
     value: 'tanstack',
     label: 'TanStack Start',
     secondaryTitle: 'Forced theme routes',
     secondaryDescription:
       'Use route staticData to force a theme per route.',
+  },
+  {
+    value: 'next',
+    label: 'Next.js',
+    secondaryTitle: 'SSR / RSC support',
+    secondaryDescription:
+      'Read cookies on the server and hydrate the initial theme.',
   },
   {
     value: 'other',

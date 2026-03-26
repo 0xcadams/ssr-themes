@@ -7,7 +7,6 @@ import type {
   SystemTheme,
   SystemThemeDefinition,
   ThemeName,
-  ThemeOptions,
   ThemeProviderProps,
   UseThemeProps,
 } from './types';
@@ -163,9 +162,6 @@ const Theme = <
     getTheme(
       cookieName,
       resolvedDefaultTheme,
-      attribute,
-      value,
-      themes,
       initialTheme,
     ),
   );
@@ -439,55 +435,6 @@ const Theme = <
   );
 };
 
-// Helpers
-function getThemeFromDOM<TTheme extends string>(
-  attribute: Attribute | Attribute[],
-  value: ThemeOptions<TTheme, boolean>['value'],
-  themes: readonly TTheme[],
-) {
-  const attributes = Array.isArray(attribute)
-    ? attribute
-    : [attribute];
-  const themeValues: Array<{
-    theme: TTheme;
-    value: string;
-  }> = [];
-
-  for (const theme of themes) {
-    const themeValue = value ? value[theme] : theme;
-    if (themeValue) {
-      themeValues.push({theme, value: themeValue});
-    }
-  }
-
-  for (const attr of attributes) {
-    if (attr === 'class') {
-      for (const entry of themeValues) {
-        if (
-          document.documentElement.classList.contains(
-            entry.value,
-          )
-        ) {
-          return entry.theme;
-        }
-      }
-      continue;
-    }
-
-    const attrValue =
-      document.documentElement.getAttribute(attr);
-    if (!attrValue) continue;
-
-    for (const entry of themeValues) {
-      if (entry.value === attrValue) {
-        return entry.theme;
-      }
-    }
-  }
-
-  return undefined;
-}
-
 function getTheme<
   TTheme extends string,
   TEnableSystem extends boolean = true,
@@ -496,14 +443,12 @@ function getTheme<
   fallback:
     | ThemeName<TTheme, TEnableSystem>
     | undefined,
-  attribute: Attribute | Attribute[],
-  value: ThemeOptions<TTheme, TEnableSystem>['value'],
-  themes: readonly TTheme[],
   initialTheme:
     | ThemeName<TTheme, TEnableSystem>
     | undefined,
 ) {
   if (isServer) return initialTheme;
+  if (initialTheme) return initialTheme;
   let theme:
     | ThemeName<TTheme, TEnableSystem>
     | undefined;
@@ -516,13 +461,6 @@ function getTheme<
     // Unsupported
   }
   if (theme) return theme;
-
-  const domTheme = getThemeFromDOM(
-    attribute,
-    value,
-    themes,
-  );
-  if (domTheme) return domTheme;
 
   return fallback;
 }
