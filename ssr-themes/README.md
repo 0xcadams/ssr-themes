@@ -39,23 +39,21 @@ If you customize `themes`, `attribute`, `value`, or `cookie`, pass the same opti
 
 ### TanStack Start
 
+In TanStack Start, prefer `ScriptOnce` for `themeScript()` instead of `head.scripts`.
+
 ```tsx
 // src/routes/__root.tsx
 import {
   HeadContent,
   Outlet,
+  ScriptOnce,
   Scripts,
   createRootRoute,
 } from '@tanstack/react-router';
-import type {ReactNode} from 'react';
 import {ThemeProvider} from 'ssr-themes';
 import {themeScript} from 'ssr-themes/server';
 
-function RootDocument({
-  children,
-}: {
-  children: ReactNode;
-}) {
+function RootComponent() {
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
@@ -63,7 +61,12 @@ function RootDocument({
       </head>
       <body>
         <ThemeProvider attribute="class">
-          {children}
+          <ScriptOnce
+            children={themeScript({
+              attribute: 'class',
+            })}
+          />
+          <Outlet />
         </ThemeProvider>
         <Scripts />
       </body>
@@ -72,24 +75,14 @@ function RootDocument({
 }
 
 export const Route = createRootRoute({
-  head: () => ({
-    scripts: [
-      {
-        children: themeScript({attribute: 'class'}),
-      },
-    ],
-  }),
-  component: () => (
-    <RootDocument>
-      <Outlet />
-    </RootDocument>
-  ),
+  component: RootComponent,
 });
 ```
 
 ### Next.js App Router
 
 Inject `themeScript()` before hydration and wrap your app with `ThemeProvider`.
+In Next.js, the equivalent of TanStack's `ScriptOnce` pattern is `next/script` with `strategy="beforeInteractive"`.
 
 In Server Components, import the provider from `ssr-themes/client` so it doesn't resolve to the `react-server` export.
 
