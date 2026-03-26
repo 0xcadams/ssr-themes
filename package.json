@@ -11,14 +11,16 @@
     "build": "bun --filter ssr-themes build && bun --filter @ssr-themes/next build && bun --filter @ssr-themes/tanstack-start build && bun --filter @ssr-themes/landing build",
     "start": "bun --filter '*' start",
     "dev": "bun --filter '*' dev",
+    "size": "bun --filter ssr-themes size",
     "test": "bun --filter '*' test",
     "test:e2e": "bun --filter ssr-themes build && bunx playwright test",
     "clean": "rm -rf node_modules .next dist coverage playwright-report test-results && bun --filter '*' clean",
     "format": "prettier . --write"
   },
   "devDependencies": {
-    "@rocicorp/prettier-config": "^0.4.0",
     "@playwright/test": "^1.58.2",
+    "@rocicorp/prettier-config": "^0.4.0",
+    "@size-limit/preset-small-lib": "^12.0.1",
     "@testing-library/react": "^16.3.2",
     "@types/node": "25.5.0",
     "@types/react": "^19.2.14",
@@ -27,6 +29,7 @@
     "prettier": "^3.2.5",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
+    "size-limit": "^12.0.1",
     "tsup": "^8.3.5",
     "typescript": "^6.0.2",
     "vitest": "^4.1.1"
