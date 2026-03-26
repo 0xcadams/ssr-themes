@@ -141,6 +141,8 @@ export const Route = createRootRoute({
   loader: async () => ({
     initialTheme: await getInitialTheme(),
   }),
+  staleTime: Infinity,
+  shouldReload: false,
   component: RootComponent,
 });
 `,

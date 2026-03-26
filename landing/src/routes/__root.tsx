@@ -78,6 +78,8 @@ export const Route = createRootRoute({
   loader: async () => ({
     initialTheme: await getInitialTheme(),
   }),
+  staleTime: Infinity,
+  shouldReload: false,
   head: () => ({
     meta: [
       {charSet: 'utf-8'},
