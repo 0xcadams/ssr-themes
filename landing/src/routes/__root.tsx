@@ -1,3 +1,4 @@
+import {Analytics} from '@vercel/analytics/react';
 import {
   HeadContent,
   Outlet,
@@ -65,6 +66,7 @@ function RootComponent() {
             })}
           />
           <Outlet />
+          <Analytics />
         </ThemeProvider>
         <Scripts />
       </body>
