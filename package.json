@@ -12,7 +12,7 @@
     "start": "bun --filter '*' start",
     "dev": "bun --filter '*' dev",
     "test": "bun --filter '*' test",
-    "test:e2e": "bunx playwright test",
+    "test:e2e": "bun --filter ssr-themes build && bunx playwright test",
     "clean": "rm -rf node_modules .next dist coverage playwright-report test-results && bun --filter '*' clean",
     "format": "prettier . --write"
   },

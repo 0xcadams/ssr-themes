@@ -14,10 +14,10 @@ export async function checkAppliedTheme(
     ),
   ).toBe(true);
   expect(
-    await page.evaluate(() =>
-      document.documentElement.getAttribute('style'),
+    await page.evaluate(
+      () => document.documentElement.style.colorScheme,
     ),
-  ).toBe(`color-scheme: ${theme};`);
+  ).toBe(theme);
 }
 
 export async function checkStoredTheme(
@@ -57,21 +57,20 @@ export async function makeBrowserContext(
       name: cookie.name,
       value: cookie.value,
       url: origin,
-      path: '/',
       sameSite: 'Lax' as const,
-      domain: new URL(origin).hostname,
       expires: Math.floor(Date.now() / 1000) + 3600,
       httpOnly: false,
       secure: origin.startsWith('https'),
     }),
   );
-
-  return await browser.newContext({
+  const context = await browser.newContext({
     colorScheme:
       options.colorScheme ?? 'no-preference',
-    storageState: {
-      cookies,
-      origins: [],
-    },
   });
+
+  if (cookies.length) {
+    await context.addCookies(cookies);
+  }
+
+  return context;
 }
