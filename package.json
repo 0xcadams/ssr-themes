@@ -13,7 +13,7 @@
     "dev": "bun --filter '*' dev",
     "test": "bun --filter '*' test",
     "test:e2e": "bun --filter ssr-themes build && bunx playwright test",
-    "clean": "rm -rf .next dist coverage playwright-report test-results && bun --filter '*' clean",
+    "clean": "rm -rf node_modules .next dist coverage playwright-report test-results && bun --filter '*' clean",
     "format": "prettier . --write"
   },
   "devDependencies": {

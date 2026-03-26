@@ -6,7 +6,7 @@
     "dev": "vite dev --port 4042",
     "build": "vite build",
     "preview": "vite preview",
-    "clean": "rm -rf .output"
+    "clean": "rm -rf node_modules .output"
   },
   "dependencies": {
     "@radix-ui/react-slot": "^1.1.1",
