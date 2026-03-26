@@ -1,6 +1,7 @@
 import {
   HeadContent,
   Outlet,
+  ScriptOnce,
   Scripts,
   createRootRoute,
   useMatches,
@@ -31,6 +32,7 @@ function RootDocument({
       </head>
       <body className="min-h-screen bg-white text-black dark:bg-black dark:text-white antialiased font-mono">
         <ThemeProvider forcedTheme={forcedTheme}>
+          <ScriptOnce children={themeScript()} />
           {children}
         </ThemeProvider>
         <Scripts />
@@ -85,11 +87,6 @@ export const Route = createRootRoute({
         href: 'https://fonts.googleapis.com/css2?family=Fira+Mono:wght@400;500;700&display=swap',
       },
       {rel: 'stylesheet', href: appCss},
-    ],
-    scripts: [
-      {
-        children: themeScript(),
-      },
     ],
   }),
   component: RootComponent,

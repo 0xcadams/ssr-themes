@@ -91,6 +91,7 @@ export default async function RootLayout({
 import {
   HeadContent,
   Outlet,
+  ScriptOnce,
   Scripts,
   createRootRoute,
 } from '@tanstack/react-router';
@@ -98,9 +99,6 @@ import {ThemeProvider} from 'ssr-themes';
 import {themeScript} from 'ssr-themes/server';
 
 export const Route = createRootRoute({
-  head: () => ({
-    scripts: [{children: themeScript()}],
-  }),
   component: () => (
     <html suppressHydrationWarning>
       <head>
@@ -108,6 +106,7 @@ export const Route = createRootRoute({
       </head>
       <body>
         <ThemeProvider>
+          <ScriptOnce children={themeScript()} />
           <Outlet />
         </ThemeProvider>
         <Scripts />
