@@ -12,8 +12,8 @@ Themes for your React app.
 
 Live demos:
 
-- TanStack Start: [start.ssr-themes.cadams.io](https://start.ssr-themes.cadams.io)
-- Next.js: [next.ssr-themes.cadams.io](https://next.ssr-themes.cadams.io)
+- TanStack Start: [https://start.ssr-themes.cadams.io](https://start.ssr-themes.cadams.io)
+- Next.js: [https://next.ssr-themes.cadams.io](https://next.ssr-themes.cadams.io)
 
 ## Install
 
