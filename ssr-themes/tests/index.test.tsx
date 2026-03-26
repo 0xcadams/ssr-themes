@@ -571,6 +571,30 @@ describe('system theme', () => {
     expect(result.current.theme).toBe('system');
     expect(result.current.resolvedTheme).toBe('dark');
   });
+
+  test('should prefer system default over resolved dom theme', () => {
+    setDeviceTheme('dark');
+    document.documentElement.classList.add('dark');
+
+    const {result} = renderHook(() => useTheme(), {
+      wrapper: makeWrapper({}),
+    });
+
+    expect(result.current.theme).toBe('system');
+    expect(result.current.resolvedTheme).toBe('dark');
+  });
+
+  test('should keep initialTheme when dom is already resolved', () => {
+    setDeviceTheme('dark');
+    document.documentElement.classList.add('dark');
+
+    const {result} = renderHook(() => useTheme(), {
+      wrapper: makeWrapper({initialTheme: 'system'}),
+    });
+
+    expect(result.current.theme).toBe('system');
+    expect(result.current.resolvedTheme).toBe('dark');
+  });
 });
 
 describe('color-scheme', () => {

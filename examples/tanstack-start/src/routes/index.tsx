@@ -2,14 +2,12 @@ import {
   Link,
   createFileRoute,
 } from '@tanstack/react-router';
+import type {ChangeEvent} from 'react';
 import {useTheme} from 'ssr-themes';
-import {useEffect, useState} from 'react';
 
 function IndexPage() {
   const {theme, setTheme} = useTheme();
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => setMounted(true), []);
+  const value = theme ?? 'system';
 
   return (
     <div className="flex min-h-screen w-full items-center justify-center px-6">
@@ -21,8 +19,10 @@ function IndexPage() {
         <select
           id="theme-selector"
           className="rounded border border-current bg-transparent px-3 py-2 text-xl"
-          value={theme}
-          onChange={event =>
+          value={value}
+          onChange={(
+            event: ChangeEvent<HTMLSelectElement>,
+          ) =>
             setTheme(
               event.target.value as
                 | 'light'
@@ -33,12 +33,8 @@ function IndexPage() {
           data-test-id="theme-selector"
         >
           <option value="system">System</option>
-          {mounted && (
-            <>
-              <option value="dark">Dark</option>
-              <option value="light">Light</option>
-            </>
-          )}
+          <option value="dark">Dark</option>
+          <option value="light">Light</option>
         </select>
 
         <div className="text-lg">
