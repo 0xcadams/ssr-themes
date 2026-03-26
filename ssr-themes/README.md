@@ -34,10 +34,6 @@ There are two pieces:
 1. `themeScript()` runs before hydration and sets the theme on `<html>`.
 2. `<ThemeProvider />` keeps the theme cookie + DOM in sync and exposes `useTheme()`.
 
-Always add `suppressHydrationWarning` to `<html>` because `ssr-themes` mutates that element.
-
-If you customize `themes`, `attribute`, `value`, or `cookie`, pass the same options to both `themeScript()` and `ThemeProvider`.
-
 ### TanStack Start
 
 In TanStack Start, prefer `ScriptOnce` for `themeScript()` instead of `head.scripts`.
@@ -200,14 +196,14 @@ By default, `ssr-themes` writes a class to your `<html>` element:
 
 ### TailwindCSS
 
-The Next.js example uses Tailwind v4 with a class-based dark mode.
+All examples use Tailwind v4 with a class-based dark mode.
 
 ```css
 @import 'tailwindcss';
 @custom-variant dark (&:where(.dark, .dark *));
 ```
 
-## API (condensed)
+## API
 
 ### ThemeProvider
 
@@ -231,12 +227,8 @@ Returns `{theme, setTheme, forcedTheme, resolvedTheme, systemTheme, themes}`.
 
 ### themeScript(options)
 
-Generate the bootstrap script string (inline it before hydration).
+Generate the bootstrap script string, which is minified and should be inlined in a `script` tag before hydration.
 
 ### registerTheme(options)
 
-Server helper that returns props to spread onto your `<html>`.
-
-### themeFromCookieHeader(cookieHeader, options)
-
-Parse a raw `Cookie` header string and return the theme name.
+Server helper that returns props to spread onto your `<html>` when doing SSR w/ reading cookies.
