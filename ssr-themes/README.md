@@ -70,10 +70,10 @@ export const Route = createRootRoute({
   loader: async () => ({
     initialTheme: await getInitialTheme(),
   }),
+  component: RootComponent,
   // only load the theme from the cookie in SSR
   staleTime: Infinity,
   shouldReload: false,
-  component: RootComponent,
 });
 
 function RootComponent() {
