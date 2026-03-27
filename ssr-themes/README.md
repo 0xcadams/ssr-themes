@@ -49,11 +49,7 @@ import {
 } from '@tanstack/react-router';
 import {createServerFn} from '@tanstack/react-start';
 import {getRequestHeader} from '@tanstack/react-start/server';
-import {
-  ThemeProvider,
-  type WithSystem,
-  type Li,
-} from 'ssr-themes';
+import {ThemeProvider} from 'ssr-themes';
 import {
   registerTheme,
   themeFromCookieHeader,
