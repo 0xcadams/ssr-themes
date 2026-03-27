@@ -48,7 +48,6 @@ function RootComponent() {
 
   return (
     <html
-      lang="en"
       suppressHydrationWarning
       {...registerTheme({theme})}
     >
