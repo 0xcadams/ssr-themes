@@ -197,7 +197,7 @@ Common props:
 - `enableSystem`: enable the `'system'` theme (default: `true`)
 - `enableColorScheme`: set CSS `color-scheme` on `<html>` (default: `true`)
 - `attribute`: `'class'`, a `data-*`, or an array of attributes
-- `value`: map theme name -> DOM attribute value
+- `valueMap`: map theme name -> DOM attribute value
 - `cookie`: cookie options (name/path/maxAge/etc.)
 - `initialTheme`: theme name to use during server rendering
 - `disableTransitionOnChange`: disable CSS transitions during theme changes (default: `true`)

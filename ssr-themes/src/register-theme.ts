@@ -9,7 +9,7 @@ export const registerTheme = <
 >({
   initialTheme,
   attribute = 'class',
-  value,
+  valueMap,
   enableColorScheme = true,
   className,
   style,
@@ -25,8 +25,8 @@ export const registerTheme = <
   if (!initialTheme || initialTheme === 'system')
     return props;
 
-  const name = value
-    ? value[initialTheme]
+  const name = valueMap
+    ? valueMap[initialTheme]
     : initialTheme;
   if (!name) return props;
   const attributes = Array.isArray(attribute)

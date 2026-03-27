@@ -22,7 +22,7 @@ export const script = <
   themes: NonNullable<
     ThemeOptions<TTheme, TEnableSystem>['themes']
   >,
-  value: ThemeOptions<TTheme, TEnableSystem>['value'],
+  valueMap: ThemeOptions<TTheme, TEnableSystem>['valueMap'],
   enableSystem: NonNullable<
     ThemeOptions<TTheme, TEnableSystem>['enableSystem']
   >,
@@ -43,7 +43,7 @@ export const script = <
   }> = [];
 
   for (const theme of themes) {
-    const themeValue = value ? value[theme] : theme;
+    const themeValue = valueMap ? valueMap[theme] : theme;
     if (themeValue) {
       themeValues.push({theme, value: themeValue});
     }
@@ -90,7 +90,7 @@ export const script = <
   };
 
   function updateDOM(theme: TTheme) {
-    const name = value ? value[theme] : theme;
+    const name = valueMap ? valueMap[theme] : theme;
     for (const attr of attributes) {
       if (attr === 'class') {
         el.classList.remove(...classList);

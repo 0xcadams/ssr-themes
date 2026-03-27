@@ -365,7 +365,7 @@ describe('custom value-mapping', () => {
       render(
         <ThemeProvider
           themes={['pink', 'light', 'dark', 'system']}
-          value={{pink: 'my-pink-theme'}}
+          valueMap={{pink: 'my-pink-theme'}}
         >
           <HelperComponent forceSetTheme="pink" />
         </ThemeProvider>,
@@ -383,7 +383,7 @@ describe('custom value-mapping', () => {
   test('should allow missing values (attribute)', () => {
     act(() => {
       render(
-        <ThemeProvider value={{dark: 'dark-mode'}}>
+        <ThemeProvider valueMap={{dark: 'dark-mode'}}>
           <HelperComponent forceSetTheme="light" />
         </ThemeProvider>,
       );
@@ -399,7 +399,7 @@ describe('custom value-mapping', () => {
       render(
         <ThemeProvider
           attribute="class"
-          value={{dark: 'dark-mode'}}
+          valueMap={{dark: 'dark-mode'}}
         >
           <HelperComponent forceSetTheme="light" />
         </ThemeProvider>,
@@ -422,7 +422,7 @@ describe('custom value-mapping', () => {
             'data-theme-test',
           ]}
           themes={['pink', 'light', 'dark', 'system']}
-          value={{pink: 'my-pink-theme'}}
+          valueMap={{pink: 'my-pink-theme'}}
         >
           <HelperComponent forceSetTheme="pink" />
         </ThemeProvider>,

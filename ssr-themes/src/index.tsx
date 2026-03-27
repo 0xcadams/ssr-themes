@@ -141,7 +141,7 @@ const Theme = <
   themes = defaultThemes as unknown as readonly TTheme[],
   defaultTheme,
   attribute = 'class',
-  value,
+  valueMap,
   children,
   nonce,
   enableSystem,
@@ -170,7 +170,7 @@ const Theme = <
         : (theme as TTheme),
     );
   const attrs = (
-    !value ? themes : Object.values(value)
+    !valueMap ? themes : Object.values(valueMap)
   ) as readonly string[];
   const broadcastRef =
     React.useRef<BroadcastChannel | null>(null);
@@ -197,8 +197,8 @@ const Theme = <
       }
 
       const resolvedTheme = resolved as TTheme;
-      const name = value
-        ? value[resolvedTheme]
+      const name = valueMap
+        ? valueMap[resolvedTheme]
         : resolvedTheme;
       const enable = disableTransitionOnChange
         ? disableAnimation(nonce)
@@ -243,7 +243,7 @@ const Theme = <
       enableColorScheme,
       enableSystemValue,
       nonce,
-      value,
+      valueMap,
     ],
   );
 

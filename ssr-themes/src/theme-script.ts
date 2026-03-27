@@ -21,7 +21,7 @@ export const themeScript = <
       'dark',
       'light',
     ] as const satisfies LightOrDarkTuple,
-    value,
+    valueMap,
     enableSystem,
   } = options;
 
@@ -36,7 +36,7 @@ export const themeScript = <
     resolvedDefaultTheme,
     forcedTheme,
     themes,
-    value,
+    valueMap,
     enableSystemValue,
     enableColorScheme,
   ]).slice(1, -1);
