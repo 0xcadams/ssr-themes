@@ -55,12 +55,7 @@ function RootComponent() {
           />
           <Outlet />
 
-          <Analytics
-            scriptSrc="/api/insights/script.js"
-            eventEndpoint="/api/insights/event"
-            sessionEndpoint="/api/insights/session"
-            viewEndpoint="/api/insights/view"
-          />
+          <Analytics />
         </ThemeProvider>
         <Scripts />
       </body>
