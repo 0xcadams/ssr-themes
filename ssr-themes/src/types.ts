@@ -59,7 +59,7 @@ export interface ThemeOptions<
   /** HTML attribute modified based on the active theme. Accepts `class`, `data-*` (meaning any data attribute, `data-mode`, `data-color`, etc.), or an array which could include both */
   attribute?: Attribute | Attribute[] | undefined;
   /** Mapping of theme name to HTML attribute value. Object where key is the theme name and value is the attribute value */
-  value?: ThemeValueMap<TTheme> | undefined;
+  valueMap?: ThemeValueMap<TTheme> | undefined;
 }
 
 export interface ThemeResult<
@@ -102,7 +102,7 @@ export interface RegisterThemeOptions<
   TEnableSystem extends boolean = true,
 > extends Pick<
   ThemeOptions<TTheme, TEnableSystem>,
-  'attribute' | 'value' | 'enableColorScheme'
+  'attribute' | 'valueMap' | 'enableColorScheme'
 > {
   /** Resolved initial theme name to apply to the html element */
   initialTheme?: TTheme | undefined;
