@@ -54,6 +54,7 @@ import Script from 'next/script';
 import type {ReactNode} from 'react';
 import {ThemeProvider} from 'ssr-themes/client';
 import {registerTheme, themeScript} from 'ssr-themes/server';
+import {lightOrDarkWithSystemSchema} from 'ssr-themes/zod';
 
 export default async function RootLayout({
   children,
@@ -63,8 +64,10 @@ export default async function RootLayout({
   const themeCookie = (await cookies()).get(
     'theme',
   )?.value;
-  const initialTheme = themeCookie
-    ? (themeCookie as 'light' | 'dark' | 'system')
+  const parsedCookie =
+    lightOrDarkWithSystemSchema.safeParse(themeCookie);
+  const initialTheme = parsedCookie.success
+    ? parsedCookie.data
     : undefined;
 
   return (

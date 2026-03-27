@@ -6,6 +6,7 @@ import {
   registerTheme,
   themeScript,
 } from 'ssr-themes/server';
+import {lightOrDarkWithSystemSchema} from 'ssr-themes/zod';
 
 import './globals.css';
 
@@ -23,8 +24,10 @@ export default async function RootLayout({
   const themeCookie = (await cookies()).get(
     'theme',
   )?.value;
-  const initialTheme = themeCookie
-    ? (themeCookie as 'light' | 'dark' | 'system')
+  const parsedCookie =
+    lightOrDarkWithSystemSchema.safeParse(themeCookie);
+  const initialTheme = parsedCookie.success
+    ? parsedCookie.data
     : undefined;
 
   return (

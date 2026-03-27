@@ -22,7 +22,10 @@ export const script = <
   themes: NonNullable<
     ThemeOptions<TTheme, TEnableSystem>['themes']
   >,
-  valueMap: ThemeOptions<TTheme, TEnableSystem>['valueMap'],
+  valueMap: ThemeOptions<
+    TTheme,
+    TEnableSystem
+  >['valueMap'],
   enableSystem: NonNullable<
     ThemeOptions<TTheme, TEnableSystem>['enableSystem']
   >,
@@ -43,7 +46,9 @@ export const script = <
   }> = [];
 
   for (const theme of themes) {
-    const themeValue = valueMap ? valueMap[theme] : theme;
+    const themeValue = valueMap
+      ? valueMap[theme]
+      : theme;
     if (themeValue) {
       themeValues.push({theme, value: themeValue});
     }

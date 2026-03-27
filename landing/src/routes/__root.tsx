@@ -8,10 +8,7 @@ import {
 } from '@tanstack/react-router';
 import {createServerFn} from '@tanstack/react-start';
 import {getRequestHeader} from '@tanstack/react-start/server';
-import {
-  ThemeProvider,
-  type WithSystem,
-} from 'ssr-themes';
+import {ThemeProvider} from 'ssr-themes';
 import {
   registerTheme,
   themeFromCookieHeader,
@@ -27,29 +24,21 @@ const themes = [
   'abyss',
 ] as const;
 
-type AppTheme = (typeof themes)[number];
-type InitialTheme = WithSystem<AppTheme>;
-
 const getInitialTheme = createServerFn({
   method: 'GET',
 }).handler(() =>
-  themeFromCookieHeader<AppTheme>(
-    getRequestHeader('cookie'),
-    {themes},
-  ),
+  themeFromCookieHeader(getRequestHeader('cookie'), {
+    themes,
+  }),
 );
 
 function RootComponent() {
   const {initialTheme} = Route.useLoaderData();
-  const theme: AppTheme | undefined =
-    initialTheme && initialTheme !== 'system'
-      ? initialTheme
-      : undefined;
 
   return (
     <html
       suppressHydrationWarning
-      {...registerTheme({theme})}
+      {...registerTheme({initialTheme})}
     >
       <head>
         <HeadContent />
@@ -57,7 +46,7 @@ function RootComponent() {
       <body className="min-h-screen bg-background text-foreground antialiased">
         <ThemeProvider
           themes={themes}
-          initialTheme={initialTheme as InitialTheme}
+          initialTheme={initialTheme}
         >
           <ScriptOnce
             children={themeScript({

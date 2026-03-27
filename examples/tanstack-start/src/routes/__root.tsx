@@ -25,8 +25,6 @@ type ThemeStaticData = {
   theme?: LightOrDark;
 };
 
-type Theme = WithSystem<LightOrDark>;
-
 const getInitialTheme = createServerFn({
   method: 'GET',
 }).handler(() =>
@@ -40,7 +38,7 @@ function RootDocument({
 }: {
   children: React.ReactNode;
   forcedTheme?: LightOrDark;
-  initialTheme?: Theme;
+  initialTheme?: WithSystem<LightOrDark>;
 }) {
   return (
     <html

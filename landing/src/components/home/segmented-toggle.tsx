@@ -3,7 +3,6 @@ import {
   ToggleGroupItem,
 } from '@/components/ui/toggle-group';
 import {cn} from '@/lib/utils';
-import {ArrowUpRight} from 'lucide-react';
 
 type SegmentedToggleOption<T extends string> = {
   value: T;
