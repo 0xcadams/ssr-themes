@@ -1,44 +1,36 @@
 import type {
-  SystemTheme,
-  ThemeName,
+  LightOrDark,
+  WithSystem,
   ThemeOptions,
 } from './types';
-
-type ScriptOptions<
-  TTheme extends string,
-  TEnableSystem extends boolean,
-> = ThemeOptions<TTheme, TEnableSystem>;
 
 export const script = <
   TTheme extends string,
   TEnableSystem extends boolean = true,
 >(
   attribute: NonNullable<
-    ScriptOptions<TTheme, TEnableSystem>['attribute']
+    ThemeOptions<TTheme, TEnableSystem>['attribute']
   >,
   cookieName: string,
   defaultTheme: NonNullable<
-    ScriptOptions<
-      TTheme,
-      TEnableSystem
-    >['defaultTheme']
+    ThemeOptions<TTheme, TEnableSystem>['defaultTheme']
   >,
-  forcedTheme: ScriptOptions<
+  forcedTheme: ThemeOptions<
     TTheme,
     TEnableSystem
   >['forcedTheme'],
   themes: NonNullable<
-    ScriptOptions<TTheme, TEnableSystem>['themes']
+    ThemeOptions<TTheme, TEnableSystem>['themes']
   >,
-  value: ScriptOptions<TTheme, TEnableSystem>['value'],
+  valueMap: ThemeOptions<
+    TTheme,
+    TEnableSystem
+  >['valueMap'],
   enableSystem: NonNullable<
-    ScriptOptions<
-      TTheme,
-      TEnableSystem
-    >['enableSystem']
+    ThemeOptions<TTheme, TEnableSystem>['enableSystem']
   >,
   enableColorScheme: NonNullable<
-    ScriptOptions<
+    ThemeOptions<
       TTheme,
       TEnableSystem
     >['enableColorScheme']
@@ -54,7 +46,9 @@ export const script = <
   }> = [];
 
   for (const theme of themes) {
-    const themeValue = value ? value[theme] : theme;
+    const themeValue = valueMap
+      ? valueMap[theme]
+      : theme;
     if (themeValue) {
       themeValues.push({theme, value: themeValue});
     }
@@ -101,7 +95,7 @@ export const script = <
   };
 
   function updateDOM(theme: TTheme) {
-    const name = value ? value[theme] : theme;
+    const name = valueMap ? valueMap[theme] : theme;
     for (const attr of attributes) {
       if (attr === 'class') {
         el.classList.remove(...classList);
@@ -125,7 +119,7 @@ export const script = <
     }
   }
 
-  const getSystemTheme = (): SystemTheme =>
+  const getBrowserTheme = (): LightOrDark =>
     window.matchMedia('(prefers-color-scheme: dark)')
       .matches
       ? 'dark'
@@ -137,10 +131,10 @@ export const script = <
   }
 
   const getThemeOrSystem = (
-    themeName: ThemeName<TTheme, TEnableSystem>,
+    themeName: WithSystem<TTheme, TEnableSystem>,
   ) =>
     enableSystem && themeName === 'system'
-      ? (getSystemTheme() as TTheme)
+      ? (getBrowserTheme() as TTheme)
       : (themeName as TTheme);
 
   const themeName = getThemeFromDOM();
@@ -151,7 +145,7 @@ export const script = <
 
   try {
     const themeName = (getCookie(cookieName) ||
-      defaultTheme) as ThemeName<
+      defaultTheme) as WithSystem<
       TTheme,
       TEnableSystem
     >;

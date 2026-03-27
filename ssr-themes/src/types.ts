@@ -17,12 +17,11 @@ export interface CookieOptions {
   secure?: boolean;
 }
 
-export type SystemThemeDefinition = readonly [
+export type LightOrDarkTuple = readonly [
   'dark',
   'light',
 ];
-export type SystemTheme =
-  SystemThemeDefinition[number];
+export type LightOrDark = LightOrDarkTuple[number];
 
 type DataAttribute = `data-${string}`;
 
@@ -32,7 +31,7 @@ type ThemeValueMap<TTheme extends string> = Partial<
   Record<TTheme, string>
 >;
 
-export type ThemeName<
+export type WithSystem<
   TTheme extends string,
   TEnableSystem extends boolean = true,
 > = TEnableSystem extends true
@@ -40,7 +39,7 @@ export type ThemeName<
   : TTheme;
 
 export interface ThemeOptions<
-  TTheme extends string = SystemTheme,
+  TTheme extends string = LightOrDark,
   TEnableSystem extends boolean = true,
 > {
   /** List of all available theme names */
@@ -55,39 +54,41 @@ export interface ThemeOptions<
   cookie?: CookieOptions | undefined;
   /** Default theme name (for v0.0.12 and lower the default was light). If `enableSystem` is false, the default theme is light */
   defaultTheme?:
-    | ThemeName<TTheme, TEnableSystem>
+    | WithSystem<TTheme, TEnableSystem>
     | undefined;
   /** HTML attribute modified based on the active theme. Accepts `class`, `data-*` (meaning any data attribute, `data-mode`, `data-color`, etc.), or an array which could include both */
   attribute?: Attribute | Attribute[] | undefined;
   /** Mapping of theme name to HTML attribute value. Object where key is the theme name and value is the attribute value */
-  value?: ThemeValueMap<TTheme> | undefined;
+  valueMap?: ThemeValueMap<TTheme> | undefined;
 }
 
-export interface UseThemeProps<
-  TTheme extends string = SystemTheme,
+export interface ThemeResult<
+  TTheme extends string = LightOrDark,
   TEnableSystem extends boolean = true,
 > {
   /** List of all available theme names */
   themes: ReadonlyArray<
-    ThemeName<TTheme, TEnableSystem>
+    WithSystem<TTheme, TEnableSystem>
   >;
   /** Forced theme name for the current page */
   forcedTheme?: TTheme | undefined;
   /** Update the theme */
   setTheme: React.Dispatch<
     React.SetStateAction<
-      ThemeName<TTheme, TEnableSystem>
+      WithSystem<TTheme, TEnableSystem>
     >
   >;
   /** Active theme name */
-  theme?: ThemeName<TTheme, TEnableSystem> | undefined;
+  theme?:
+    | WithSystem<TTheme, TEnableSystem>
+    | undefined;
   /** If `enableSystem` is true and the active theme is "system", this returns whether the system preference resolved to "dark" or "light". Otherwise, identical to `theme` */
   resolvedTheme?:
     | Exclude<TTheme, 'system'>
     | undefined;
   /** If enableSystem is true, returns the System theme preference ("dark" or "light"), regardless what the active theme is */
-  systemTheme?: TEnableSystem extends true
-    ? SystemTheme
+  colorScheme?: TEnableSystem extends true
+    ? LightOrDark
     : undefined;
 }
 
@@ -97,14 +98,14 @@ export type ThemeHtmlProps = {
 } & Partial<Record<DataAttribute, string>>;
 
 export interface RegisterThemeOptions<
-  TTheme extends string = SystemTheme,
+  TTheme extends string = LightOrDark,
   TEnableSystem extends boolean = true,
 > extends Pick<
   ThemeOptions<TTheme, TEnableSystem>,
-  'attribute' | 'value' | 'enableColorScheme'
+  'attribute' | 'valueMap' | 'enableColorScheme'
 > {
-  /** Resolved theme name to apply to the html element */
-  theme?: TTheme | undefined;
+  /** Resolved initial theme name to apply to the html element */
+  initialTheme?: TTheme | undefined;
   /** Optional class name to merge with the theme class */
   className?: string | undefined;
   /** Optional style object to merge with color-scheme */
@@ -112,7 +113,7 @@ export interface RegisterThemeOptions<
 }
 
 export interface ThemeProviderProps<
-  TTheme extends string = SystemTheme,
+  TTheme extends string = LightOrDark,
   TEnableSystem extends boolean = true,
 >
   extends
@@ -122,13 +123,8 @@ export interface ThemeProviderProps<
   disableTransitionOnChange?: boolean | undefined;
   /** Theme name to use for server rendering */
   initialTheme?:
-    | ThemeName<TTheme, TEnableSystem>
+    | WithSystem<TTheme, TEnableSystem>
     | undefined;
   /** Nonce string to pass to the inline style elements for CSP headers */
   nonce?: string;
 }
-
-export type ThemeScriptOptions<
-  TTheme extends string = SystemTheme,
-  TEnableSystem extends boolean = true,
-> = ThemeOptions<TTheme, TEnableSystem>;

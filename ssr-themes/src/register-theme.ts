@@ -1,15 +1,15 @@
 import type {
   RegisterThemeOptions,
-  SystemTheme,
+  LightOrDark,
   ThemeHtmlProps,
 } from './types';
 
 export const registerTheme = <
-  TTheme extends string = SystemTheme,
+  TTheme extends string = LightOrDark,
 >({
-  theme,
+  initialTheme,
   attribute = 'class',
-  value,
+  valueMap,
   enableColorScheme = true,
   className,
   style,
@@ -22,9 +22,12 @@ export const registerTheme = <
     props.style = {...style};
   }
 
-  if (!theme || theme === 'system') return props;
+  if (!initialTheme || initialTheme === 'system')
+    return props;
 
-  const name = value ? value[theme] : theme;
+  const name = valueMap
+    ? valueMap[initialTheme]
+    : initialTheme;
   if (!name) return props;
   const attributes = Array.isArray(attribute)
     ? attribute
@@ -42,11 +45,12 @@ export const registerTheme = <
 
   if (
     enableColorScheme &&
-    (theme === 'light' || theme === 'dark')
+    (initialTheme === 'light' ||
+      initialTheme === 'dark')
   ) {
     props.style = {
       ...(props.style ?? {}),
-      colorScheme: theme,
+      colorScheme: initialTheme,
     };
   }
 

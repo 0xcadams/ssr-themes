@@ -4,26 +4,24 @@ import * as React from 'react';
 import type {
   Attribute,
   CookieOptions,
-  SystemTheme,
-  SystemThemeDefinition,
-  ThemeName,
+  WithSystem,
   ThemeProviderProps,
-  UseThemeProps,
+  ThemeResult,
+  LightOrDark,
+  LightOrDarkTuple,
 } from './types';
 
 const colorSchemes = ['light', 'dark'];
 const MEDIA = '(prefers-color-scheme: dark)';
 const isServer = typeof window === 'undefined';
 const ThemeContext = React.createContext<
-  UseThemeProps<string, boolean> | undefined
+  ThemeResult<string, boolean> | undefined
 >(undefined);
-const defaultContext: UseThemeProps<
-  SystemTheme,
-  true
-> = {
-  setTheme: _ => {},
-  themes: [] as ThemeName<SystemTheme, true>[],
-};
+const defaultContext: ThemeResult<LightOrDark, true> =
+  {
+    setTheme: _ => {},
+    themes: [] as WithSystem<LightOrDark, true>[],
+  };
 
 const defaultCookieOptions: CookieOptions = {
   path: '/',
@@ -104,17 +102,17 @@ const saveToCookie = (
 };
 
 export const useTheme = <
-  TTheme extends string = SystemTheme,
+  TTheme extends string = LightOrDark,
   TEnableSystem extends boolean = true,
 >() =>
   (React.useContext(ThemeContext) ??
-    defaultContext) as UseThemeProps<
+    defaultContext) as ThemeResult<
     TTheme,
     TEnableSystem
   >;
 
 export const ThemeProvider = <
-  TTheme extends string = SystemTheme,
+  TTheme extends string = LightOrDark,
   TEnableSystem extends boolean = true,
 >(
   props: ThemeProviderProps<TTheme, TEnableSystem>,
@@ -129,10 +127,10 @@ export const ThemeProvider = <
 const defaultThemes = [
   'dark',
   'light',
-] as const satisfies SystemThemeDefinition;
+] as const satisfies LightOrDarkTuple;
 
 const Theme = <
-  TTheme extends string = SystemTheme,
+  TTheme extends string = LightOrDark,
   TEnableSystem extends boolean = true,
 >({
   forcedTheme,
@@ -143,7 +141,7 @@ const Theme = <
   themes = defaultThemes as unknown as readonly TTheme[],
   defaultTheme,
   attribute = 'class',
-  value,
+  valueMap,
   children,
   nonce,
   enableSystem,
@@ -154,10 +152,10 @@ const Theme = <
     defaultTheme ??
     ((enableSystemValue
       ? 'system'
-      : 'light') as ThemeName<TTheme, TEnableSystem>);
+      : 'light') as WithSystem<TTheme, TEnableSystem>);
   const cookieName = getCookieName(cookie);
   const [theme, setThemeState] = React.useState<
-    ThemeName<TTheme, TEnableSystem> | undefined
+    WithSystem<TTheme, TEnableSystem> | undefined
   >(() =>
     getTheme(
       cookieName,
@@ -168,11 +166,11 @@ const Theme = <
   const [resolvedTheme, setResolvedTheme] =
     React.useState<TTheme | undefined>(() =>
       theme === 'system' && !isServer
-        ? (getSystemTheme() as TTheme)
+        ? (getBaseTheme() as TTheme)
         : (theme as TTheme),
     );
   const attrs = (
-    !value ? themes : Object.values(value)
+    !valueMap ? themes : Object.values(valueMap)
   ) as readonly string[];
   const broadcastRef =
     React.useRef<BroadcastChannel | null>(null);
@@ -185,22 +183,22 @@ const Theme = <
   const applyTheme = React.useCallback(
     (
       theme:
-        | ThemeName<TTheme, TEnableSystem>
+        | WithSystem<TTheme, TEnableSystem>
         | undefined,
     ):
-      | ThemeName<TTheme, TEnableSystem>
+      | WithSystem<TTheme, TEnableSystem>
       | undefined => {
       let resolved = theme;
       if (!resolved) return undefined;
 
       // If theme is system, resolve it before setting theme
       if (resolved === 'system' && enableSystemValue) {
-        resolved = getSystemTheme() as TTheme;
+        resolved = getBaseTheme() as TTheme;
       }
 
       const resolvedTheme = resolved as TTheme;
-      const name = value
-        ? value[resolvedTheme]
+      const name = valueMap
+        ? valueMap[resolvedTheme]
         : resolvedTheme;
       const enable = disableTransitionOnChange
         ? disableAnimation(nonce)
@@ -245,7 +243,7 @@ const Theme = <
       enableColorScheme,
       enableSystemValue,
       nonce,
-      value,
+      valueMap,
     ],
   );
 
@@ -262,15 +260,15 @@ const Theme = <
   const setTheme = React.useCallback(
     (
       value:
-        | ThemeName<TTheme, TEnableSystem>
+        | WithSystem<TTheme, TEnableSystem>
         | React.SetStateAction<
-            ThemeName<TTheme, TEnableSystem>
+            WithSystem<TTheme, TEnableSystem>
           >,
     ) => {
       if (typeof value === 'function') {
         setThemeState(prevTheme => {
           const newTheme = value(
-            prevTheme as ThemeName<
+            prevTheme as WithSystem<
               TTheme,
               TEnableSystem
             >,
@@ -292,7 +290,7 @@ const Theme = <
 
   const handleMediaQuery = React.useCallback(
     (e: MediaQueryListEvent | MediaQueryList) => {
-      const resolved = getSystemTheme(e) as TTheme;
+      const resolved = getBaseTheme(e) as TTheme;
       setResolvedTheme(resolved);
 
       if (
@@ -301,7 +299,10 @@ const Theme = <
         !forcedTheme
       ) {
         applyTheme(
-          'system' as ThemeName<TTheme, TEnableSystem>,
+          'system' as WithSystem<
+            TTheme,
+            TEnableSystem
+          >,
         );
       }
     },
@@ -359,7 +360,7 @@ const Theme = <
 
       setThemeState(
         event.data.value as
-          | ThemeName<TTheme, TEnableSystem>
+          | WithSystem<TTheme, TEnableSystem>
           | undefined,
       );
     };
@@ -407,14 +408,14 @@ const Theme = <
         themes: (enableSystemValue
           ? [...themes, 'system']
           : themes) as ReadonlyArray<
-          ThemeName<TTheme, TEnableSystem>
+          WithSystem<TTheme, TEnableSystem>
         >,
-        systemTheme: (enableSystemValue
-          ? (resolvedTheme as unknown as SystemTheme)
+        colorScheme: (enableSystemValue
+          ? (resolvedTheme as unknown as LightOrDark)
           : undefined) as TEnableSystem extends true
-          ? SystemTheme
+          ? LightOrDark
           : undefined,
-      }) as UseThemeProps<TTheme, TEnableSystem>,
+      }) as ThemeResult<TTheme, TEnableSystem>,
     [
       theme,
       setTheme,
@@ -428,7 +429,7 @@ const Theme = <
 
   return (
     <ThemeContext.Provider
-      value={providerValue as unknown as UseThemeProps}
+      value={providerValue as unknown as ThemeResult}
     >
       {children}
     </ThemeContext.Provider>
@@ -441,19 +442,19 @@ function getTheme<
 >(
   cookieName: string,
   fallback:
-    | ThemeName<TTheme, TEnableSystem>
+    | WithSystem<TTheme, TEnableSystem>
     | undefined,
   initialTheme:
-    | ThemeName<TTheme, TEnableSystem>
+    | WithSystem<TTheme, TEnableSystem>
     | undefined,
 ) {
   if (isServer) return initialTheme;
   if (initialTheme) return initialTheme;
   let theme:
-    | ThemeName<TTheme, TEnableSystem>
+    | WithSystem<TTheme, TEnableSystem>
     | undefined;
   try {
-    theme = getCookieValue(cookieName) as ThemeName<
+    theme = getCookieValue(cookieName) as WithSystem<
       TTheme,
       TEnableSystem
     >;
@@ -488,15 +489,15 @@ const disableAnimation = (nonce?: string) => {
   };
 };
 
-const getSystemTheme = (
+const getBaseTheme = (
   e?: MediaQueryList | MediaQueryListEvent,
-): SystemTheme => {
+): LightOrDark => {
   if (!e) {
     e = window.matchMedia(MEDIA);
   }
   const isDark = e.matches;
-  const systemTheme = isDark ? 'dark' : 'light';
-  return systemTheme;
+  const colorScheme = isDark ? 'dark' : 'light';
+  return colorScheme;
 };
 
 export type {
@@ -504,12 +505,11 @@ export type {
   CookieOptions,
   RegisterThemeOptions,
   ThemeHtmlProps,
-  ThemeName,
+  WithSystem,
   ThemeOptions,
   ThemeProviderProps,
-  ThemeScriptOptions,
-  UseThemeProps,
-  SystemTheme,
+  ThemeResult,
+  LightOrDark,
 } from './types';
 export {themeScript} from './theme-script';
 export {registerTheme} from './register-theme';

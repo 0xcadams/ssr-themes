@@ -27,6 +27,8 @@ pnpm add ssr-themes
 yarn add ssr-themes
 ```
 
+If you use `ssr-themes/zod`, install `zod` too.
+
 ## Quickstart
 
 There are two pieces:
@@ -36,7 +38,7 @@ There are two pieces:
 
 ### TanStack Start
 
-In TanStack Start, prefer `ScriptOnce` for `themeScript()` instead of `head.scripts`.
+In TanStack Start, use `ScriptOnce` for `themeScript()` (instead of `head.scripts`).
 
 ```tsx
 // src/routes/__root.tsx
@@ -49,53 +51,43 @@ import {
 } from '@tanstack/react-router';
 import {createServerFn} from '@tanstack/react-start';
 import {getRequestHeader} from '@tanstack/react-start/server';
-import {
-  ThemeProvider,
-  type ThemeName,
-  type SystemTheme,
-} from 'ssr-themes';
+import {ThemeProvider} from 'ssr-themes';
 import {
   registerTheme,
   themeFromCookieHeader,
   themeScript,
 } from 'ssr-themes/server';
 
-type InitialTheme = ThemeName<SystemTheme>;
-
 const getInitialTheme = createServerFn({
   method: 'GET',
 }).handler(() =>
-  themeFromCookieHeader<SystemTheme>(
-    getRequestHeader('cookie'),
-  ),
+  themeFromCookieHeader(getRequestHeader('cookie')),
 );
+
+export const Route = createRootRoute({
+  loader: async () => ({
+    initialTheme: await getInitialTheme(),
+  }),
+  component: RootComponent,
+  // only load the theme from the cookie in SSR
+  staleTime: Infinity,
+  shouldReload: false,
+});
 
 function RootComponent() {
   const {initialTheme} = Route.useLoaderData();
-  const theme =
-    initialTheme && initialTheme !== 'system'
-      ? initialTheme
-      : undefined;
 
   return (
     <html
-      lang="en"
       suppressHydrationWarning
-      {...registerTheme({theme})}
+      {...registerTheme({initialTheme})}
     >
       <head>
         <HeadContent />
       </head>
       <body>
-        <ThemeProvider
-          attribute="class"
-          initialTheme={initialTheme as InitialTheme}
-        >
-          <ScriptOnce
-            children={themeScript({
-              attribute: 'class',
-            })}
-          />
+        <ThemeProvider initialTheme={initialTheme}>
+          <ScriptOnce children={themeScript()} />
           <Outlet />
         </ThemeProvider>
         <Scripts />
@@ -103,13 +95,6 @@ function RootComponent() {
     </html>
   );
 }
-
-export const Route = createRootRoute({
-  loader: async () => ({
-    initialTheme: await getInitialTheme(),
-  }),
-  component: RootComponent,
-});
 ```
 
 ### Next.js App Router
@@ -117,7 +102,7 @@ export const Route = createRootRoute({
 Inject `themeScript()` before hydration and wrap your app with `ThemeProvider`.
 In Next.js, the equivalent of TanStack's `ScriptOnce` pattern is `next/script` with `strategy="beforeInteractive"`.
 
-In Server Components, import the provider from `ssr-themes/client` so it doesn't resolve to the `react-server` export.
+In Server Components, import the provider from `ssr-themes/client` so it doesn't resolve to the `react-server` export, and includes the `'use client'` directive.
 
 ```tsx
 // app/layout.tsx
@@ -129,29 +114,26 @@ import {
   registerTheme,
   themeScript,
 } from 'ssr-themes/server';
+import {lightOrDarkWithSystemSchema} from 'ssr-themes/zod';
 
 export default async function RootLayout({
   children,
 }: {
   children: ReactNode;
 }) {
-  const cookieStore = await cookies();
-  const themeCookie = cookieStore.get('theme')?.value;
-  const initialTheme =
-    themeCookie === 'dark' ||
-    themeCookie === 'light' ||
-    themeCookie === 'system'
-      ? themeCookie
-      : undefined;
-  const theme =
-    initialTheme === 'dark' || initialTheme === 'light'
-      ? initialTheme
-      : undefined;
+  const themeCookie = (await cookies()).get(
+    'theme',
+  )?.value;
+  const parsedCookie =
+    lightOrDarkWithSystemSchema.safeParse(themeCookie);
+  const initialTheme = parsedCookie.success
+    ? parsedCookie.data
+    : undefined;
 
   return (
     <html
       suppressHydrationWarning
-      {...registerTheme({theme})}
+      {...registerTheme({initialTheme})}
     >
       <head>
         <Script
@@ -171,10 +153,12 @@ export default async function RootLayout({
 }
 ```
 
-If you render theme-dependent UI during SSR, pass the cookie theme to `initialTheme` and the resolved non-`system` theme to:
+If you render theme-dependent UI during SSR, pass the cookie theme straight through to:
 
-- `registerTheme({theme})` on `<html>`
+- `registerTheme({initialTheme})` on `<html>`
 - `initialTheme={initialTheme}` on `<ThemeProvider />`
+
+Passing `'system'` is fine. In that case, `registerTheme()` leaves the SSR theme attribute alone, and `themeScript()` resolves the active theme before hydration.
 
 ## Styling
 
@@ -205,30 +189,68 @@ All examples use Tailwind v4 with a class-based dark mode.
 
 ## API
 
-### ThemeProvider
+### Shared theme options
 
-Common props:
+`ThemeProvider` and `themeScript(options)` share the same core theme config.
+`registerTheme(options)` overlaps with `attribute`, `valueMap`, and `enableColorScheme`.
+
+Keep overlapping options in sync. If your server HTML, bootstrap script, and hydrated provider use different theme settings, they can disagree during SSR or hydration.
 
 - `themes`: list of theme names (default: `['dark', 'light']`)
-- `defaultTheme`: default theme name (default: `'system'` when `enableSystem`)
+- `defaultTheme`: fallback theme when no cookie is set (default: `'system'` when `enableSystem`, otherwise `'light'`)
 - `forcedTheme`: force a page to a theme (disable your theme toggle UI when set)
 - `enableSystem`: enable the `'system'` theme (default: `true`)
-- `enableColorScheme`: set CSS `color-scheme` on `<html>` (default: `true`)
+- `enableColorScheme`: set browser `color-scheme` when the active theme resolves to literal `light` or `dark`; custom theme names do not automatically map to a browser color scheme (default: `true`)
 - `attribute`: `'class'`, a `data-*`, or an array of attributes
-- `value`: map theme name -> DOM attribute value
-- `cookie`: cookie options (name/path/maxAge/etc.)
-- `initialTheme`: theme name to use during server rendering
+- `valueMap`: map theme name -> DOM attribute value; use the same mapping everywhere you write the theme to `<html>`
+- `cookie`: cookie options used to persist the theme; `themeScript()` only reads `cookie.name`, so keep that in sync with `ThemeProvider`
+
+### ThemeProvider
+
+Additional props:
+
+- `initialTheme`: initial theme to use during SSR and hydration; pass the cookie value through directly, including `'system'`
 - `disableTransitionOnChange`: disable CSS transitions during theme changes (default: `true`)
-- `nonce`: nonce for CSP headers (used when transitions are disabled)
+- `nonce`: nonce for the temporary inline style tag used when transitions are disabled
 
 ### useTheme()
 
-Returns `{theme, setTheme, forcedTheme, resolvedTheme, systemTheme, themes}`.
+Returns `{theme, setTheme, forcedTheme, resolvedTheme, colorScheme, themes}`.
+
+- `theme`: the selected theme, including `'system'` when enabled
+- `resolvedTheme`: the active resolved theme after applying system preference
+- `colorScheme`: the current system preference (`'light'` or `'dark'`) when `enableSystem` is enabled
+- `themes`: the available themes, plus `'system'` when `enableSystem` is enabled
 
 ### themeScript(options)
 
-Generate the bootstrap script string, which is minified and should be inlined in a `script` tag before hydration.
+Generate the bootstrap script string, which should be inlined in a `script` tag before hydration.
+
+It accepts the shared theme options above. Pass the same `themes`, `defaultTheme`, `forcedTheme`, `enableSystem`, `enableColorScheme`, `attribute`, `valueMap`, and `cookie.name` that your `ThemeProvider` uses.
 
 ### registerTheme(options)
 
-Server helper that returns props to spread onto your `<html>` when doing SSR w/ reading cookies.
+Server helper that returns props to spread onto your `<html>` during SSR.
+
+- `initialTheme`: optional theme to pre-apply on `<html>`; passing `'system'` is fine, and simply skips pre-setting the SSR theme attribute
+- `attribute`: same theme attribute config used by `ThemeProvider` / `themeScript()`
+- `valueMap`: same theme-to-DOM mapping used by `ThemeProvider` / `themeScript()`
+- `enableColorScheme`: same browser `color-scheme` behavior used by `ThemeProvider` / `themeScript()`; only applies when the initial theme is literal `light` or `dark`
+- `className`: extra classes to merge with the theme class
+- `style`: extra styles to merge with the generated `colorScheme` style
+
+### ssr-themes/zod
+
+Tiny Zod helpers for the default cookie values used by the library.
+
+```ts
+import {cookies} from 'next/headers';
+import {lightOrDarkWithSystemSchema} from 'ssr-themes/zod';
+
+const cookie = (await cookies()).get('theme')?.value;
+const initialTheme =
+  lightOrDarkWithSystemSchema.safeParse(cookie).data;
+```
+
+- `lightOrDarkSchema`: parses `'light' | 'dark'`
+- `lightOrDarkWithSystemSchema`: parses `'light' | 'dark' | 'system'`

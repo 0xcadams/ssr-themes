@@ -11,8 +11,8 @@ import {getRequestHeader} from '@tanstack/react-start/server';
 import * as React from 'react';
 import {
   ThemeProvider,
-  type SystemTheme,
-  type ThemeName,
+  type LightOrDark,
+  type WithSystem,
 } from 'ssr-themes';
 import {
   registerTheme,
@@ -22,17 +22,13 @@ import {
 import appCss from '../styles.css?url';
 
 type ThemeStaticData = {
-  theme?: SystemTheme;
+  theme?: LightOrDark;
 };
-
-type InitialTheme = ThemeName<SystemTheme>;
 
 const getInitialTheme = createServerFn({
   method: 'GET',
 }).handler(() =>
-  themeFromCookieHeader<SystemTheme>(
-    getRequestHeader('cookie'),
-  ),
+  themeFromCookieHeader(getRequestHeader('cookie')),
 );
 
 function RootDocument({
@@ -41,18 +37,13 @@ function RootDocument({
   initialTheme,
 }: {
   children: React.ReactNode;
-  forcedTheme?: SystemTheme;
-  initialTheme?: InitialTheme;
+  forcedTheme?: LightOrDark;
+  initialTheme?: WithSystem<LightOrDark>;
 }) {
-  const theme: SystemTheme | undefined =
-    initialTheme && initialTheme !== 'system'
-      ? initialTheme
-      : undefined;
-
   return (
     <html
       suppressHydrationWarning
-      {...registerTheme({theme})}
+      {...registerTheme({initialTheme})}
     >
       <head>
         <HeadContent />
@@ -75,7 +66,7 @@ function RootComponent() {
   const matches = useMatches();
   const {initialTheme} = Route.useLoaderData();
   const forcedTheme = React.useMemo(() => {
-    return matches.reduce<SystemTheme | undefined>(
+    return matches.reduce<LightOrDark | undefined>(
       (theme, match) => {
         const staticData = match.staticData as
           | ThemeStaticData
@@ -100,6 +91,8 @@ export const Route = createRootRoute({
   loader: async () => ({
     initialTheme: await getInitialTheme(),
   }),
+  staleTime: Infinity,
+  shouldReload: false,
   head: () => ({
     meta: [
       {charSet: 'utf-8'},

@@ -10,33 +10,44 @@
 
 import {Route as rootRouteImport} from './routes/__root';
 import {Route as IndexRouteImport} from './routes/index';
+import {Route as ApiInsightsSplatRouteImport} from './routes/api/insights/$';
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any);
+const ApiInsightsSplatRoute =
+  ApiInsightsSplatRouteImport.update({
+    id: '/api/insights/$',
+    path: '/api/insights/$',
+    getParentRoute: () => rootRouteImport,
+  } as any);
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute;
+  '/api/insights/$': typeof ApiInsightsSplatRoute;
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute;
+  '/api/insights/$': typeof ApiInsightsSplatRoute;
 }
 export interface FileRoutesById {
   '__root__': typeof rootRouteImport;
   '/': typeof IndexRoute;
+  '/api/insights/$': typeof ApiInsightsSplatRoute;
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath;
-  fullPaths: '/';
+  fullPaths: '/' | '/api/insights/$';
   fileRoutesByTo: FileRoutesByTo;
-  to: '/';
-  id: '__root__' | '/';
+  to: '/' | '/api/insights/$';
+  id: '__root__' | '/' | '/api/insights/$';
   fileRoutesById: FileRoutesById;
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute;
+  ApiInsightsSplatRoute: typeof ApiInsightsSplatRoute;
 }
 
 declare module '@tanstack/react-router' {
@@ -48,11 +59,19 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport;
       parentRoute: typeof rootRouteImport;
     };
+    '/api/insights/$': {
+      id: '/api/insights/$';
+      path: '/api/insights/$';
+      fullPath: '/api/insights/$';
+      preLoaderRoute: typeof ApiInsightsSplatRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  ApiInsightsSplatRoute: ApiInsightsSplatRoute,
 };
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
