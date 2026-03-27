@@ -6,7 +6,7 @@ import {
 } from './util';
 
 test.describe('system theme test-suite', () => {
-  function testBaseTheme(
+  function testSystemTheme(
     pagePath: string,
     preferredColorScheme: 'light' | 'dark',
     expectedTheme: string,
@@ -33,6 +33,6 @@ test.describe('system theme test-suite', () => {
   }
 
   // Test if preferred-colorscheme works
-  testBaseTheme('/', 'light', 'light');
-  testBaseTheme('/', 'dark', 'dark');
+  testSystemTheme('/', 'light', 'light');
+  testSystemTheme('/', 'dark', 'dark');
 });
