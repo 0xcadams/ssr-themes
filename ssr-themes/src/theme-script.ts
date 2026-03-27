@@ -1,24 +1,15 @@
 import {script} from './script';
 import type {
-  SystemTheme,
-  SystemThemeDefinition,
-  ThemeName,
-  ThemeScriptOptions,
+  LightOrDark,
+  LightOrDarkTuple,
+  ThemeOptions,
 } from './types';
 
-const defaultThemes = [
-  'dark',
-  'light',
-] as const satisfies SystemThemeDefinition;
-
 export const themeScript = <
-  TTheme extends string = SystemTheme,
+  TTheme extends string = LightOrDark,
   TEnableSystem extends boolean = true,
 >(
-  options: ThemeScriptOptions<
-    TTheme,
-    TEnableSystem
-  > = {},
+  options: ThemeOptions<TTheme, TEnableSystem> = {},
 ) => {
   const {
     attribute = 'class',
@@ -26,18 +17,18 @@ export const themeScript = <
     defaultTheme,
     enableColorScheme = true,
     forcedTheme,
-    themes = defaultThemes,
+    themes = [
+      'dark',
+      'light',
+    ] as const satisfies LightOrDarkTuple,
     value,
     enableSystem,
   } = options;
 
-  const enableSystemValue = (enableSystem ??
-    true) as TEnableSystem;
+  const enableSystemValue = enableSystem ?? true;
   const resolvedDefaultTheme =
     defaultTheme ??
-    ((enableSystemValue
-      ? 'system'
-      : 'light') as ThemeName<TTheme, TEnableSystem>);
+    (enableSystemValue ? 'system' : 'light');
   const cookieName = cookie?.name ?? 'theme';
   const scriptArgs = JSON.stringify([
     attribute,

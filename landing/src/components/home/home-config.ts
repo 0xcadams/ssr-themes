@@ -93,14 +93,14 @@ export const frameworks = [
   {
     value: 'next',
     label: 'Next.js',
-    secondaryTitle: 'SSR / RSC support',
+    secondaryTitle: 'RSC support',
     secondaryDescription:
       'Read cookies on the server and hydrate the initial theme.',
   },
   {
     value: 'other',
     label: 'Other',
-    secondaryTitle: 'SSR cookie parsing',
+    secondaryTitle: 'SSR cookies',
     secondaryDescription:
       'Parse a raw Cookie header and pre-set the <html> theme.',
   },

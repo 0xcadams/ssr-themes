@@ -71,7 +71,7 @@ const HelperComponent = ({
     theme,
     forcedTheme,
     resolvedTheme,
-    systemTheme,
+    colorScheme,
   } = useTheme<string, boolean>();
 
   React.useEffect(() => {
@@ -87,7 +87,7 @@ const HelperComponent = ({
       <p data-testid="resolvedTheme">
         {resolvedTheme}
       </p>
-      <p data-testid="systemTheme">{systemTheme}</p>
+      <p data-testid="colorScheme">{colorScheme}</p>
     </>
   );
 };
@@ -175,7 +175,7 @@ describe('defaultTheme', () => {
       wrapper: makeWrapper({}),
     });
     expect(result.current.theme).toBe('system');
-    expect(result.current.systemTheme).toBe('light');
+    expect(result.current.colorScheme).toBe('light');
     expect(result.current.resolvedTheme).toBe('light');
   });
 
@@ -513,7 +513,7 @@ describe('system theme', () => {
     });
 
     expect(result.current.theme).toBe('system');
-    expect(result.current.systemTheme).toBe('dark');
+    expect(result.current.colorScheme).toBe('dark');
     expect(result.current.resolvedTheme).toBe('dark');
     expect(result.current.forcedTheme).toBeUndefined();
   });
@@ -539,7 +539,7 @@ describe('system theme', () => {
       screen.getByTestId('resolvedTheme').textContent,
     ).toBe('light');
     expect(
-      screen.getByTestId('systemTheme').textContent,
+      screen.getByTestId('colorScheme').textContent,
     ).toBe('dark');
   });
 
@@ -554,7 +554,7 @@ describe('system theme', () => {
     });
 
     expect(result.current.theme).toBe('light');
-    expect(result.current.systemTheme).toBeUndefined();
+    expect(result.current.colorScheme).toBeUndefined();
     expect(result.current.resolvedTheme).toBe('light');
     expect(result.current.forcedTheme).toBeUndefined();
   });

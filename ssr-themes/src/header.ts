@@ -1,11 +1,11 @@
 import type {
-  SystemTheme,
-  ThemeName,
+  LightOrDark,
+  WithSystem,
   ThemeOptions,
 } from './types';
 
 type ThemeFromCookieHeaderOptions<
-  TTheme extends string = SystemTheme,
+  TTheme extends string = LightOrDark,
   TEnableSystem extends boolean = true,
 > = {
   cookieName?: string;
@@ -16,7 +16,7 @@ type ThemeFromCookieHeaderOptions<
 };
 
 export const themeFromCookieHeader = <
-  TTheme extends string = SystemTheme,
+  TTheme extends string = LightOrDark,
   TEnableSystem extends boolean = true,
 >(
   cookieHeader: string | null | undefined,
@@ -24,7 +24,7 @@ export const themeFromCookieHeader = <
     TTheme,
     TEnableSystem
   > = {},
-): ThemeName<TTheme, TEnableSystem> | undefined => {
+): WithSystem<TTheme, TEnableSystem> | undefined => {
   if (!cookieHeader) return undefined;
 
   const cookieName = options.cookieName ?? 'theme';
@@ -51,7 +51,7 @@ export const themeFromCookieHeader = <
       return undefined;
     }
 
-    return value as ThemeName<TTheme, TEnableSystem>;
+    return value as WithSystem<TTheme, TEnableSystem>;
   }
 
   return undefined;

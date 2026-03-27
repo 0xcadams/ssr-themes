@@ -60,22 +60,17 @@ export default async function RootLayout({
 }: {
   children: ReactNode;
 }) {
-  const themeCookie = (await cookies()).get('theme')?.value;
-  const initialTheme =
-    themeCookie === 'dark' ||
-    themeCookie === 'light' ||
-    themeCookie === 'system'
-      ? themeCookie
-      : undefined;
-  const theme =
-    initialTheme === 'dark' || initialTheme === 'light'
-      ? initialTheme
-      : undefined;
+  const themeCookie = (await cookies()).get(
+    'theme',
+  )?.value;
+  const initialTheme = themeCookie
+    ? (themeCookie as 'light' | 'dark' | 'system')
+    : undefined;
 
   return (
     <html
       suppressHydrationWarning
-      {...registerTheme({theme})}
+      {...registerTheme({initialTheme})}
     >
       <head>
         <Script id="ssr-themes" strategy="beforeInteractive">
@@ -110,19 +105,29 @@ import {
   themeScript,
 } from 'ssr-themes/server';
 
-const getInitialTheme = createServerFn({method: 'GET'}).handler(
-  () => themeFromCookieHeader(getRequestHeader('cookie')),
+const getInitialTheme = createServerFn({
+  method: 'GET',
+}).handler(() =>
+  themeFromCookieHeader(getRequestHeader('cookie')),
 );
+
+export const Route = createRootRoute({
+  loader: async () => ({
+    initialTheme: await getInitialTheme(),
+  }),
+  staleTime: Infinity,
+  shouldReload: false,
+  component: RootComponent,
+});
 
 function RootComponent() {
   const {initialTheme} = Route.useLoaderData();
-  const theme =
-    initialTheme && initialTheme !== 'system'
-      ? initialTheme
-      : undefined;
 
   return (
-    <html suppressHydrationWarning {...registerTheme({theme})}>
+    <html
+      suppressHydrationWarning
+      {...registerTheme({initialTheme})}
+    >
       <head>
         <HeadContent />
       </head>
@@ -136,15 +141,6 @@ function RootComponent() {
     </html>
   );
 }
-
-export const Route = createRootRoute({
-  loader: async () => ({
-    initialTheme: await getInitialTheme(),
-  }),
-  staleTime: Infinity,
-  shouldReload: false,
-  component: RootComponent,
-});
 `,
     secondary: `// src/routes/dark.tsx
 import {createFileRoute} from '@tanstack/react-router';
@@ -156,13 +152,13 @@ export const Route = createFileRoute('/dark')({
 
 // src/routes/__root.tsx
 import {useMatches} from '@tanstack/react-router';
-import {ThemeProvider, type SystemTheme} from 'ssr-themes';
+import {ThemeProvider, type LightOrDark} from 'ssr-themes';
 
 const matches = useMatches();
-const forcedTheme = matches.reduce<SystemTheme | undefined>(
+const forcedTheme = matches.reduce<LightOrDark | undefined>(
   (theme, match) => {
     const staticData = match.staticData as
-      | {theme?: SystemTheme}
+      | {theme?: LightOrDark}
       | undefined;
     return staticData?.theme ?? theme;
   },
@@ -198,8 +194,8 @@ export function App() {
 import {registerTheme, themeFromCookieHeader} from 'ssr-themes/server';
 
 export function handleRequest(request: Request) {
-  const theme = themeFromCookieHeader(request.headers.get('cookie'));
-  const htmlProps = registerTheme({theme});
+  const initialTheme = themeFromCookieHeader(request.headers.get('cookie'));
+  const htmlProps = registerTheme({initialTheme});
 
   // Spread htmlProps on <html> when rendering
   return <html suppressHydrationWarning {...htmlProps} />;

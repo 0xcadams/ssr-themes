@@ -10,7 +10,7 @@ import {createServerFn} from '@tanstack/react-start';
 import {getRequestHeader} from '@tanstack/react-start/server';
 import {
   ThemeProvider,
-  type ThemeName,
+  type WithSystem,
 } from 'ssr-themes';
 import {
   registerTheme,
@@ -28,7 +28,7 @@ const themes = [
 ] as const;
 
 type AppTheme = (typeof themes)[number];
-type InitialTheme = ThemeName<AppTheme>;
+type InitialTheme = WithSystem<AppTheme>;
 
 const getInitialTheme = createServerFn({
   method: 'GET',

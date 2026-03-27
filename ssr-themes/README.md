@@ -36,7 +36,7 @@ There are two pieces:
 
 ### TanStack Start
 
-In TanStack Start, prefer `ScriptOnce` for `themeScript()` instead of `head.scripts`.
+In TanStack Start, use `ScriptOnce` for `themeScript()` (instead of `head.scripts`).
 
 ```tsx
 // src/routes/__root.tsx
@@ -51,8 +51,8 @@ import {createServerFn} from '@tanstack/react-start';
 import {getRequestHeader} from '@tanstack/react-start/server';
 import {
   ThemeProvider,
-  type ThemeName,
-  type SystemTheme,
+  type WithSystem,
+  type Li,
 } from 'ssr-themes';
 import {
   registerTheme,
@@ -60,42 +60,37 @@ import {
   themeScript,
 } from 'ssr-themes/server';
 
-type InitialTheme = ThemeName<SystemTheme>;
-
 const getInitialTheme = createServerFn({
   method: 'GET',
 }).handler(() =>
-  themeFromCookieHeader<SystemTheme>(
-    getRequestHeader('cookie'),
-  ),
+  themeFromCookieHeader(getRequestHeader('cookie')),
 );
+
+export const Route = createRootRoute({
+  loader: async () => ({
+    initialTheme: await getInitialTheme(),
+  }),
+  // only load the theme from the cookie in SSR
+  staleTime: Infinity,
+  shouldReload: false,
+  component: RootComponent,
+});
 
 function RootComponent() {
   const {initialTheme} = Route.useLoaderData();
-  const theme =
-    initialTheme && initialTheme !== 'system'
-      ? initialTheme
-      : undefined;
 
   return (
     <html
       lang="en"
       suppressHydrationWarning
-      {...registerTheme({theme})}
+      {...registerTheme({initialTheme})}
     >
       <head>
         <HeadContent />
       </head>
       <body>
-        <ThemeProvider
-          attribute="class"
-          initialTheme={initialTheme as InitialTheme}
-        >
-          <ScriptOnce
-            children={themeScript({
-              attribute: 'class',
-            })}
-          />
+        <ThemeProvider initialTheme={initialTheme}>
+          <ScriptOnce children={themeScript()} />
           <Outlet />
         </ThemeProvider>
         <Scripts />
@@ -103,15 +98,6 @@ function RootComponent() {
     </html>
   );
 }
-
-export const Route = createRootRoute({
-  loader: async () => ({
-    initialTheme: await getInitialTheme(),
-  }),
-  staleTime: Infinity,
-  shouldReload: false,
-  component: RootComponent,
-});
 ```
 
 ### Next.js App Router
@@ -119,7 +105,7 @@ export const Route = createRootRoute({
 Inject `themeScript()` before hydration and wrap your app with `ThemeProvider`.
 In Next.js, the equivalent of TanStack's `ScriptOnce` pattern is `next/script` with `strategy="beforeInteractive"`.
 
-In Server Components, import the provider from `ssr-themes/client` so it doesn't resolve to the `react-server` export.
+In Server Components, import the provider from `ssr-themes/client` so it doesn't resolve to the `react-server` export, and includes the `'use client'` directive.
 
 ```tsx
 // app/layout.tsx
@@ -137,23 +123,17 @@ export default async function RootLayout({
 }: {
   children: ReactNode;
 }) {
-  const cookieStore = await cookies();
-  const themeCookie = cookieStore.get('theme')?.value;
-  const initialTheme =
-    themeCookie === 'dark' ||
-    themeCookie === 'light' ||
-    themeCookie === 'system'
-      ? themeCookie
-      : undefined;
-  const theme =
-    initialTheme === 'dark' || initialTheme === 'light'
-      ? initialTheme
-      : undefined;
+  const themeCookie = (await cookies()).get(
+    'theme',
+  )?.value;
+  const initialTheme = themeCookie
+    ? (themeCookie as 'light' | 'dark' | 'system')
+    : undefined;
 
   return (
     <html
       suppressHydrationWarning
-      {...registerTheme({theme})}
+      {...registerTheme({initialTheme})}
     >
       <head>
         <Script
@@ -175,7 +155,7 @@ export default async function RootLayout({
 
 If you render theme-dependent UI during SSR, pass the cookie theme to `initialTheme` and the resolved non-`system` theme to:
 
-- `registerTheme({theme})` on `<html>`
+- `registerTheme({initialTheme})` on `<html>`
 - `initialTheme={initialTheme}` on `<ThemeProvider />`
 
 ## Styling
@@ -225,7 +205,7 @@ Common props:
 
 ### useTheme()
 
-Returns `{theme, setTheme, forcedTheme, resolvedTheme, systemTheme, themes}`.
+Returns `{theme, setTheme, forcedTheme, resolvedTheme, colorScheme, themes}`.
 
 ### themeScript(options)
 

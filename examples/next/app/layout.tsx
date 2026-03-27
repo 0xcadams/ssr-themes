@@ -20,23 +20,17 @@ export default async function RootLayout({
 }: {
   children: ReactNode;
 }) {
-  const cookieStore = await cookies();
-  const themeCookie = cookieStore.get('theme')?.value;
-  const initialTheme =
-    themeCookie === 'dark' ||
-    themeCookie === 'light' ||
-    themeCookie === 'system'
-      ? themeCookie
-      : undefined;
-  const theme =
-    initialTheme === 'dark' || initialTheme === 'light'
-      ? initialTheme
-      : undefined;
+  const themeCookie = (await cookies()).get(
+    'theme',
+  )?.value;
+  const initialTheme = themeCookie
+    ? (themeCookie as 'light' | 'dark' | 'system')
+    : undefined;
 
   return (
     <html
       suppressHydrationWarning
-      {...registerTheme({theme})}
+      {...registerTheme({initialTheme})}
     >
       <head>
         <link
