@@ -4,24 +4,69 @@ import * as React from 'react';
 import type {
   Attribute,
   CookieOptions,
-  WithSystem,
-  ThemeProviderProps,
-  ThemeResult,
   LightOrDark,
   LightOrDarkTuple,
+  ThemeOptions,
+  WithSystem,
 } from './types';
+
+export interface ThemeResult<
+  TTheme extends string = LightOrDark,
+  TEnableSystem extends boolean = true,
+> {
+  /** List of all available theme names */
+  themes: ReadonlyArray<
+    WithSystem<TTheme, TEnableSystem>
+  >;
+  /** Forced theme name for the current page */
+  forcedTheme?: TTheme | undefined;
+  /** Update the theme */
+  setTheme: React.Dispatch<
+    React.SetStateAction<
+      WithSystem<TTheme, TEnableSystem>
+    >
+  >;
+  /** Active theme name */
+  theme?:
+    | WithSystem<TTheme, TEnableSystem>
+    | undefined;
+  /** If `enableSystem` is true and the active theme is "system", this returns whether the system preference resolved to "dark" or "light". Otherwise, identical to `theme` */
+  resolvedTheme?:
+    | Exclude<TTheme, 'system'>
+    | undefined;
+  /** If enableSystem is true, returns the System theme preference ("dark" or "light"), regardless what the active theme is */
+  colorScheme?: TEnableSystem extends true
+    ? LightOrDark
+    : undefined;
+}
+
+export interface ThemeProviderProps<
+  TTheme extends string = LightOrDark,
+  TEnableSystem extends boolean = true,
+> extends ThemeOptions<TTheme, TEnableSystem> {
+  children?: React.ReactNode | undefined;
+  /** Disable all CSS transitions when switching themes */
+  disableTransitionOnChange?: boolean | undefined;
+  /** Theme name to use for server rendering */
+  initialTheme?:
+    | WithSystem<TTheme, TEnableSystem>
+    | undefined;
+  /** Nonce string to pass to the inline style elements for CSP headers */
+  nonce?: string;
+}
 
 const colorSchemes = ['light', 'dark'];
 const MEDIA = '(prefers-color-scheme: dark)';
 const isServer = typeof window === 'undefined';
+type ThemeContextValue = ThemeResult<string, boolean>;
+
 const ThemeContext = React.createContext<
-  ThemeResult<string, boolean> | undefined
+  ThemeContextValue | undefined
 >(undefined);
-const defaultContext: ThemeResult<LightOrDark, true> =
-  {
-    setTheme: _ => {},
-    themes: [] as WithSystem<LightOrDark, true>[],
-  };
+const defaultContext: ThemeContextValue = {
+  setTheme: _ => {},
+  themes: [],
+};
 
 const defaultCookieOptions: CookieOptions = {
   path: '/',
@@ -106,7 +151,7 @@ export const useTheme = <
   TEnableSystem extends boolean = true,
 >() =>
   (React.useContext(ThemeContext) ??
-    defaultContext) as ThemeResult<
+    defaultContext) as unknown as ThemeResult<
     TTheme,
     TEnableSystem
   >;
@@ -429,7 +474,9 @@ const Theme = <
 
   return (
     <ThemeContext.Provider
-      value={providerValue as unknown as ThemeResult}
+      value={
+        providerValue as unknown as ThemeContextValue
+      }
     >
       {children}
     </ThemeContext.Provider>
@@ -507,9 +554,5 @@ export type {
   ThemeHtmlProps,
   WithSystem,
   ThemeOptions,
-  ThemeProviderProps,
-  ThemeResult,
   LightOrDark,
 } from './types';
-export {themeScript} from './theme-script';
-export {registerTheme} from './register-theme';

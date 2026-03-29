@@ -1,14 +1,12 @@
-export {themeScript} from './theme-script';
 export {themeFromCookieHeader} from './header';
 export {registerTheme} from './register-theme';
+export {themeScript} from './theme-script';
 export type {
   Attribute,
   CookieOptions,
+  LightOrDark,
   RegisterThemeOptions,
-  WithSystem,
   ThemeHtmlProps,
   ThemeOptions,
-  ThemeProviderProps,
-  ThemeResult,
-  LightOrDark,
+  WithSystem,
 } from './types';

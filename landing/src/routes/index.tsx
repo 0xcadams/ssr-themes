@@ -1,6 +1,6 @@
 import {createFileRoute} from '@tanstack/react-router';
-import {useTheme} from 'ssr-themes';
 import {useEffect, useState} from 'react';
+import {useTheme} from 'ssr-themes/react';
 
 import {CodeSnippetCard} from '@/components/home/code-snippet-card';
 import {
@@ -140,14 +140,17 @@ function IndexPage() {
           <div className="grid items-start gap-14 lg:grid-cols-[1.05fr_0.95fr] lg:gap-20">
             <section className="min-w-0 space-y-6 animate-rise animate-delay-2">
               <h1 className="font-display text-4xl leading-tight text-foreground sm:text-5xl">
-                Perfect theming for any React framework
+                Framework-agnostic SSR theming
               </h1>
               <p className="max-w-xl text-lg text-muted-foreground">
-                SSR-friendly theming for React using
-                cookies - with system preference,
-                cross-tab sync, no flash, and a
-                strongly typed{' '}
+                Server helpers for any framework, plus
+                a typed{' '}
                 <InlineCode>useTheme</InlineCode> hook.
+                Import the React bindings from{' '}
+                <InlineCode>
+                  ssr-themes/react
+                </InlineCode>
+                .
               </p>
               <div className="space-y-6">
                 <div className="flex flex-col gap-3">

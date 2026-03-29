@@ -111,9 +111,9 @@ bunx playwright test --list test/system-theme.test.ts
 ### React / SSR / Theme Conventions
 
 - Keep `'use client';` only in files that truly need client execution.
-- For Next.js Server Components, import the provider from `ssr-themes/client` and server helpers from `ssr-themes/server`.
+- For Next.js Server Components, import the provider from `ssr-themes/react` and shared SSR helpers from `ssr-themes`.
 - When theme logic mutates `<html>`, keep `suppressHydrationWarning` on `<html>`.
-- If you customize `themes`, `attribute`, `value`, or `cookie`, pass the same options to both `themeScript()` and `ThemeProvider`.
+- If you customize `themes`, `attribute`, `valueMap`, or `cookie`, pass the same options to both `themeScript()` and `ThemeProvider`.
 - If SSR output depends on the current theme, read cookies on the server and pass the value through `registerTheme(...)` and `initialTheme`.
 - Keep theme changes hydration-safe and cookie-backed.
 

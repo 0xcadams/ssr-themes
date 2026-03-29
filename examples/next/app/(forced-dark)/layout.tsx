@@ -1,5 +1,5 @@
 import type {ReactNode} from 'react';
-import {ThemeProvider} from 'ssr-themes/client';
+import {ThemeProvider} from 'ssr-themes/react';
 
 export default function ForcedDarkLayout({
   children,

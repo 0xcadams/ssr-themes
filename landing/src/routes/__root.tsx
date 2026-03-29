@@ -8,12 +8,12 @@ import {
 } from '@tanstack/react-router';
 import {createServerFn} from '@tanstack/react-start';
 import {getRequestHeader} from '@tanstack/react-start/server';
-import {ThemeProvider} from 'ssr-themes';
 import {
   registerTheme,
   themeFromCookieHeader,
   themeScript,
-} from 'ssr-themes/server';
+} from 'ssr-themes';
+import {ThemeProvider} from 'ssr-themes/react';
 import faviconUrl from '../assets/favicon.svg?url';
 import appCss from '../styles.css?url';
 
@@ -80,7 +80,7 @@ export const Route = createRootRoute({
       {
         name: 'description',
         content:
-          'SSR-friendly theming for React using cookies - with system preference, cross-tab sync, no flash, and a strongly typed useTheme hook.',
+          'Framework-agnostic SSR theming with cookies, system preference, cross-tab sync, no flash, and React bindings in ssr-themes/react.',
       },
     ],
     links: [

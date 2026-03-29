@@ -26,8 +26,8 @@ const frameworkSnippets: FrameworkSnippets = {
     primary: `// app/layout.tsx
 import Script from 'next/script';
 import type {ReactNode} from 'react';
-import {ThemeProvider} from 'ssr-themes/client';
-import {themeScript} from 'ssr-themes/server';
+import {themeScript} from 'ssr-themes';
+import {ThemeProvider} from 'ssr-themes/react';
 
 export default function RootLayout({
   children,
@@ -52,8 +52,8 @@ export default function RootLayout({
 import {cookies} from 'next/headers';
 import Script from 'next/script';
 import type {ReactNode} from 'react';
-import {ThemeProvider} from 'ssr-themes/client';
-import {registerTheme, themeScript} from 'ssr-themes/server';
+import {registerTheme, themeScript} from 'ssr-themes';
+import {ThemeProvider} from 'ssr-themes/react';
 import {lightOrDarkWithSystemSchema} from 'ssr-themes/zod';
 
 export default async function RootLayout({
@@ -101,12 +101,12 @@ import {
   Scripts,
   createRootRoute,
 } from '@tanstack/react-router';
-import {ThemeProvider} from 'ssr-themes';
 import {
   registerTheme,
   themeFromCookieHeader,
   themeScript,
-} from 'ssr-themes/server';
+} from 'ssr-themes';
+import {ThemeProvider} from 'ssr-themes/react';
 
 const getInitialTheme = createServerFn({
   method: 'GET',
@@ -155,7 +155,8 @@ export const Route = createFileRoute('/dark')({
 
 // src/routes/__root.tsx
 import {useMatches} from '@tanstack/react-router';
-import {ThemeProvider, type LightOrDark} from 'ssr-themes';
+import type {LightOrDark} from 'ssr-themes';
+import {ThemeProvider} from 'ssr-themes/react';
 
 const matches = useMatches();
 const forcedTheme = matches.reduce<LightOrDark | undefined>(
@@ -173,7 +174,7 @@ const forcedTheme = matches.reduce<LightOrDark | undefined>(
   },
   other: {
     primary: `// root.tsx
-import {themeScript} from 'ssr-themes/server';
+import {themeScript} from 'ssr-themes';
 
 const html = \`<html>
   <head>
@@ -183,7 +184,7 @@ const html = \`<html>
 </html>\`;
 
 // app.tsx
-import {ThemeProvider} from 'ssr-themes';
+import {ThemeProvider} from 'ssr-themes/react';
 
 export function App() {
   return (
@@ -194,7 +195,7 @@ export function App() {
 }
 `,
     secondary: `// Parse cookies + pre-set <html>
-import {registerTheme, themeFromCookieHeader} from 'ssr-themes/server';
+import {registerTheme, themeFromCookieHeader} from 'ssr-themes';
 
 export function handleRequest(request: Request) {
   const initialTheme = themeFromCookieHeader(request.headers.get('cookie'));

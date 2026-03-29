@@ -2,10 +2,7 @@ import type {Metadata} from 'next';
 import {cookies} from 'next/headers';
 import Script from 'next/script';
 import type {ReactNode} from 'react';
-import {
-  registerTheme,
-  themeScript,
-} from 'ssr-themes/server';
+import {registerTheme, themeScript} from 'ssr-themes';
 import {lightOrDarkWithSystemSchema} from 'ssr-themes/zod';
 
 import './globals.css';

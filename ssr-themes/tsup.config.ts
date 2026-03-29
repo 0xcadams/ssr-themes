@@ -2,8 +2,8 @@ import {defineConfig} from 'tsup';
 
 export default defineConfig({
   entry: [
-    'src/index.tsx',
-    'src/server.ts',
+    'src/index.ts',
+    'src/react.tsx',
     'src/zod.ts',
   ],
   sourcemap: false,
