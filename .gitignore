@@ -1,10 +1,12 @@
 .DS_Store
 node_modules/
 dist/
+.svelte-kit/
 .next/
 .yalc/
 yalc.lock
 .idea/
+build/
 coverage/
 playwright-report/
 test-results/

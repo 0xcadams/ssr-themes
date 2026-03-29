@@ -144,8 +144,17 @@ function IndexPage() {
                 theming
               </h1>
               <p className="max-w-xl text-lg text-muted-foreground">
-                Typescript-friendly themes for multiple
-                frameworks.
+                Server helpers for any framework, plus
+                first-party React and Svelte bindings.
+                Import{' '}
+                <InlineCode>
+                  ssr-themes/react
+                </InlineCode>{' '}
+                or{' '}
+                <InlineCode>
+                  ssr-themes/svelte
+                </InlineCode>
+                .
               </p>
               <div className="space-y-6">
                 <div className="flex flex-col gap-3">
@@ -215,7 +224,7 @@ function IndexPage() {
                 <>
                   Drop in{' '}
                   <InlineCode>
-                    themeScript()
+                    ThemeScript / themeScript()
                   </InlineCode>{' '}
                   +{' '}
                   <InlineCode>

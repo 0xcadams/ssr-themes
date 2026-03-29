@@ -2,6 +2,7 @@ import {codeToHtml} from 'shiki';
 
 export type FrameworkId =
   | 'next'
+  | 'svelte'
   | 'tanstack'
   | 'other';
 
@@ -88,6 +89,82 @@ export default async function RootLayout({
     </html>
   );
 }
+`,
+  },
+  svelte: {
+    primary: `// src/app.html
+<html lang="en" %ssr-themes.html-attrs%>
+
+// src/hooks.server.ts
+import type {Handle} from '@sveltejs/kit';
+import {
+  renderThemeAttributes,
+  type LightOrDark,
+  type WithSystem,
+} from 'ssr-themes';
+
+const parseThemeCookie = (
+  value: string | undefined,
+): WithSystem<LightOrDark> | undefined => {
+  if (value === 'system' || value === 'dark' || value === 'light') {
+    return value;
+  }
+
+  return undefined;
+};
+
+export const handle: Handle = async ({event, resolve}) => {
+  const initialTheme = parseThemeCookie(
+    event.cookies.get('theme'),
+  );
+
+  return resolve(event, {
+    transformPageChunk: ({html}) =>
+      html.replace(
+        '%ssr-themes.html-attrs%',
+        renderThemeAttributes({attribute: 'class', initialTheme}),
+      ),
+  });
+};
+
+// src/routes/+layout.svelte
+<script lang="ts">
+  import {
+    ThemeProvider,
+    ThemeScript,
+  } from 'ssr-themes/svelte';
+  import type {LayoutProps} from './$types';
+
+  let {data, children}: LayoutProps = $props();
+</script>
+
+<ThemeScript />
+
+<ThemeProvider initialTheme={data.initialTheme}>
+  {@render children()}
+</ThemeProvider>
+`,
+    secondary: `// src/routes/dark/+page.ts
+import type {PageLoad} from './$types';
+
+export const load: PageLoad = () => ({
+  forcedTheme: 'dark',
+});
+
+// src/routes/+layout.svelte
+<script lang="ts">
+  import {page} from '$app/state';
+  import type {LightOrDark} from 'ssr-themes';
+  import {ThemeProvider} from 'ssr-themes/svelte';
+
+  let forcedTheme = $derived(
+    page.data.forcedTheme as LightOrDark | undefined,
+  );
+</script>
+
+<ThemeProvider forcedTheme={forcedTheme}>
+  {@render children()}
+</ThemeProvider>
 `,
   },
   tanstack: {
@@ -208,9 +285,12 @@ export function handleRequest(request: Request) {
   },
 };
 
-const highlightCode = (code: string) =>
+const highlightCode = (
+  code: string,
+  framework: FrameworkId,
+) =>
   codeToHtml(code, {
-    lang: 'tsx',
+    lang: framework === 'svelte' ? 'svelte' : 'tsx',
     themes: {
       light: 'vitesse-light',
       dark: 'vitesse-dark',
@@ -231,9 +311,11 @@ const highlightSnippets = async () => {
     entries.map(async ([framework, snippets]) => {
       const primaryHtml = await highlightCode(
         snippets.primary,
+        framework,
       );
       const secondaryHtml = await highlightCode(
         snippets.secondary,
+        framework,
       );
       return [
         framework,

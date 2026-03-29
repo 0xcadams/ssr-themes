@@ -11,6 +11,7 @@
 - `ssr-themes/` - published library source, Vite library build, Vitest tests.
 - `landing/` - TanStack Start marketing/docs site.
 - `examples/next/` - Next.js App Router example used by Playwright.
+- `examples/svelte/` - SvelteKit example app.
 - `examples/tanstack-start/` - TanStack Start example.
 - `test/` - root Playwright specs.
 

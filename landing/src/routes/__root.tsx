@@ -80,7 +80,7 @@ export const Route = createRootRoute({
       {
         name: 'description',
         content:
-          'Framework-agnostic, SSR-friendly theming with system preference, cross-tab sync, and no flash.',
+          'Framework-agnostic SSR theming with cookies, system preference, cross-tab sync, no flash, plus first-party React and Svelte bindings.',
       },
     ],
     links: [

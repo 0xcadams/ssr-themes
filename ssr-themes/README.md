@@ -1,13 +1,13 @@
 # ssr-themes [![Version](https://img.shields.io/npm/v/ssr-themes.svg?colorB=green)](https://www.npmjs.com/package/ssr-themes)
 
-Framework-agnostic, SSR-friendly theming.
+Framework-agnostic, SSR-friendly theming with React and Svelte bindings.
 
 - Perfect dark mode with no flashing
 - System setting with `prefers-color-scheme`
 - Themed browser UI with `color-scheme`
 - SSR friendly with cookies
 - Sync theme across tabs
-- Typed `useTheme` hook
+- React hook and Svelte store bindings
 - 1.74 kB hydrated client bundle + 537 B inline theme bootstrap, minified and brotlied
 
 Live demos:
@@ -32,7 +32,7 @@ yarn add ssr-themes
 The API is simple:
 
 1. `themeScript()` from `ssr-themes` runs on the client before hydration and sets the theme on `<html>`, to avoid theme flash on first render.
-2. `<ThemeProvider />` from `ssr-themes/react` keeps the theme cookie + DOM in sync and exposes `useTheme()`.
+2. `<ThemeProvider />` from `ssr-themes/react` or `ssr-themes/svelte` keeps the theme cookie + DOM in sync.
 3. Optionally, `themeFromCookieHeader()` + `registerTheme()` from `ssr-themes` let you pre-render the `<html>` theme during SSR.
 
 ### TanStack Start
@@ -155,6 +155,79 @@ If you render theme-dependent UI during SSR, pass the cookie theme straight thro
 
 Passing `'system'` is fine. In that case, `registerTheme()` leaves the SSR theme attribute alone, and `themeScript()` resolves the active theme before hydration.
 
+### SvelteKit
+
+In SvelteKit, inject the server-rendered `<html>` attributes from `hooks.server.ts`, pass the cookie theme through `+layout.server.ts`, and render `ThemeScript` + `ThemeProvider` from `ssr-themes/svelte` in `+layout.svelte`.
+
+```ts
+// src/hooks.server.ts
+import type {Handle} from '@sveltejs/kit';
+import {
+  renderThemeAttributes,
+  type LightOrDark,
+  type WithSystem,
+} from 'ssr-themes';
+
+const parseThemeCookie = (
+  value: string | undefined,
+): WithSystem<LightOrDark> | undefined => {
+  if (
+    value === 'system' ||
+    value === 'dark' ||
+    value === 'light'
+  ) {
+    return value;
+  }
+
+  return undefined;
+};
+
+export const handle: Handle = async ({
+  event,
+  resolve,
+}) => {
+  const initialTheme = parseThemeCookie(
+    event.cookies.get('theme'),
+  );
+
+  return resolve(event, {
+    transformPageChunk: ({html}) =>
+      html.replace(
+        '%ssr-themes.html-attrs%',
+        renderThemeAttributes({
+          attribute: 'class',
+          initialTheme,
+        }),
+      ),
+  });
+};
+```
+
+Also add the placeholder to `src/app.html`:
+
+```html
+<html lang="en" %ssr-themes.html-attrs%></html>
+```
+
+```svelte
+<!-- src/routes/+layout.svelte -->
+<script lang="ts">
+  import {
+    ThemeProvider,
+    ThemeScript,
+  } from 'ssr-themes/svelte';
+  import type {LayoutProps} from './$types';
+
+  let {data, children}: LayoutProps = $props();
+</script>
+
+<ThemeScript />
+
+<ThemeProvider initialTheme={data.initialTheme}>
+  {@render children()}
+</ThemeProvider>
+```
+
 ## Styling
 
 ### Class-based theming (default)
@@ -186,7 +259,7 @@ All examples use Tailwind v4 with a class-based dark mode.
 
 ### Shared theme options
 
-`ThemeProvider` from `ssr-themes/react` and `themeScript(options)` from `ssr-themes` share the same core theme config.
+`ThemeProvider` from `ssr-themes/react` or `ssr-themes/svelte` and `themeScript(options)` from `ssr-themes` share the same core theme config.
 `registerTheme(options)` overlaps with `attribute`, `valueMap`, and `enableColorScheme`.
 
 Keep overlapping options in sync. If your server HTML, bootstrap script, and hydrated provider use different theme settings, they can disagree during SSR or hydration.
@@ -221,6 +294,33 @@ Returns `{theme, setTheme, forcedTheme, resolvedTheme, colorScheme, themes}`.
 - `colorScheme`: the current system preference (`'light'` or `'dark'`) when `enableSystem` is enabled
 - `themes`: the available themes, plus `'system'` when `enableSystem` is enabled
 
+### ssr-themes/svelte
+
+Svelte bindings for the core SSR helpers.
+
+### ThemeProvider
+
+Uses the same shared theme options as the React provider, plus:
+
+- `initialTheme`: initial theme to use during SSR and hydration; pass the cookie value through directly, including `'system'`
+- `disableTransitionOnChange`: disable CSS transitions during theme changes (default: `true`)
+- `nonce`: nonce for the temporary inline style tag used when transitions are disabled
+
+### ThemeScript
+
+Renders the inline bootstrap script into `<svelte:head>`.
+
+### getTheme()
+
+Returns a context object with readable stores and a setter:
+
+- `theme`
+- `forcedTheme`
+- `resolvedTheme`
+- `colorScheme`
+- `themes`
+- `setTheme(value)`
+
 ### themeScript(options)
 
 Generate the bootstrap script string, which should be inlined in a `script` tag before hydration.
@@ -237,6 +337,10 @@ Server helper that returns props to spread onto your `<html>` during SSR.
 - `enableColorScheme`: same browser `color-scheme` behavior used by `ThemeProvider` / `themeScript()`; only applies when the initial theme is literal `light` or `dark`
 - `className`: extra classes to merge with the theme class
 - `style`: extra styles to merge with the generated `colorScheme` style
+
+### renderThemeAttributes(options)
+
+Serialize the result of `registerTheme(options)` into an HTML attribute string. This is especially useful in frameworks like SvelteKit where you need to inject theme attrs into `<html>` from a server hook or template placeholder.
 
 ### ssr-themes/zod
 

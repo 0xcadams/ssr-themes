@@ -98,6 +98,13 @@ export const frameworks = [
       'Read cookies on the server and hydrate the initial theme.',
   },
   {
+    value: 'svelte',
+    label: 'SvelteKit',
+    secondaryTitle: 'Hook-based SSR attrs',
+    secondaryDescription:
+      'Inject html theme attributes from hooks.server.ts and read stores from getTheme().',
+  },
+  {
     value: 'other',
     label: 'Other',
     secondaryTitle: 'SSR cookies',
