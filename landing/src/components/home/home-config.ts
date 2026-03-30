@@ -109,7 +109,7 @@ export const frameworks = [
     label: 'SvelteKit',
     secondaryTitle: 'Hook-based html SSR',
     secondaryDescription:
-      'Inject html theme attrs from hooks.server.ts and read theme stores from getTheme().',
+      'Inject html attrs and the bootstrap script via app.html + hooks.server.ts, then read theme stores from getTheme().',
   },
   {
     value: 'astro',
