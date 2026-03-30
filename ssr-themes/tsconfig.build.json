@@ -5,5 +5,10 @@
     "types": []
   },
   "include": ["src/**/*.ts", "src/**/*.tsx"],
-  "exclude": ["tests", "dist", "node_modules"]
+  "exclude": [
+    "src/svelte/**/*",
+    "tests",
+    "dist",
+    "node_modules"
+  ]
 }

@@ -1,4 +1,4 @@
-import {z} from 'zod/mini';
+import {z} from 'zod';
 
 export const lightOrDarkSchema = z.enum([
   'dark',

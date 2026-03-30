@@ -297,12 +297,18 @@ export default function Home() {
       lang: 'svelte',
       code: `<!-- src/app.html -->
 <html lang="en" %ssr-themes.html-attrs%>
+  <head>
+    <script id="ssr-themes">
+      %ssr-themes.script%
+    </script>
+  </head>
 
 // src/hooks.server.ts
 import type {Handle} from '@sveltejs/kit';
 import {
   renderThemeAttributes,
   themeFromCookieHeader,
+  themeScript,
 } from 'ssr-themes';
 
 export const handle: Handle = async ({event, resolve}) => {
@@ -313,27 +319,27 @@ export const handle: Handle = async ({event, resolve}) => {
 
   return resolve(event, {
     transformPageChunk: ({html}) =>
-      html.replace(
-        '%ssr-themes.html-attrs%',
-        renderThemeAttributes({
-          attribute: 'class',
-          initialTheme,
-        }),
-      ),
+      html
+        .replace(
+          '%ssr-themes.html-attrs%',
+          renderThemeAttributes({
+            attribute: 'class',
+            initialTheme,
+          }),
+        )
+        .replace(
+          '%ssr-themes.script%',
+          themeScript(),
+        ),
   });
 };
 
 <!-- src/routes/+layout.svelte -->
 <script lang="ts">
-  import {themeScript} from 'ssr-themes';
   import {ThemeProvider} from 'ssr-themes/svelte';
 
   let {data, children} = $props();
 </script>
-
-<svelte:head>
-  <script id="ssr-themes">{themeScript()}</script>
-</svelte:head>
 
 <ThemeProvider initialTheme={data.initialTheme}>
   {@render children()}

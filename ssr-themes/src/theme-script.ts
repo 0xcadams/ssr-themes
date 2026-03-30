@@ -41,5 +41,5 @@ export const themeScript = <
     enableColorScheme,
   ]).slice(1, -1);
 
-  return `(${script.toString()})(${scriptArgs})`;
+  return `(${script.toString().replaceAll(`\n`, '')})(${scriptArgs})`;
 };
