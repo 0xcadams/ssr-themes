@@ -1,5 +1,4 @@
 <script lang="ts">
-  import {themeScript} from 'ssr-themes';
   import {ThemeProvider} from 'ssr-themes/svelte';
 
   import {themeConfig} from '$lib/theme';
@@ -15,11 +14,6 @@
     name="description"
     content="SvelteKit SSR theme switching with cookies."
   />
-  <script id="ssr-themes">
-    {
-      themeScript(themeConfig);
-    }
-  </script>
 </svelte:head>
 
 <ThemeProvider

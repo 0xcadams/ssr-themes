@@ -4,6 +4,8 @@ import {
   getInitialTheme,
   htmlAttributesPlaceholder,
   renderThemeHtmlAttributes,
+  renderThemeScript,
+  themeScriptPlaceholder,
 } from '$lib/theme';
 
 export const handle: Handle = async ({
@@ -17,9 +19,14 @@ export const handle: Handle = async ({
 
   return resolve(event, {
     transformPageChunk: ({html}) =>
-      html.replace(
-        htmlAttributesPlaceholder,
-        renderThemeHtmlAttributes(initialTheme),
-      ),
+      html
+        .replace(
+          htmlAttributesPlaceholder,
+          renderThemeHtmlAttributes(initialTheme),
+        )
+        .replace(
+          themeScriptPlaceholder,
+          renderThemeScript(),
+        ),
   });
 };

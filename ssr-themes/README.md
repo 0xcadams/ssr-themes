@@ -16,6 +16,7 @@ Live demos:
 - Next.js: [https://next.ssr-themes.cadams.io](https://next.ssr-themes.cadams.io)
 - Solid: [https://solid.ssr-themes.cadams.io](https://solid.ssr-themes.cadams.io)
 - Astro: [https://astro.ssr-themes.cadams.io](https://astro.ssr-themes.cadams.io)
+- Svelte: [https://svelte.ssr-themes.cadams.io](https://svelte.ssr-themes.cadams.io)
 
 ## Install
 
@@ -157,65 +158,9 @@ If you render theme-dependent UI during SSR, pass the cookie theme straight thro
 
 Passing `'system'` is fine. In that case, `registerTheme()` leaves the SSR theme attribute alone, and `themeScript()` resolves the active theme before hydration.
 
-### SvelteKit
+### Svelte, Astro, and Others
 
-In SvelteKit, add an HTML attribute placeholder to `src/app.html`, replace it from `hooks.server.ts`, and inline `themeScript()` from `+layout.svelte`.
-
-```html
-<!-- src/app.html -->
-<html lang="en" %ssr-themes.html-attrs%></html>
-```
-
-```ts
-// src/hooks.server.ts
-import type {Handle} from '@sveltejs/kit';
-import {
-  renderThemeAttributes,
-  themeFromCookieHeader,
-} from 'ssr-themes';
-
-export const handle: Handle = async ({
-  event,
-  resolve,
-}) => {
-  const initialTheme = themeFromCookieHeader(
-    event.request.headers.get('cookie'),
-  );
-  event.locals.initialTheme = initialTheme;
-
-  return resolve(event, {
-    transformPageChunk: ({html}) =>
-      html.replace(
-        '%ssr-themes.html-attrs%',
-        renderThemeAttributes({
-          attribute: 'class',
-          initialTheme,
-        }),
-      ),
-  });
-};
-```
-
-```svelte
-<!-- src/routes/+layout.svelte -->
-<script lang="ts">
-  import {themeScript} from 'ssr-themes';
-  import {ThemeProvider} from 'ssr-themes/svelte';
-  import type {LayoutProps} from './$types';
-
-  let {data, children}: LayoutProps = $props();
-</script>
-
-<svelte:head>
-  <script id="ssr-themes">{themeScript()}</script>
-</svelte:head>
-
-<ThemeProvider initialTheme={data.initialTheme}>
-  {@render children()}
-</ThemeProvider>
-```
-
-### Astro
+Svelte should use `renderThemeAttributes()` instead of `registerTheme()` to directly render a string which can be injected onto the `<html>` tag. Check out the [Svelte example](https://github.com/0xcadams/ssr-themes/tree/main/examples/svelte/).
 
 Astro can use the shared SSR helpers directly and hydrate a tiny React island for the client-side toggle. See the [Astro example](https://github.com/0xcadams/ssr-themes/tree/main/examples/astro/) for more information.
 
