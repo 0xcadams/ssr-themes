@@ -5,4 +5,4 @@ node_modules/
 .output/
 dist/
 .nitro/
-.vercel/
+.vercel
