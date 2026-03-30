@@ -1,16 +1,13 @@
+import solid from 'vite-plugin-solid';
 import {defineConfig} from 'vitest/config';
 
 export default defineConfig({
+  plugins: [
+    solid({
+      include: ['tests/solid.test.tsx'],
+    }),
+  ],
   resolve: {
-    alias: [
-      {
-        find: 'solid-js/web',
-        replacement: 'solid-js/web/dist/web.js',
-      },
-      {
-        find: /^solid-js$/,
-        replacement: 'solid-js/dist/solid.js',
-      },
-    ],
+    conditions: ['development', 'browser'],
   },
 });
