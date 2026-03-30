@@ -105,6 +105,13 @@ export const frameworks = [
       'Call theme() in your route and update the cookie-backed theme with setTheme(...).',
   },
   {
+    value: 'astro',
+    label: 'Astro',
+    secondaryTitle: 'React island',
+    secondaryDescription:
+      'Read the cookie in .astro, pre-set <html>, and hydrate a tiny React switcher with client:load.',
+  },
+  {
     value: 'other',
     label: 'Other',
     secondaryTitle: 'SSR cookies',
@@ -136,5 +143,9 @@ export const liveDemoLinks = [
   {
     href: 'https://solid.ssr-themes.cadams.io',
     label: 'Solid',
+  },
+  {
+    href: 'https://astro.ssr-themes.cadams.io',
+    label: 'Astro',
   },
 ] as const;

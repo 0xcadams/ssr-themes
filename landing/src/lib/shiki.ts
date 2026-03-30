@@ -1,16 +1,24 @@
 import {codeToHtml} from 'shiki';
 
 export type FrameworkId =
+  | 'astro'
   | 'next'
   | 'solid'
   | 'tanstack'
   | 'other';
 
+type FrameworkSnippet =
+  | string
+  | {
+      code: string;
+      lang: 'astro' | 'tsx';
+    };
+
 type FrameworkSnippets = Record<
   FrameworkId,
   {
-    primary: string;
-    secondary: string;
+    primary: FrameworkSnippet;
+    secondary: FrameworkSnippet;
   }
 >;
 
@@ -23,6 +31,114 @@ export type HighlightedFrameworkSnippets = Record<
 >;
 
 const frameworkSnippets: FrameworkSnippets = {
+  astro: {
+    primary: {
+      lang: 'astro',
+      code: `---
+import ThemeSwitcher from '../components/theme-switcher';
+import {
+  registerTheme,
+  themeFromCookieHeader,
+  themeScript,
+  type ThemeHtmlProps,
+} from 'ssr-themes';
+
+const initialTheme = themeFromCookieHeader(
+  Astro.request.headers.get('cookie'),
+);
+
+const styleToString = (
+  style?: ThemeHtmlProps['style'],
+) => {
+  if (!style) return undefined;
+
+  const declarations = Object.entries(style)
+    .filter(([, value]) => value !== undefined)
+    .map(([key, value]) => {
+      const property = key.replace(
+        /[A-Z]/g,
+        match => \`-\${match.toLowerCase()}\`,
+      );
+
+      return \`\${property}: \${value}\`;
+    });
+
+  return declarations.length
+    ? declarations.join('; ')
+    : undefined;
+};
+
+const {
+  className,
+  style,
+  ...themeHtmlProps
+} = registerTheme({initialTheme});
+---
+
+<html
+  lang="en"
+  class={className}
+  style={styleToString(style)}
+  {...themeHtmlProps}
+>
+  <head>
+    <script
+      id="ssr-themes"
+      is:inline
+      set:html={themeScript()}
+    />
+  </head>
+  <body>
+    <ThemeSwitcher
+      client:load
+      initialTheme={initialTheme}
+    />
+  </body>
+</html>
+`,
+    },
+    secondary: `// src/components/theme-switcher.tsx
+import type {LightOrDark, WithSystem} from 'ssr-themes';
+import {
+  ThemeProvider,
+  useTheme,
+} from 'ssr-themes/react';
+
+type ThemeName = WithSystem<LightOrDark>;
+
+function ThemeSelect() {
+  const {theme, setTheme} = useTheme<LightOrDark>();
+  const value = theme ?? 'system';
+
+  return (
+    <select
+      value={value}
+      onChange={event =>
+        setTheme(
+          event.target.value as ThemeName,
+        )
+      }
+    >
+      <option value="system">System</option>
+      <option value="dark">Dark</option>
+      <option value="light">Light</option>
+    </select>
+  );
+}
+
+export default function ThemeSwitcher({
+  initialTheme,
+}: {
+  initialTheme?: ThemeName;
+}) {
+  return (
+    <ThemeProvider initialTheme={initialTheme}>
+      <ThemeSelect />
+    </ThemeProvider>
+  );
+}
+`,
+  },
   next: {
     primary: `// app/layout.tsx
 import Script from 'next/script';
@@ -293,14 +409,22 @@ export function handleRequest(request: Request) {
   },
 };
 
-const highlightCode = (code: string) =>
-  codeToHtml(code, {
-    lang: 'tsx',
+const highlightCode = (snippet: FrameworkSnippet) => {
+  const code =
+    typeof snippet === 'string'
+      ? snippet
+      : snippet.code;
+  const lang =
+    typeof snippet === 'string' ? 'tsx' : snippet.lang;
+
+  return codeToHtml(code, {
+    lang,
     themes: {
       light: 'vitesse-light',
       dark: 'vitesse-dark',
     },
   });
+};
 
 let cachedHighlights: Promise<HighlightedFrameworkSnippets> | null =
   null;
