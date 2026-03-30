@@ -8,13 +8,25 @@ const entries = {
   react: resolve(import.meta.dirname, 'src/react.tsx'),
   solid: resolve(import.meta.dirname, 'src/solid.ts'),
   zod: resolve(import.meta.dirname, 'src/zod.ts'),
-};
+} as const;
+
+const format =
+  process.env.SSR_THEMES_FORMAT === 'cjs'
+    ? 'cjs'
+    : 'es';
+const targetEntry = process.env.SSR_THEMES_ENTRY as
+  | keyof typeof entries
+  | undefined;
+const libEntries = targetEntry
+  ? {[targetEntry]: entries[targetEntry]}
+  : entries;
 
 export default defineConfig({
   build: {
-    emptyOutDir: true,
+    emptyOutDir: false,
     lib: {
-      entry: entries,
+      entry: libEntries,
+      formats: [format],
     },
     minify: true,
     target: 'es2018',
@@ -25,44 +37,50 @@ export default defineConfig({
         'solid-js',
         'solid-js/web',
         'zod',
+        'zod/mini',
       ],
-      output: [
-        {
-          chunkFileNames: 'chunks/[name]-[hash].mjs',
-          entryFileNames: '[name].mjs',
-          exports: 'named',
-          format: 'es',
-        },
-        {
-          chunkFileNames: 'chunks/[name]-[hash].js',
-          entryFileNames: '[name].js',
-          exports: 'named',
-          format: 'cjs',
-        },
-      ],
+      output:
+        format === 'es'
+          ? {
+              entryFileNames: '[name].js',
+              exports: 'named',
+              format: 'es',
+              preserveModules: true,
+              preserveModulesRoot: 'src',
+            }
+          : {
+              entryFileNames: '[name].cjs',
+              exports: 'named',
+              format: 'cjs',
+            },
     },
   },
   plugins: [
     react(),
-    dts({
-      beforeWriteFile(filePath, content) {
-        const srcSegment = `${sep}dist${sep}src${sep}`;
-        if (!filePath.includes(srcSegment)) {
-          return {content, filePath};
-        }
+    ...(format === 'es'
+      ? [
+          dts({
+            beforeWriteFile(filePath, content) {
+              const srcSegment = `${sep}dist${sep}src${sep}`;
+              if (!filePath.includes(srcSegment)) {
+                return {content, filePath};
+              }
 
-        return {
-          content,
-          filePath: filePath.replace(
-            srcSegment,
-            `${sep}dist${sep}`,
-          ),
-        };
-      },
-      entryRoot: 'src',
-      include: ['src/**/*.{ts,tsx}'],
-      outDir: 'dist',
-      tsconfigPath: './tsconfig.build.json',
-    }),
+              return {
+                content,
+                filePath: filePath.replace(
+                  srcSegment,
+                  `${sep}dist${sep}`,
+                ),
+              };
+            },
+            entryRoot: 'src',
+            exclude: ['src/svelte/**/*'],
+            include: ['src/**/*.{ts,tsx}'],
+            outDir: 'dist',
+            tsconfigPath: './tsconfig.build.json',
+          }),
+        ]
+      : []),
   ],
 });

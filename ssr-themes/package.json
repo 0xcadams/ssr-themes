@@ -2,8 +2,9 @@
   "name": "ssr-themes",
   "version": "0.2.0",
   "license": "Apache-2.0",
-  "main": "./dist/index.js",
-  "module": "./dist/index.mjs",
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "files": [
     "dist",
@@ -14,34 +15,33 @@
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
-      "import": "./dist/index.mjs",
-      "require": "./dist/index.js"
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
     },
     "./react": {
       "types": "./dist/react.d.ts",
-      "import": "./dist/react.mjs",
-      "require": "./dist/react.js"
+      "import": "./dist/react.js",
+      "require": "./dist/react.cjs"
     },
     "./solid": {
       "types": "./dist/solid.d.ts",
-      "import": "./dist/solid.mjs",
-      "require": "./dist/solid.js"
+      "import": "./dist/solid.js",
+      "require": "./dist/solid.cjs"
     },
     "./svelte": {
-      "types": "./dist/svelte/svelte/index.d.ts",
-      "svelte": "./dist/svelte/svelte/index.js",
-      "default": "./dist/svelte/svelte/index.js"
+      "types": "./dist/svelte/index.d.ts",
+      "svelte": "./dist/svelte/index.js",
+      "default": "./dist/svelte/index.js"
     },
     "./zod": {
       "types": "./dist/zod.d.ts",
-      "import": "./dist/zod.mjs",
-      "require": "./dist/zod.js"
+      "import": "./dist/zod.js",
+      "require": "./dist/zod.cjs"
     }
   },
   "scripts": {
     "prepublish": "bun run build",
-    "build": "svelte-kit sync && vite build && svelte-package -i src -o dist/svelte",
-    "dev": "svelte-kit sync && (vite build --watch & svelte-package -i src -o dist/svelte --watch)",
+    "build": "bun ./scripts/build.ts",
     "size": "bun run build && size-limit",
     "test": "svelte-kit sync && vitest run tests",
     "clean": "rm -rf .svelte-kit dist node_modules"
@@ -49,7 +49,7 @@
   "size-limit": [
     {
       "name": "react",
-      "path": "dist/react.mjs",
+      "path": "dist/react.js",
       "import": "{ ThemeProvider, useTheme }"
     }
   ],
@@ -60,6 +60,9 @@
     "zod": "^3.23.0 || ^4"
   },
   "peerDependenciesMeta": {
+    "react": {
+      "optional": true
+    },
     "solid-js": {
       "optional": true
     },
@@ -73,14 +76,14 @@
   "devDependencies": {
     "@sveltejs/kit": "^2.48.0",
     "@sveltejs/package": "^2.5.1",
-    "@sveltejs/vite-plugin-svelte": "^6.2.1",
+    "@sveltejs/vite-plugin-svelte": "^7.0.0",
     "@solidjs/testing-library": "^0.8.10",
     "@vitejs/plugin-react": "^6.0.1",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
     "solid-js": "^1.9.12",
     "svelte": "^5.40.1",
-    "vite": "^8.0.2",
+    "vite": "^8.0.3",
     "vite-plugin-dts": "^4.5.4",
     "vite-plugin-solid": "^2.11.11",
     "zod": "^4.1.12"
