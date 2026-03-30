@@ -11,6 +11,7 @@
 - `ssr-themes/` - published library source, Vite library build, Vitest tests.
 - `landing/` - TanStack Start marketing/docs site.
 - `examples/next/` - Next.js App Router example used by Playwright.
+- `examples/solid/` - SolidStart example.
 - `examples/tanstack-start/` - TanStack Start example.
 - `test/` - root Playwright specs.
 
@@ -39,12 +40,14 @@ bun run clean
 bun run dev
 bun --filter ssr-themes dev
 bun --filter @ssr-themes/next dev
+bun --filter @ssr-themes/solid dev
 bun --filter @ssr-themes/tanstack-start dev
 bun --filter @ssr-themes/landing dev
 # build
 bun run build
 bun --filter ssr-themes build
 bun --filter @ssr-themes/next build
+bun --filter @ssr-themes/solid build
 bun --filter @ssr-themes/tanstack-start build
 bun --filter @ssr-themes/landing build
 # format / lint-equivalent / typecheck
@@ -54,6 +57,7 @@ bunx prettier . --write
 bunx tsc --noEmit -p ssr-themes/tsconfig.json
 bunx tsc --noEmit -p landing/tsconfig.json
 bunx tsc --noEmit -p examples/next/tsconfig.json
+bunx tsc --noEmit -p examples/solid/tsconfig.json
 bunx tsc --noEmit -p examples/tanstack-start/tsconfig.json
 # tests
 bun run test
