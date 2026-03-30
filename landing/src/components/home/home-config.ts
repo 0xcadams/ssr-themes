@@ -105,6 +105,13 @@ export const frameworks = [
       'Call theme() in your route and update the cookie-backed theme with setTheme(...).',
   },
   {
+    value: 'svelte',
+    label: 'SvelteKit',
+    secondaryTitle: 'Hook-based html SSR',
+    secondaryDescription:
+      'Inject html theme attrs from hooks.server.ts and read theme stores from getTheme().',
+  },
+  {
     value: 'astro',
     label: 'Astro',
     secondaryTitle: 'React island',
