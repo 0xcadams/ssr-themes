@@ -11,10 +11,24 @@ import {
   useContext,
 } from 'solid-js';
 import {isServer} from 'solid-js/web';
+import {
+  disableThemeTransitions,
+  updateThemeAttributes,
+  updateThemeColorScheme,
+} from './theme-dom';
+import {
+  createThemeBroadcastSubscription,
+  defaultThemes,
+  getCookieName,
+  getSystemTheme,
+  getTheme,
+  postThemeBroadcast,
+  resolveDefaultTheme,
+  saveToCookie,
+  subscribeToSystemTheme,
+} from './theme-runtime';
 import type {
-  CookieOptions,
   LightOrDark,
-  LightOrDarkTuple,
   ThemeOptions,
   WithSystem,
 } from './types';
@@ -75,144 +89,6 @@ export const ThemeContext = createContext<
   ThemeContextValue | undefined
 >(undefined);
 
-const colorSchemes = ['light', 'dark'];
-const MEDIA = '(prefers-color-scheme: dark)';
-const defaultCookieOptions: CookieOptions = {
-  path: '/',
-  maxAge: 31536000,
-  sameSite: 'lax',
-};
-const defaultThemes = [
-  'dark',
-  'light',
-] as const satisfies LightOrDarkTuple;
-
-const getCookieName = (cookie?: CookieOptions) =>
-  cookie?.name ?? 'theme';
-
-const getCookieValue = (key: string) => {
-  if (isServer) return undefined;
-  const cookies = document.cookie
-    ? document.cookie.split('; ')
-    : [];
-  for (const cookie of cookies) {
-    const [name, ...rest] = cookie.split('=');
-    if (name === key) {
-      return decodeURIComponent(rest.join('='));
-    }
-  }
-  return undefined;
-};
-
-const formatSameSite = (
-  sameSite?: CookieOptions['sameSite'],
-) => {
-  if (!sameSite) return undefined;
-  return `${sameSite.charAt(0).toUpperCase()}${sameSite.slice(1)}`;
-};
-
-const saveToCookie = (
-  cookieName: string,
-  value: string,
-  options?: CookieOptions,
-) => {
-  try {
-    const cookieOptions = {
-      ...defaultCookieOptions,
-      ...(options ?? {}),
-    };
-    const cookieValue = encodeURIComponent(value);
-    const parts = [`${cookieName}=${cookieValue}`];
-
-    if (cookieOptions.path) {
-      parts.push(`Path=${cookieOptions.path}`);
-    }
-
-    if (cookieOptions.domain) {
-      parts.push(`Domain=${cookieOptions.domain}`);
-    }
-
-    if (typeof cookieOptions.maxAge === 'number') {
-      parts.push(`Max-Age=${cookieOptions.maxAge}`);
-    }
-
-    if (cookieOptions.expires) {
-      parts.push(
-        `Expires=${cookieOptions.expires.toUTCString()}`,
-      );
-    }
-
-    const sameSite = formatSameSite(
-      cookieOptions.sameSite,
-    );
-    if (sameSite) {
-      parts.push(`SameSite=${sameSite}`);
-    }
-
-    if (cookieOptions.secure) {
-      parts.push('Secure');
-    }
-
-    document.cookie = parts.join('; ');
-  } catch {}
-};
-
-const disableAnimation = (nonce?: string) => {
-  const css = document.createElement('style');
-  if (nonce) {
-    css.setAttribute('nonce', nonce);
-  }
-  css.appendChild(
-    document.createTextNode(
-      `*,*::before,*::after{-webkit-transition:none!important;-moz-transition:none!important;-o-transition:none!important;-ms-transition:none!important;transition:none!important}`,
-    ),
-  );
-  document.head.appendChild(css);
-
-  return () => {
-    (() => window.getComputedStyle(document.body))();
-
-    setTimeout(() => {
-      document.head.removeChild(css);
-    }, 1);
-  };
-};
-
-const getBaseTheme = (
-  media?: MediaQueryList | MediaQueryListEvent,
-): LightOrDark => {
-  const event = media ?? window.matchMedia(MEDIA);
-  return event.matches ? 'dark' : 'light';
-};
-
-const getTheme = <
-  TTheme extends string,
-  TEnableSystem extends boolean = true,
->(
-  cookieName: string,
-  fallback:
-    | WithSystem<TTheme, TEnableSystem>
-    | undefined,
-  initialTheme:
-    | WithSystem<TTheme, TEnableSystem>
-    | undefined,
-) => {
-  if (isServer) return initialTheme;
-  if (initialTheme) return initialTheme;
-  let theme:
-    | WithSystem<TTheme, TEnableSystem>
-    | undefined;
-  try {
-    theme = getCookieValue(cookieName) as WithSystem<
-      TTheme,
-      TEnableSystem
-    >;
-  } catch {}
-  if (theme) return theme;
-
-  return fallback;
-};
-
 export const useTheme = <
   TTheme extends string = LightOrDark,
   TEnableSystem extends boolean = true,
@@ -251,15 +127,11 @@ export const ThemeProvider = <
       (props.themes ??
         (defaultThemes as unknown as readonly TTheme[])) as readonly TTheme[],
   );
-  const resolvedDefaultTheme = createMemo(
-    () =>
-      (props.defaultTheme ??
-        (enableSystemValue()
-          ? 'system'
-          : 'light')) as WithSystem<
-        TTheme,
-        TEnableSystem
-      >,
+  const resolvedDefaultTheme = createMemo(() =>
+    resolveDefaultTheme<TTheme, TEnableSystem>(
+      props.defaultTheme,
+      enableSystemValue(),
+    ),
   );
   const cookieName = getCookieName(props.cookie);
   const [theme, setThemeState] = createSignal<
@@ -275,7 +147,7 @@ export const ThemeProvider = <
     Exclude<TTheme, 'system'> | undefined
   >(
     theme() === 'system' && !isServer
-      ? (getBaseTheme() as Exclude<TTheme, 'system'>)
+      ? (getSystemTheme() as Exclude<TTheme, 'system'>)
       : (theme() as
           | Exclude<TTheme, 'system'>
           | undefined),
@@ -324,7 +196,7 @@ export const ThemeProvider = <
 
     let resolved = value;
     if (resolved === 'system' && enableSystemValue()) {
-      resolved = getBaseTheme() as TTheme;
+      resolved = getSystemTheme() as TTheme;
     }
 
     const nextTheme = resolved as TTheme;
@@ -333,42 +205,35 @@ export const ThemeProvider = <
       : nextTheme;
     const restoreTransitions =
       (props.disableTransitionOnChange ?? true)
-        ? disableAnimation(props.nonce)
+        ? disableThemeTransitions(props.nonce)
         : null;
     const element = document.documentElement;
     const attributes = Array.isArray(props.attribute)
       ? props.attribute
       : [props.attribute ?? 'class'];
 
-    for (const attribute of attributes) {
-      if (attribute === 'class') {
-        element.classList.remove(...themeValues());
-        if (nextName) {
-          element.classList.add(nextName);
-        }
-      } else if (nextName) {
-        element.setAttribute(attribute, nextName);
-      } else {
-        element.removeAttribute(attribute);
-      }
-    }
-
-    if (props.enableColorScheme ?? true) {
-      element.style.colorScheme =
-        colorSchemes.includes(nextTheme)
-          ? nextTheme
-          : '';
-    }
+    updateThemeAttributes(
+      element,
+      attributes,
+      themeValues(),
+      nextName,
+    );
+    updateThemeColorScheme(
+      element,
+      nextTheme,
+      props.enableColorScheme ?? true,
+    );
 
     restoreTransitions?.();
     return resolved;
   };
 
   const broadcastTheme = (value: string) => {
-    broadcastChannel?.postMessage({
-      key: cookieName,
+    postThemeBroadcast(
+      broadcastChannel,
+      cookieName,
       value,
-    });
+    );
   };
 
   const setTheme: ThemeSetter<
@@ -388,14 +253,12 @@ export const ThemeProvider = <
   };
 
   onMount(() => {
-    const media = window.matchMedia(MEDIA);
     const handleMediaQuery = (
       event: MediaQueryList | MediaQueryListEvent,
     ) => {
-      const nextTheme = getBaseTheme(event) as Exclude<
-        TTheme,
-        'system'
-      >;
+      const nextTheme = getSystemTheme(
+        event,
+      ) as Exclude<TTheme, 'system'>;
       setSystemTheme(() => nextTheme);
 
       if (
@@ -412,81 +275,35 @@ export const ThemeProvider = <
       }
     };
 
-    if ('addEventListener' in media) {
-      media.addEventListener(
-        'change',
-        handleMediaQuery,
-      );
-      onCleanup(() => {
-        media.removeEventListener(
-          'change',
-          handleMediaQuery,
-        );
-      });
-    } else {
-      const legacyMedia = media as MediaQueryList & {
-        addListener: (
-          listener: typeof handleMediaQuery,
-        ) => void;
-        removeListener: (
-          listener: typeof handleMediaQuery,
-        ) => void;
-      };
-      legacyMedia.addListener(handleMediaQuery);
-      onCleanup(() => {
-        legacyMedia.removeListener(handleMediaQuery);
-      });
-    }
-
-    handleMediaQuery(media);
+    onCleanup(
+      subscribeToSystemTheme(handleMediaQuery),
+    );
   });
 
   onMount(() => {
-    if (
-      typeof window.BroadcastChannel === 'undefined'
-    ) {
-      return;
-    }
+    const {channel, cleanup} =
+      createThemeBroadcastSubscription(
+        cookieName,
+        value => {
+          if (!value) {
+            setThemeState(() =>
+              resolvedDefaultTheme(),
+            );
+            return;
+          }
 
-    const channel = new BroadcastChannel(
-      `ssr-themes:${cookieName}`,
-    );
+          setThemeState(
+            () =>
+              value as
+                | WithSystem<TTheme, TEnableSystem>
+                | undefined,
+          );
+        },
+      );
     broadcastChannel = channel;
 
-    const handleMessage = (
-      event: MessageEvent<{
-        key: string;
-        value?: string;
-      }>,
-    ) => {
-      if (
-        !event.data ||
-        event.data.key !== cookieName
-      ) {
-        return;
-      }
-
-      if (!event.data.value) {
-        setThemeState(() => resolvedDefaultTheme());
-        return;
-      }
-
-      setThemeState(
-        () =>
-          event.data.value as
-            | WithSystem<TTheme, TEnableSystem>
-            | undefined,
-      );
-    };
-
-    channel.addEventListener('message', handleMessage);
-
     onCleanup(() => {
-      channel.removeEventListener(
-        'message',
-        handleMessage,
-      );
-      channel.close();
+      cleanup();
       if (broadcastChannel === channel) {
         broadcastChannel = null;
       }

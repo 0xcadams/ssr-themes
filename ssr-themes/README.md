@@ -1,19 +1,20 @@
 # ssr-themes [![Version](https://img.shields.io/npm/v/ssr-themes.svg?colorB=green)](https://www.npmjs.com/package/ssr-themes)
 
-Framework-agnostic, SSR-friendly theming.
+Framework-agnostic, SSR-friendly theming, with first-class React & Solid support.
 
-- Perfect dark mode with no flashing
+- Perfect theming with no flashing
 - System setting with `prefers-color-scheme`
 - Themed browser UI with `color-scheme`
 - SSR friendly with cookies
 - Sync theme across tabs
-- Typed React and Solid bindings
+- Strongly-typed React and Solid bindings
 - 1.74 kB hydrated client bundle + 537 B inline theme bootstrap, minified and brotlied
 
 Live demos:
 
 - TanStack Start: [https://start.ssr-themes.cadams.io](https://start.ssr-themes.cadams.io)
 - Next.js: [https://next.ssr-themes.cadams.io](https://next.ssr-themes.cadams.io)
+- Solid: [https://solid.ssr-themes.cadams.io](https://solid.ssr-themes.cadams.io)
 
 ## Install
 
