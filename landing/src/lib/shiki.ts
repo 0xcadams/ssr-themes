@@ -4,6 +4,7 @@ export type FrameworkId =
   | 'astro'
   | 'next'
   | 'solid'
+  | 'svelte'
   | 'tanstack'
   | 'other';
 
@@ -11,7 +12,7 @@ type FrameworkSnippet =
   | string
   | {
       code: string;
-      lang: 'astro' | 'tsx';
+      lang: 'astro' | 'svelte' | 'tsx';
     };
 
 type FrameworkSnippets = Record<
@@ -289,7 +290,89 @@ export default function Home() {
     </select>
   );
 }
+    `,
+  },
+  svelte: {
+    primary: {
+      lang: 'svelte',
+      code: `<!-- src/app.html -->
+<html lang="en" %ssr-themes.html-attrs%>
+
+// src/hooks.server.ts
+import type {Handle} from '@sveltejs/kit';
+import {
+  renderThemeAttributes,
+  themeFromCookieHeader,
+} from 'ssr-themes';
+
+export const handle: Handle = async ({event, resolve}) => {
+  const initialTheme = themeFromCookieHeader(
+    event.request.headers.get('cookie'),
+  );
+  event.locals.initialTheme = initialTheme;
+
+  return resolve(event, {
+    transformPageChunk: ({html}) =>
+      html.replace(
+        '%ssr-themes.html-attrs%',
+        renderThemeAttributes({
+          attribute: 'class',
+          initialTheme,
+        }),
+      ),
+  });
+};
+
+<!-- src/routes/+layout.svelte -->
+<script lang="ts">
+  import {themeScript} from 'ssr-themes';
+  import {ThemeProvider} from 'ssr-themes/svelte';
+
+  let {data, children} = $props();
+</script>
+
+<svelte:head>
+  <script id="ssr-themes">{themeScript()}</script>
+</svelte:head>
+
+<ThemeProvider initialTheme={data.initialTheme}>
+  {@render children()}
+</ThemeProvider>
 `,
+    },
+    secondary: {
+      lang: 'svelte',
+      code: `<!-- src/lib/theme-switcher.svelte -->
+<script lang="ts">
+  import type {
+    LightOrDark,
+    WithSystem,
+  } from 'ssr-themes';
+  import {getTheme} from 'ssr-themes/svelte';
+
+  const {setTheme, theme} = getTheme<
+    LightOrDark,
+    true
+  >();
+
+  const handleChange = (event: Event) => {
+    const select = event.currentTarget as HTMLSelectElement;
+    setTheme(
+      select.value as WithSystem<LightOrDark>,
+    );
+  };
+</script>
+
+<select
+  value={$theme ?? 'system'}
+  on:change={handleChange}
+>
+  <option value="system">System</option>
+  <option value="dark">Dark</option>
+  <option value="light">Light</option>
+</select>
+`,
+    },
   },
   tanstack: {
     primary: `// src/routes/__root.tsx

@@ -4,5 +4,6 @@
   "arrowParens": "avoid",
   "bracketSpacing": false,
   "quoteProps": "consistent",
+  "plugins": ["prettier-plugin-svelte"],
   "printWidth": 55
 }

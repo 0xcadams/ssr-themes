@@ -10,49 +10,23 @@ import {
   waitFor,
 } from '@solidjs/testing-library';
 import {
-  afterAll,
   afterEach,
-  beforeAll,
-  beforeEach,
   describe,
   expect,
   test,
-  vi,
 } from 'vitest';
 import {
   ThemeProvider,
   useTheme,
   type ThemeProviderProps,
 } from '../src/solid';
+import {
+  getCookieValue,
+  installThemeTestEnv,
+  setDeviceTheme,
+} from './helpers/theme-test-env';
 
-let originalCookieDescriptor:
-  | PropertyDescriptor
-  | undefined;
-let cookieStore: Record<string, string> = {};
-
-const serializeCookies = () =>
-  Object.entries(cookieStore)
-    .map(([name, value]) => `${name}=${value}`)
-    .join('; ');
-
-const setMockCookie = (cookie: string) => {
-  const [pair = ''] = cookie.split(';');
-  const [rawName = '', ...rawValueParts] =
-    pair.split('=');
-  const name = rawName.trim();
-  if (!name) return;
-  const value = rawValueParts.join('=').trim();
-  cookieStore[name] = value;
-};
-
-const clearCookies = () => {
-  cookieStore = {};
-};
-
-const getCookieValue = (name: string) => {
-  const value = cookieStore[name];
-  return value ? decodeURIComponent(value) : null;
-};
+installThemeTestEnv();
 
 const ThemeReporter = (props: {
   forceSetTheme?: string;
@@ -101,64 +75,8 @@ const renderTheme = (
     wrapper: createThemeWrapper(providerProps),
   });
 
-function setDeviceTheme(theme: 'light' | 'dark') {
-  Object.defineProperty(window, 'matchMedia', {
-    writable: true,
-    value: vi.fn().mockImplementation(query => ({
-      matches: theme === 'dark',
-      media: query,
-      onchange: null,
-      addListener: vi.fn(),
-      removeListener: vi.fn(),
-      addEventListener: vi.fn(),
-      removeEventListener: vi.fn(),
-      dispatchEvent: vi.fn(),
-    })),
-  });
-}
-
-beforeAll(() => {
-  originalCookieDescriptor =
-    Object.getOwnPropertyDescriptor(
-      document,
-      'cookie',
-    ) ??
-    Object.getOwnPropertyDescriptor(
-      Document.prototype,
-      'cookie',
-    );
-
-  Object.defineProperty(document, 'cookie', {
-    configurable: true,
-    get: () => serializeCookies(),
-    set: value => {
-      setMockCookie(value);
-    },
-  });
-});
-
-beforeEach(() => {
-  setDeviceTheme('light');
-  document.documentElement.style.colorScheme = '';
-  document.documentElement.removeAttribute(
-    'data-theme',
-  );
-  document.documentElement.removeAttribute('class');
-  clearCookies();
-});
-
 afterEach(() => {
   cleanup();
-});
-
-afterAll(() => {
-  if (originalCookieDescriptor) {
-    Object.defineProperty(
-      document,
-      'cookie',
-      originalCookieDescriptor,
-    );
-  }
 });
 
 describe('solid bindings', () => {
