@@ -12,6 +12,7 @@ const nitroPreset = process.env.VERCEL
 const config = defineConfig({
   server: {
     port: 4042,
+    allowedHosts: ['.ts.net']
   },
   plugins: [
     nitro({

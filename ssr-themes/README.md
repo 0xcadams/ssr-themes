@@ -1,6 +1,6 @@
 # ssr-themes [![Version](https://img.shields.io/npm/v/ssr-themes.svg?colorB=green)](https://www.npmjs.com/package/ssr-themes)
 
-Framework-agnostic SSR theming with React bindings.
+Framework-agnostic, SSR-friendly theming.
 
 - Perfect dark mode with no flashing
 - System setting with `prefers-color-scheme`
