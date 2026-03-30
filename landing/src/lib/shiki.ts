@@ -2,6 +2,7 @@ import {codeToHtml} from 'shiki';
 
 export type FrameworkId =
   | 'next'
+  | 'solid'
   | 'tanstack'
   | 'other';
 
@@ -86,6 +87,90 @@ export default async function RootLayout({
         </ThemeProvider>
       </body>
     </html>
+  );
+}
+`,
+  },
+  solid: {
+    primary: `// src/lib/theme.ts
+import {themeFromCookieHeader} from 'ssr-themes';
+import {getRequestEvent, isServer} from 'solid-js/web';
+
+export const getInitialTheme = () =>
+  themeFromCookieHeader(
+    isServer
+      ? getRequestEvent()?.request.headers.get('cookie')
+      : document.cookie,
+  );
+
+// src/app.tsx
+import {Router} from '@solidjs/router';
+import {FileRoutes} from '@solidjs/start/router';
+import {Suspense} from 'solid-js';
+import {ThemeProvider} from 'ssr-themes/solid';
+import {getInitialTheme} from '~/lib/theme';
+
+export default function App() {
+  const initialTheme = getInitialTheme();
+
+  return (
+    <ThemeProvider initialTheme={initialTheme}>
+      <Router root={props => <Suspense>{props.children}</Suspense>}>
+        <FileRoutes />
+      </Router>
+    </ThemeProvider>
+  );
+}
+
+// src/entry-server.tsx
+import {createHandler, StartServer} from '@solidjs/start/server';
+import {registerTheme, themeScript} from 'ssr-themes';
+
+export default createHandler(() => (
+  <StartServer
+    document={({assets, children, scripts}) => {
+      const initialTheme = getInitialTheme();
+      const htmlProps = registerTheme({initialTheme});
+
+      return (
+        <html class={htmlProps.className} style={htmlProps.style}>
+          <head>
+            <script innerHTML={themeScript()} />
+            {assets}
+          </head>
+          <body>
+            <div id="app">{children}</div>
+            {scripts}
+          </body>
+        </html>
+      );
+    }}
+  />
+));
+`,
+    secondary: `// src/routes/index.tsx
+import {useTheme} from 'ssr-themes/solid';
+
+export default function Home() {
+  const theme = useTheme();
+  const value = () => theme.theme() ?? 'system';
+
+  return (
+    <select
+      value={value()}
+      onChange={event =>
+        theme.setTheme(
+          event.currentTarget.value as
+            | 'system'
+            | 'dark'
+            | 'light',
+        )
+      }
+    >
+      <option value="system">System</option>
+      <option value="dark">Dark</option>
+      <option value="light">Light</option>
+    </select>
   );
 }
 `,

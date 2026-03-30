@@ -98,6 +98,13 @@ export const frameworks = [
       'Read cookies on the server and hydrate the initial theme.',
   },
   {
+    value: 'solid',
+    label: 'Solid',
+    secondaryTitle: 'Accessor-based UI',
+    secondaryDescription:
+      'Call theme() in your route and update the cookie-backed theme with setTheme(...).',
+  },
+  {
     value: 'other',
     label: 'Other',
     secondaryTitle: 'SSR cookies',
@@ -125,5 +132,9 @@ export const liveDemoLinks = [
   {
     href: 'https://next.ssr-themes.cadams.io',
     label: 'Next.js',
+  },
+  {
+    href: 'https://solid.ssr-themes.cadams.io',
+    label: 'Solid',
   },
 ] as const;

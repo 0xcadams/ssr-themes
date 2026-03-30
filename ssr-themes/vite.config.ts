@@ -6,6 +6,7 @@ import dts from 'vite-plugin-dts';
 const entries = {
   index: resolve(import.meta.dirname, 'src/index.ts'),
   react: resolve(import.meta.dirname, 'src/react.tsx'),
+  solid: resolve(import.meta.dirname, 'src/solid.ts'),
   zod: resolve(import.meta.dirname, 'src/zod.ts'),
 };
 
@@ -18,7 +19,13 @@ export default defineConfig({
     minify: true,
     target: 'es2018',
     rollupOptions: {
-      external: ['react', 'react/jsx-runtime', 'zod'],
+      external: [
+        'react',
+        'react/jsx-runtime',
+        'solid-js',
+        'solid-js/web',
+        'zod',
+      ],
       output: [
         {
           chunkFileNames: 'chunks/[name]-[hash].mjs',

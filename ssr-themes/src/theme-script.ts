@@ -1,9 +1,10 @@
 import {script} from './script';
-import type {
-  LightOrDark,
-  LightOrDarkTuple,
-  ThemeOptions,
-} from './types';
+import {
+  defaultThemes,
+  getCookieName,
+  resolveDefaultTheme,
+} from './theme-runtime';
+import type {LightOrDark, ThemeOptions} from './types';
 
 export const themeScript = <
   TTheme extends string = LightOrDark,
@@ -17,19 +18,18 @@ export const themeScript = <
     defaultTheme,
     enableColorScheme = true,
     forcedTheme,
-    themes = [
-      'dark',
-      'light',
-    ] as const satisfies LightOrDarkTuple,
+    themes = defaultThemes as unknown as readonly TTheme[],
     valueMap,
     enableSystem,
   } = options;
 
-  const enableSystemValue = enableSystem ?? true;
-  const resolvedDefaultTheme =
-    defaultTheme ??
-    (enableSystemValue ? 'system' : 'light');
-  const cookieName = cookie?.name ?? 'theme';
+  const enableSystemValue = (enableSystem ??
+    true) as TEnableSystem;
+  const resolvedDefaultTheme = resolveDefaultTheme<
+    TTheme,
+    TEnableSystem
+  >(defaultTheme, enableSystemValue);
+  const cookieName = getCookieName(cookie);
   const scriptArgs = JSON.stringify([
     attribute,
     cookieName,

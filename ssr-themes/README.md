@@ -1,19 +1,20 @@
 # ssr-themes [![Version](https://img.shields.io/npm/v/ssr-themes.svg?colorB=green)](https://www.npmjs.com/package/ssr-themes)
 
-Framework-agnostic, SSR-friendly theming.
+Framework-agnostic, SSR-friendly theming, with first-class React & Solid support.
 
-- Perfect dark mode with no flashing
+- Perfect theming with no flashing
 - System setting with `prefers-color-scheme`
 - Themed browser UI with `color-scheme`
 - SSR friendly with cookies
 - Sync theme across tabs
-- Typed `useTheme` hook
+- Strongly-typed React and Solid bindings
 - 1.74 kB hydrated client bundle + 537 B inline theme bootstrap, minified and brotlied
 
 Live demos:
 
 - TanStack Start: [https://start.ssr-themes.cadams.io](https://start.ssr-themes.cadams.io)
 - Next.js: [https://next.ssr-themes.cadams.io](https://next.ssr-themes.cadams.io)
+- Solid: [https://solid.ssr-themes.cadams.io](https://solid.ssr-themes.cadams.io)
 
 ## Install
 
@@ -32,7 +33,7 @@ yarn add ssr-themes
 The API is simple:
 
 1. `themeScript()` from `ssr-themes` runs on the client before hydration and sets the theme on `<html>`, to avoid theme flash on first render.
-2. `<ThemeProvider />` from `ssr-themes/react` keeps the theme cookie + DOM in sync and exposes `useTheme()`.
+2. `<ThemeProvider />` from `ssr-themes/react` or `ssr-themes/solid` keeps the theme cookie + DOM in sync and exposes `useTheme()`.
 3. Optionally, `themeFromCookieHeader()` + `registerTheme()` from `ssr-themes` let you pre-render the `<html>` theme during SSR.
 
 ### TanStack Start
@@ -220,6 +221,25 @@ Returns `{theme, setTheme, forcedTheme, resolvedTheme, colorScheme, themes}`.
 - `resolvedTheme`: the active resolved theme after applying system preference
 - `colorScheme`: the current system preference (`'light'` or `'dark'`) when `enableSystem` is enabled
 - `themes`: the available themes, plus `'system'` when `enableSystem` is enabled
+
+### ssr-themes/solid
+
+Solid bindings for the core SSR helpers.
+
+### ThemeProvider
+
+Additional props match the React binding:
+
+- `initialTheme`: initial theme to use during SSR and hydration; pass the cookie value through directly, including `'system'`
+- `disableTransitionOnChange`: disable CSS transitions during theme changes (default: `true`)
+- `nonce`: nonce for the temporary inline style tag used when transitions are disabled
+
+### useTheme()
+
+Returns accessors plus a setter: `{theme, setTheme, forcedTheme, resolvedTheme, colorScheme, themes}`.
+
+- call the accessors as functions, like `theme()` or `resolvedTheme()`
+- `setTheme(...)` accepts either a theme value or an updater callback
 
 ### themeScript(options)
 
