@@ -1,10 +1,26 @@
+import {For} from 'solid-js';
 import {useTheme} from 'ssr-themes/solid';
 
-type ThemeName = 'system' | 'dark' | 'light';
+const options = [
+  {
+    value: 'system',
+    label: 'System',
+  },
+  {
+    value: 'dark',
+    label: 'Dark',
+  },
+  {
+    value: 'light',
+    label: 'Light',
+  },
+] as const;
+
+type ThemeName = (typeof options)[number]['value'];
 
 export function ThemeSwitcher() {
   const theme = useTheme();
-  const value = () => theme.theme() ?? 'system';
+  const currentTheme = () => theme.theme() ?? 'system';
 
   const handleChange = (
     event: Event & {
@@ -20,13 +36,20 @@ export function ThemeSwitcher() {
     <select
       id="theme-selector"
       class="rounded border border-current bg-transparent px-3 py-2 text-xl"
-      value={value()}
+      value={currentTheme()}
       onChange={handleChange}
       data-test-id="theme-selector"
     >
-      <option value="system">System</option>
-      <option value="dark">Dark</option>
-      <option value="light">Light</option>
+      <For each={options}>
+        {option => (
+          <option
+            value={option.value}
+            selected={option.value === currentTheme()}
+          >
+            {option.label}
+          </option>
+        )}
+      </For>
     </select>
   );
 }
