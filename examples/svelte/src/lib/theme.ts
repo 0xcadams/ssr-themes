@@ -1,12 +1,16 @@
 import {
   renderThemeAttributes,
   themeFromCookieHeader,
+  themeScript,
   type LightOrDark,
   type WithSystem,
 } from 'ssr-themes';
 
 export const htmlAttributesPlaceholder =
   '%ssr-themes.html-attrs%';
+
+export const themeScriptPlaceholder =
+  '%ssr-themes.script%';
 
 export const themes = ['dark', 'light'] as const;
 
@@ -29,3 +33,6 @@ export const renderThemeHtmlAttributes = (
     ...themeConfig,
     initialTheme,
   });
+
+export const renderThemeScript = () =>
+  themeScript(themeConfig);
