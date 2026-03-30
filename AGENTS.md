@@ -8,7 +8,7 @@
 
 ## Repo Map
 
-- `ssr-themes/` - published library source, `tsup` build, Vitest tests.
+- `ssr-themes/` - published library source, Vite library build, Vitest tests.
 - `landing/` - TanStack Start marketing/docs site.
 - `examples/next/` - Next.js App Router example used by Playwright.
 - `examples/tanstack-start/` - TanStack Start example.

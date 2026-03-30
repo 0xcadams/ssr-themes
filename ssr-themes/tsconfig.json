@@ -9,7 +9,7 @@
     "esModuleInterop": true,
     "ignoreDeprecations": "6.0",
     "module": "esnext",
-    "moduleResolution": "node",
+    "moduleResolution": "bundler",
     "resolveJsonModule": true,
     "isolatedModules": true,
     "exactOptionalPropertyTypes": true,
@@ -24,7 +24,7 @@
     "declaration": true,
     "jsx": "react-jsx",
     "noEmit": true,
-    "types": ["vitest/jsdom"]
+    "types": ["node", "vitest/jsdom"]
   },
   "include": [
     "next-env.d.ts",

@@ -30,8 +30,8 @@
   },
   "scripts": {
     "prepublish": "bun run build",
-    "build": "tsup",
-    "dev": "tsup --watch",
+    "build": "vite build",
+    "dev": "vite build --watch",
     "size": "bun run build && size-limit",
     "test": "vitest run tests",
     "clean": "rm -rf dist node_modules"
@@ -53,8 +53,11 @@
     }
   },
   "devDependencies": {
+    "@vitejs/plugin-react": "^6.0.1",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
+    "vite": "^8.0.2",
+    "vite-plugin-dts": "^4.5.4",
     "zod": "^4.1.12"
   },
   "repository": {
