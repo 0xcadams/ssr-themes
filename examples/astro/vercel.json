@@ -1,0 +1,6 @@
+{
+  "name": "ssr-themes-astro",
+  "framework": "astro",
+  "installCommand": "bun install --cwd ../..",
+  "buildCommand": "bun --cwd ../.. --filter ssr-themes build && bun run build"
+}

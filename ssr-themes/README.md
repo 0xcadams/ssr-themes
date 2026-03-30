@@ -1,6 +1,6 @@
 # ssr-themes [![Version](https://img.shields.io/npm/v/ssr-themes.svg?colorB=green)](https://www.npmjs.com/package/ssr-themes)
 
-Framework-agnostic, SSR-friendly theming, with first-class React & Solid support.
+Framework-agnostic, SSR-friendly theming, with first-class React and Solid bindings.
 
 - Perfect theming with no flashing
 - System setting with `prefers-color-scheme`
@@ -15,6 +15,7 @@ Live demos:
 - TanStack Start: [https://start.ssr-themes.cadams.io](https://start.ssr-themes.cadams.io)
 - Next.js: [https://next.ssr-themes.cadams.io](https://next.ssr-themes.cadams.io)
 - Solid: [https://solid.ssr-themes.cadams.io](https://solid.ssr-themes.cadams.io)
+- Astro: [https://astro.ssr-themes.cadams.io](https://astro.ssr-themes.cadams.io)
 
 ## Install
 
@@ -32,9 +33,9 @@ yarn add ssr-themes
 
 The API is simple:
 
-1. `themeScript()` from `ssr-themes` runs on the client before hydration and sets the theme on `<html>`, to avoid theme flash on first render.
-2. `<ThemeProvider />` from `ssr-themes/react` or `ssr-themes/solid` keeps the theme cookie + DOM in sync and exposes `useTheme()`.
-3. Optionally, `themeFromCookieHeader()` + `registerTheme()` from `ssr-themes` let you pre-render the `<html>` theme during SSR.
+1. `themeScript()` runs on the client before hydration and sets the theme on `<html>`, to avoid theme flash on first render.
+2. `<ThemeProvider />` keeps the theme cookie + DOM in sync and exposes `useTheme()`.
+3. Optionally, `themeFromCookieHeader()` + `registerTheme()` let you pre-render the `<html>` theme during SSR.
 
 ### TanStack Start
 
@@ -155,6 +156,10 @@ If you render theme-dependent UI during SSR, pass the cookie theme straight thro
 - `initialTheme={initialTheme}` on `<ThemeProvider />`
 
 Passing `'system'` is fine. In that case, `registerTheme()` leaves the SSR theme attribute alone, and `themeScript()` resolves the active theme before hydration.
+
+### Astro
+
+Astro can use the shared SSR helpers directly and hydrate a tiny React island for the client-side toggle. See the [Astro example](https://github.com/0xcadams/ssr-themes/tree/main/examples/astro/) for more information.
 
 ## Styling
 
