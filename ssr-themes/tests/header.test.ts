@@ -1,6 +1,6 @@
 import {describe, expect, it} from 'vitest';
 
-import {themeFromCookieHeader} from '../src/server';
+import {themeFromCookieHeader} from '../src/index';
 
 describe('themeFromCookieHeader', () => {
   it('returns undefined when the cookie header is missing or has no matching cookie', () => {

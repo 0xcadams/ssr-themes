@@ -20,9 +20,12 @@ import {
 } from 'vitest';
 import {cleanup} from '@testing-library/react';
 
-import {ThemeProvider, useTheme} from '../src/index';
-import {themeScript} from '../src/server';
-import {ThemeProviderProps} from '../src/types';
+import {
+  ThemeProvider,
+  type ThemeProviderProps,
+  useTheme,
+} from '../src/react';
+import {themeScript} from '../src/index';
 
 let originalCookieDescriptor:
   | PropertyDescriptor

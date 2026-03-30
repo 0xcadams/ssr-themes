@@ -1,6 +1,6 @@
 import {cookies} from 'next/headers';
 import type {ReactNode} from 'react';
-import {ThemeProvider} from 'ssr-themes/client';
+import {ThemeProvider} from 'ssr-themes/react';
 
 export default async function BaseLayout({
   children,

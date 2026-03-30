@@ -3,7 +3,7 @@ import {
   createFileRoute,
 } from '@tanstack/react-router';
 import type {ChangeEvent} from 'react';
-import {useTheme} from 'ssr-themes';
+import {useTheme} from 'ssr-themes/react';
 
 function IndexPage() {
   const {theme, setTheme} = useTheme();

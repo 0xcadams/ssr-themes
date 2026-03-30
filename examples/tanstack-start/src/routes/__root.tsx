@@ -10,15 +10,13 @@ import {createServerFn} from '@tanstack/react-start';
 import {getRequestHeader} from '@tanstack/react-start/server';
 import * as React from 'react';
 import {
-  ThemeProvider,
-  type LightOrDark,
-  type WithSystem,
-} from 'ssr-themes';
-import {
   registerTheme,
   themeFromCookieHeader,
   themeScript,
-} from 'ssr-themes/server';
+  type LightOrDark,
+  type WithSystem,
+} from 'ssr-themes';
+import {ThemeProvider} from 'ssr-themes/react';
 import appCss from '../styles.css?url';
 
 type ThemeStaticData = {

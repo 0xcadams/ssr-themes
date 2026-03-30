@@ -1,11 +1,11 @@
 # ssr-themes [![Version](https://img.shields.io/npm/v/ssr-themes.svg?colorB=green)](https://www.npmjs.com/package/ssr-themes)
 
-Themes for your React app.
+Framework-agnostic, SSR-friendly theming.
 
 - Perfect dark mode with no flashing
 - System setting with `prefers-color-scheme`
 - Themed browser UI with `color-scheme`
-- SSR friendly (cookie based)
+- SSR friendly with cookies
 - Sync theme across tabs
 - Typed `useTheme` hook
 - 1.74 kB hydrated client bundle + 537 B inline theme bootstrap, minified and brotlied
@@ -27,14 +27,13 @@ pnpm add ssr-themes
 yarn add ssr-themes
 ```
 
-If you use `ssr-themes/zod`, install `zod` too.
-
 ## Quickstart
 
-There are two pieces:
+The API is simple:
 
-1. `themeScript()` runs before hydration and sets the theme on `<html>`.
-2. `<ThemeProvider />` keeps the theme cookie + DOM in sync and exposes `useTheme()`.
+1. `themeScript()` from `ssr-themes` runs on the client before hydration and sets the theme on `<html>`, to avoid theme flash on first render.
+2. `<ThemeProvider />` from `ssr-themes/react` keeps the theme cookie + DOM in sync and exposes `useTheme()`.
+3. Optionally, `themeFromCookieHeader()` + `registerTheme()` from `ssr-themes` let you pre-render the `<html>` theme during SSR.
 
 ### TanStack Start
 
@@ -51,12 +50,12 @@ import {
 } from '@tanstack/react-router';
 import {createServerFn} from '@tanstack/react-start';
 import {getRequestHeader} from '@tanstack/react-start/server';
-import {ThemeProvider} from 'ssr-themes';
 import {
   registerTheme,
   themeFromCookieHeader,
   themeScript,
-} from 'ssr-themes/server';
+} from 'ssr-themes';
+import {ThemeProvider} from 'ssr-themes/react';
 
 const getInitialTheme = createServerFn({
   method: 'GET',
@@ -69,7 +68,7 @@ export const Route = createRootRoute({
     initialTheme: await getInitialTheme(),
   }),
   component: RootComponent,
-  // only load the theme from the cookie in SSR
+  // only load the theme from the cookie during SSR
   staleTime: Infinity,
   shouldReload: false,
 });
@@ -99,21 +98,17 @@ function RootComponent() {
 
 ### Next.js App Router
 
-Inject `themeScript()` before hydration and wrap your app with `ThemeProvider`.
-In Next.js, the equivalent of TanStack's `ScriptOnce` pattern is `next/script` with `strategy="beforeInteractive"`.
+Inject `themeScript()` before hydration and wrap your app with `ThemeProvider`. In Next.js, the equivalent of TanStack's `ScriptOnce` pattern is `next/script` with `strategy="beforeInteractive"`.
 
-In Server Components, import the provider from `ssr-themes/client` so it doesn't resolve to the `react-server` export, and includes the `'use client'` directive.
+Import the provider from `ssr-themes/react`; that's the React client entry and includes the `'use client'` directive.
 
 ```tsx
 // app/layout.tsx
 import {cookies} from 'next/headers';
 import Script from 'next/script';
 import type {ReactNode} from 'react';
-import {ThemeProvider} from 'ssr-themes/client';
-import {
-  registerTheme,
-  themeScript,
-} from 'ssr-themes/server';
+import {registerTheme, themeScript} from 'ssr-themes';
+import {ThemeProvider} from 'ssr-themes/react';
 import {lightOrDarkWithSystemSchema} from 'ssr-themes/zod';
 
 export default async function RootLayout({
@@ -191,7 +186,7 @@ All examples use Tailwind v4 with a class-based dark mode.
 
 ### Shared theme options
 
-`ThemeProvider` and `themeScript(options)` share the same core theme config.
+`ThemeProvider` from `ssr-themes/react` and `themeScript(options)` from `ssr-themes` share the same core theme config.
 `registerTheme(options)` overlaps with `attribute`, `valueMap`, and `enableColorScheme`.
 
 Keep overlapping options in sync. If your server HTML, bootstrap script, and hydrated provider use different theme settings, they can disagree during SSR or hydration.
@@ -204,6 +199,10 @@ Keep overlapping options in sync. If your server HTML, bootstrap script, and hyd
 - `attribute`: `'class'`, a `data-*`, or an array of attributes
 - `valueMap`: map theme name -> DOM attribute value; use the same mapping everywhere you write the theme to `<html>`
 - `cookie`: cookie options used to persist the theme; `themeScript()` only reads `cookie.name`, so keep that in sync with `ThemeProvider`
+
+### ssr-themes/react
+
+React bindings for the core SSR helpers.
 
 ### ThemeProvider
 

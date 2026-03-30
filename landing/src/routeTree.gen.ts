@@ -8,80 +8,61 @@
 // You should NOT make any changes in this file as it will be overwritten.
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
-import {Route as rootRouteImport} from './routes/__root';
-import {Route as IndexRouteImport} from './routes/index';
-import {Route as ApiInsightsSplatRouteImport} from './routes/api/insights/$';
+import { Route as rootRouteImport } from './routes/__root'
+import { Route as IndexRouteImport } from './routes/index'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
-} as any);
-const ApiInsightsSplatRoute =
-  ApiInsightsSplatRouteImport.update({
-    id: '/api/insights/$',
-    path: '/api/insights/$',
-    getParentRoute: () => rootRouteImport,
-  } as any);
+} as any)
 
 export interface FileRoutesByFullPath {
-  '/': typeof IndexRoute;
-  '/api/insights/$': typeof ApiInsightsSplatRoute;
+  '/': typeof IndexRoute
 }
 export interface FileRoutesByTo {
-  '/': typeof IndexRoute;
-  '/api/insights/$': typeof ApiInsightsSplatRoute;
+  '/': typeof IndexRoute
 }
 export interface FileRoutesById {
-  '__root__': typeof rootRouteImport;
-  '/': typeof IndexRoute;
-  '/api/insights/$': typeof ApiInsightsSplatRoute;
+  __root__: typeof rootRouteImport
+  '/': typeof IndexRoute
 }
 export interface FileRouteTypes {
-  fileRoutesByFullPath: FileRoutesByFullPath;
-  fullPaths: '/' | '/api/insights/$';
-  fileRoutesByTo: FileRoutesByTo;
-  to: '/' | '/api/insights/$';
-  id: '__root__' | '/' | '/api/insights/$';
-  fileRoutesById: FileRoutesById;
+  fileRoutesByFullPath: FileRoutesByFullPath
+  fullPaths: '/'
+  fileRoutesByTo: FileRoutesByTo
+  to: '/'
+  id: '__root__' | '/'
+  fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
-  IndexRoute: typeof IndexRoute;
-  ApiInsightsSplatRoute: typeof ApiInsightsSplatRoute;
+  IndexRoute: typeof IndexRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
     '/': {
-      id: '/';
-      path: '/';
-      fullPath: '/';
-      preLoaderRoute: typeof IndexRouteImport;
-      parentRoute: typeof rootRouteImport;
-    };
-    '/api/insights/$': {
-      id: '/api/insights/$';
-      path: '/api/insights/$';
-      fullPath: '/api/insights/$';
-      preLoaderRoute: typeof ApiInsightsSplatRouteImport;
-      parentRoute: typeof rootRouteImport;
-    };
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  ApiInsightsSplatRoute: ApiInsightsSplatRoute,
-};
+}
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
-  ._addFileTypes<FileRouteTypes>();
+  ._addFileTypes<FileRouteTypes>()
 
-import type {getRouter} from './router.tsx';
-import type {createStart} from '@tanstack/react-start';
+import type { getRouter } from './router.tsx'
+import type { createStart } from '@tanstack/react-start'
 declare module '@tanstack/react-start' {
   interface Register {
-    ssr: true;
-    router: Awaited<ReturnType<typeof getRouter>>;
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
   }
 }

@@ -1,6 +1,6 @@
 'use client';
 
-import {useTheme} from 'ssr-themes';
+import {useTheme} from 'ssr-themes/react';
 
 export default function ThemeSwitcher() {
   const {theme, setTheme, forcedTheme} = useTheme();

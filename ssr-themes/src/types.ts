@@ -1,5 +1,3 @@
-import * as React from 'react';
-
 export interface CookieOptions {
   /** Cookie name used to store theme preference */
   name?: string;
@@ -62,39 +60,14 @@ export interface ThemeOptions<
   valueMap?: ThemeValueMap<TTheme> | undefined;
 }
 
-export interface ThemeResult<
-  TTheme extends string = LightOrDark,
-  TEnableSystem extends boolean = true,
-> {
-  /** List of all available theme names */
-  themes: ReadonlyArray<
-    WithSystem<TTheme, TEnableSystem>
-  >;
-  /** Forced theme name for the current page */
-  forcedTheme?: TTheme | undefined;
-  /** Update the theme */
-  setTheme: React.Dispatch<
-    React.SetStateAction<
-      WithSystem<TTheme, TEnableSystem>
-    >
-  >;
-  /** Active theme name */
-  theme?:
-    | WithSystem<TTheme, TEnableSystem>
-    | undefined;
-  /** If `enableSystem` is true and the active theme is "system", this returns whether the system preference resolved to "dark" or "light". Otherwise, identical to `theme` */
-  resolvedTheme?:
-    | Exclude<TTheme, 'system'>
-    | undefined;
-  /** If enableSystem is true, returns the System theme preference ("dark" or "light"), regardless what the active theme is */
-  colorScheme?: TEnableSystem extends true
-    ? LightOrDark
-    : undefined;
-}
+type ThemeStyle = Record<
+  string,
+  string | number | undefined
+>;
 
 export type ThemeHtmlProps = {
   className?: string;
-  style?: React.CSSProperties;
+  style?: ThemeStyle;
 } & Partial<Record<DataAttribute, string>>;
 
 export interface RegisterThemeOptions<
@@ -109,22 +82,5 @@ export interface RegisterThemeOptions<
   /** Optional class name to merge with the theme class */
   className?: string | undefined;
   /** Optional style object to merge with color-scheme */
-  style?: React.CSSProperties | undefined;
-}
-
-export interface ThemeProviderProps<
-  TTheme extends string = LightOrDark,
-  TEnableSystem extends boolean = true,
->
-  extends
-    React.PropsWithChildren<unknown>,
-    ThemeOptions<TTheme, TEnableSystem> {
-  /** Disable all CSS transitions when switching themes */
-  disableTransitionOnChange?: boolean | undefined;
-  /** Theme name to use for server rendering */
-  initialTheme?:
-    | WithSystem<TTheme, TEnableSystem>
-    | undefined;
-  /** Nonce string to pass to the inline style elements for CSP headers */
-  nonce?: string;
+  style?: ThemeStyle | undefined;
 }
