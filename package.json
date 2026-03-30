@@ -8,6 +8,7 @@
   ],
   "scripts": {
     "prepublish": "bun --filter ssr-themes build",
+    "pretest": "bun --filter ssr-themes build",
     "build": "bun --filter ssr-themes build && bun --filter @ssr-themes/* build",
     "start": "bun --filter '*' start",
     "dev": "bun --filter '*' dev",
