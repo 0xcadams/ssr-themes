@@ -19,16 +19,6 @@ export default defineConfig({
     target: 'es2018',
     rollupOptions: {
       external: ['react', 'react/jsx-runtime', 'zod'],
-      onwarn(warning, defaultHandler) {
-        if (
-          warning.code === 'MODULE_LEVEL_DIRECTIVE' &&
-          warning.message.includes("'use client'")
-        ) {
-          return;
-        }
-
-        defaultHandler(warning);
-      },
       output: [
         {
           chunkFileNames: 'chunks/[name]-[hash].mjs',
