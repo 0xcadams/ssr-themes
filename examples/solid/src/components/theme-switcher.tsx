@@ -1,4 +1,4 @@
-import {For} from 'solid-js';
+import {For, JSX} from 'solid-js';
 import {useTheme} from 'ssr-themes/solid';
 
 const options = [
@@ -22,15 +22,12 @@ export function ThemeSwitcher() {
   const theme = useTheme();
   const currentTheme = () => theme.theme() ?? 'system';
 
-  const handleChange = (
-    event: Event & {
-      currentTarget: HTMLSelectElement;
-    },
-  ) => {
-    theme.setTheme(
-      event.currentTarget.value as ThemeName,
-    );
-  };
+  const handleChange: JSX.CustomEventHandlersCamelCase<HTMLSelectElement>['onChange'] =
+    event => {
+      theme.setTheme(
+        event.currentTarget.value as ThemeName,
+      );
+    };
 
   return (
     <select

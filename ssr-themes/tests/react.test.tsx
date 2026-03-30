@@ -9,16 +9,19 @@ import {
 } from '@testing-library/react';
 import {
   vi,
-  beforeAll,
-  beforeEach,
   afterEach,
-  afterAll,
   describe,
   test,
   it,
   expect,
 } from 'vitest';
 import {cleanup} from '@testing-library/react';
+import {
+  getCookieValue,
+  installThemeTestEnv,
+  setCookieValue,
+  setDeviceTheme,
+} from './helpers/theme-test-env';
 
 import {
   ThemeProvider,
@@ -27,41 +30,7 @@ import {
 } from '../src/react';
 import {themeScript} from '../src/index';
 
-let originalCookieDescriptor:
-  | PropertyDescriptor
-  | undefined;
-let cookieStore: Record<string, string> = {};
-
-const serializeCookies = () =>
-  Object.entries(cookieStore)
-    .map(([name, value]) => `${name}=${value}`)
-    .join('; ');
-
-const setMockCookie = (cookie: string) => {
-  const [pair = ''] = cookie.split(';');
-  const [rawName = '', ...rawValueParts] =
-    pair.split('=');
-  const name = rawName.trim();
-  if (!name) return;
-  const value = rawValueParts.join('=').trim();
-  cookieStore[name] = value;
-};
-
-const clearCookies = () => {
-  cookieStore = {};
-};
-
-const getCookieValue = (name: string) => {
-  const value = cookieStore[name];
-  return value ? decodeURIComponent(value) : null;
-};
-
-const setCookieValue = (
-  name: string,
-  value: string,
-) => {
-  document.cookie = `${name}=${encodeURIComponent(value)}`;
-};
+installThemeTestEnv();
 
 // HelperComponent to render the theme inside a paragraph-tag and setting a theme via the forceSetTheme prop
 const HelperComponent = ({
@@ -95,69 +64,8 @@ const HelperComponent = ({
   );
 };
 
-function setDeviceTheme(theme: 'light' | 'dark') {
-  // Create a mock of the window.matchMedia function
-  // Based on: https://stackoverflow.com/questions/39830580/jest-test-fails-typeerror-window-matchmedia-is-not-a-function
-  Object.defineProperty(window, 'matchMedia', {
-    writable: true,
-    value: vi.fn().mockImplementation(query => ({
-      matches: theme === 'dark' ? true : false,
-      media: query,
-      onchange: null,
-      addListener: vi.fn(), // Deprecated
-      removeListener: vi.fn(), // Deprecated
-      addEventListener: vi.fn(),
-      removeEventListener: vi.fn(),
-      dispatchEvent: vi.fn(),
-    })),
-  });
-}
-
-beforeAll(() => {
-  originalCookieDescriptor =
-    Object.getOwnPropertyDescriptor(
-      document,
-      'cookie',
-    ) ??
-    Object.getOwnPropertyDescriptor(
-      Document.prototype,
-      'cookie',
-    );
-
-  Object.defineProperty(document, 'cookie', {
-    configurable: true,
-    get: () => serializeCookies(),
-    set: value => {
-      setMockCookie(value);
-    },
-  });
-});
-
-beforeEach(() => {
-  // Reset window side-effects
-  setDeviceTheme('light');
-  document.documentElement.style.colorScheme = '';
-  document.documentElement.removeAttribute(
-    'data-theme',
-  );
-  document.documentElement.removeAttribute('class');
-
-  // Clear cookies
-  clearCookies();
-});
-
 afterEach(() => {
   cleanup();
-});
-
-afterAll(() => {
-  if (originalCookieDescriptor) {
-    Object.defineProperty(
-      document,
-      'cookie',
-      originalCookieDescriptor,
-    );
-  }
 });
 
 function makeWrapper(

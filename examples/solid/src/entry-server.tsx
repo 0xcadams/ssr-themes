@@ -1,5 +1,4 @@
 // @refresh reload
-import type {JSX} from 'solid-js';
 import {
   createHandler,
   StartServer,
@@ -17,7 +16,7 @@ export default createHandler(() => (
         <html
           lang="en"
           class={htmlProps.className}
-          style={htmlProps.style as JSX.CSSProperties}
+          style={htmlProps.style}
         >
           <head>
             <meta charset="utf-8" />
