@@ -395,7 +395,7 @@ export default function Home() {
 // src/hooks.server.ts
 import type {Handle} from '@sveltejs/kit';
 import {
-  renderThemeAttributes,
+  registerTheme,
   themeFromCookieHeader,
   themeScript,
 } from 'ssr-themes';
@@ -411,9 +411,10 @@ export const handle: Handle = async ({event, resolve}) => {
       html
         .replace(
           '%ssr-themes.html-attrs%',
-          renderThemeAttributes({
+          registerTheme({
             attribute: 'class',
             initialTheme,
+            renderMode: 'html-string',
           }),
         )
         .replace(

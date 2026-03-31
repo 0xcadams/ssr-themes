@@ -1,5 +1,5 @@
 import {
-  renderThemeAttributes,
+  registerTheme,
   themeFromCookieHeader,
   themeScript,
   type LightOrDark,
@@ -29,9 +29,10 @@ export const getInitialTheme = (
 export const renderThemeHtmlAttributes = (
   initialTheme?: WithSystem<LightOrDark>,
 ) =>
-  renderThemeAttributes({
+  registerTheme({
     ...themeConfig,
     initialTheme,
+    renderMode: 'html-string',
   });
 
 export const renderThemeScript = () =>

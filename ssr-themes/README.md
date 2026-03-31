@@ -193,15 +193,29 @@ Options:
 
 ### `registerTheme(options)`
 
-Use `registerTheme()` when your server renders JSX and you want props to spread onto `<html>`.
+Use `registerTheme()` to pre-render the current theme on `<html>` during SSR.
 
-It returns the class, data attributes, and `color-scheme` style needed to pre-render the current theme on the server.
+By default it returns JSX-friendly props you can spread onto `<html>`. Pass `renderMode: 'html-string'` when your framework needs a serialized attribute string instead.
 
 If `initialTheme` is `undefined` or `'system'`, the function does not pre-set a resolved theme on `<html>`. That lets the bootstrap script resolve the final theme before hydration.
 
+```tsx
+const htmlProps = registerTheme({
+  initialTheme,
+});
+// {  }
+
+const htmlAttributes = registerTheme({
+  initialTheme,
+  renderMode: 'html-string',
+});
+// ""
+```
+
 Options:
 
-- `initialTheme`: resolved theme to pre-apply to `<html>`.
+- `initialTheme`: resolved or system theme to pre-apply to `<html>`.
+- `renderMode`: output format. Defaults to `'jsx'`. Use `'html-string'` for template-based SSR such as SvelteKit `app.html`.
 - `attribute`: same attribute config used by `ThemeProvider` and
   `themeScript()`.
 - `valueMap`: same theme-to-DOM mapping used elsewhere.
@@ -211,15 +225,6 @@ Options:
   class.
 - `style`: extra inline styles to merge with the generated
   `color-scheme` style.
-
-### `renderThemeAttributes(options)`
-
-Use `renderThemeAttributes()` when your framework needs a
-serialized HTML attribute string instead of JSX props.
-
-It takes the same options as `registerTheme()` and serializes the
-result for template-based SSR. This is especially useful in
-setups like SvelteKit `app.html`.
 
 ### `ssr-themes/zod`
 
