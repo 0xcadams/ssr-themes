@@ -1,4 +1,3 @@
-import {useEffect, useState} from 'react';
 import type {
   LightOrDark,
   WithSystem,
@@ -20,28 +19,11 @@ function ThemeSelect() {
 
   const disabled = Boolean(forcedTheme);
   const value = theme ?? 'system';
-  const [mounted, setMounted] = useState(false);
-  const clientColorScheme = mounted
-    ? colorScheme
-    : undefined;
+  const deviceTheme = colorScheme ?? 'dark';
   const suggestedTheme =
-    clientColorScheme === 'dark'
-      ? 'light'
-      : clientColorScheme === 'light'
-        ? 'dark'
-        : undefined;
-  const flashedTheme =
-    suggestedTheme === 'dark'
-      ? 'light'
-      : suggestedTheme === 'light'
-        ? 'dark'
-        : undefined;
+    deviceTheme === 'dark' ? 'light' : 'dark';
   const codeClassName =
     'rounded bg-black/5 px-1 py-0.5 dark:bg-white/10';
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
 
   return (
     <>
@@ -62,31 +44,16 @@ function ThemeSelect() {
       </select>
 
       <p className="mx-auto max-w-lg text-sm leading-relaxed text-black/60 dark:text-white/60">
-        {suggestedTheme && flashedTheme ? (
-          <>
-            Try{' '}
-            <code className={codeClassName}>
-              {suggestedTheme}
-            </code>
-            , refresh the page, and watch whether the
-            select briefly flashes{' '}
-            <code className={codeClassName}>
-              {flashedTheme}
-            </code>{' '}
-            before settling on{' '}
-            <code className={codeClassName}>
-              {suggestedTheme}
-            </code>
-            .
-          </>
-        ) : (
-          <>
-            Try the theme opposite your device setting,
-            refresh the page, and watch whether the
-            select briefly flashes the wrong value
-            before settling on your choice.
-          </>
-        )}
+        Try{' '}
+        <code className={codeClassName}>
+          {suggestedTheme}
+        </code>
+        , refresh the page, and check that the select
+        never briefly shows{' '}
+        <code className={codeClassName}>
+          {deviceTheme}
+        </code>{' '}
+        first.
       </p>
     </>
   );

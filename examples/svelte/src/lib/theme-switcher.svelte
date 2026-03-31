@@ -1,5 +1,4 @@
 <script lang="ts">
-  import {onMount} from 'svelte';
   import type {
     LightOrDark,
     WithSystem,
@@ -13,10 +12,8 @@
   const codeClassName =
     'rounded bg-black/5 px-1 py-0.5 dark:bg-white/10';
 
-  let mounted = false;
-  let clientColorScheme: LightOrDark | undefined;
-  let suggestedTheme: LightOrDark | undefined;
-  let flashedTheme: LightOrDark | undefined;
+  let deviceTheme: LightOrDark;
+  let suggestedTheme: LightOrDark;
 
   const handleChange = (event: Event) => {
     const select =
@@ -24,25 +21,9 @@
     setTheme(select.value as WithSystem<LightOrDark>);
   };
 
-  onMount(() => {
-    mounted = true;
-  });
-
-  $: clientColorScheme = mounted
-    ? $colorScheme
-    : undefined;
+  $: deviceTheme = $colorScheme ?? 'dark';
   $: suggestedTheme =
-    clientColorScheme === 'dark'
-      ? 'light'
-      : clientColorScheme === 'light'
-        ? 'dark'
-        : undefined;
-  $: flashedTheme =
-    suggestedTheme === 'dark'
-      ? 'light'
-      : suggestedTheme === 'light'
-        ? 'dark'
-        : undefined;
+    deviceTheme === 'dark' ? 'light' : 'dark';
 </script>
 
 <select
@@ -61,19 +42,9 @@
 <p
   class="mx-auto max-w-lg text-sm leading-relaxed text-black/60 dark:text-white/60"
 >
-  {#if suggestedTheme && flashedTheme}
-    Try <code class={codeClassName}
-      >{suggestedTheme}</code
-    >, refresh the page, and watch whether the select
-    briefly flashes
-    <code class={codeClassName}>{flashedTheme}</code>
-    before settling on
-    <code class={codeClassName}>{suggestedTheme}</code
-    >.
-  {:else}
-    Try the theme opposite your device setting, refresh
-    the page, and watch whether the select briefly
-    flashes the wrong value before settling on your
-    choice.
-  {/if}
+  Try <code class={codeClassName}
+    >{suggestedTheme}</code
+  >, refresh the page, and check that the select never
+  briefly shows
+  <code class={codeClassName}>{deviceTheme}</code> first.
 </p>
