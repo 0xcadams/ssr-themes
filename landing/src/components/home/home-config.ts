@@ -98,6 +98,13 @@ export const frameworks = [
       'Read cookies on the server and hydrate the initial theme.',
   },
   {
+    value: 'nuxt',
+    label: 'Nuxt',
+    secondaryTitle: 'useHead SSR',
+    secondaryDescription:
+      'Read the cookie on the server, pre-set <html> with useHead(), and hydrate the Vue binding after render.',
+  },
+  {
     value: 'solid',
     label: 'Solid',
     secondaryTitle: 'Accessor-based UI',

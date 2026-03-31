@@ -12,6 +12,7 @@ const cjsEntries = [
   'index',
   'react',
   'solid',
+  'vue',
   'zod',
 ] as const;
 const generatedDeclarationFiles = [

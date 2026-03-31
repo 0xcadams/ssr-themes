@@ -3,6 +3,7 @@ import {codeToHtml} from 'shiki';
 export type FrameworkId =
   | 'astro'
   | 'next'
+  | 'nuxt'
   | 'solid'
   | 'svelte'
   | 'tanstack'
@@ -12,7 +13,7 @@ type FrameworkSnippet =
   | string
   | {
       code: string;
-      lang: 'astro' | 'svelte' | 'tsx';
+      lang: 'astro' | 'svelte' | 'tsx' | 'vue';
     };
 
 type FrameworkSnippets = Record<
@@ -207,6 +208,94 @@ export default async function RootLayout({
   );
 }
 `,
+  },
+  nuxt: {
+    primary: {
+      lang: 'vue',
+      code: `<!-- app/app.vue -->
+<script setup lang="ts">
+import {computed} from 'vue';
+import type {LightOrDark, WithSystem} from 'ssr-themes';
+import {
+  registerTheme,
+  themeFromCookieHeader,
+  themeScript,
+} from 'ssr-themes';
+import {ThemeProvider} from 'ssr-themes/vue';
+
+const initialTheme = useState<
+  WithSystem<LightOrDark> | undefined
+>('theme', () => {
+  if (import.meta.client) return undefined;
+
+  return themeFromCookieHeader(
+    useRequestHeaders(['cookie']).cookie,
+  );
+});
+
+const htmlAttrs = computed(() => {
+  const {className, style, ...dataAttrs} =
+    registerTheme({
+      initialTheme: initialTheme.value,
+    });
+
+  return {
+    lang: 'en' as const,
+    ...(className ? {class: className} : {}),
+    ...(style ? {style} : {}),
+    ...dataAttrs,
+  };
+});
+
+if (import.meta.server) {
+  useHead(() => ({
+    htmlAttrs: htmlAttrs.value,
+    script: [
+      {
+        id: 'ssr-themes',
+        innerHTML: themeScript(),
+      },
+    ],
+  }));
+}
+</script>
+
+<template>
+  <ThemeProvider :initial-theme="initialTheme">
+    <NuxtPage />
+  </ThemeProvider>
+</template>
+`,
+    },
+    secondary: {
+      lang: 'vue',
+      code: `<!-- app/components/theme-switcher.vue -->
+<script setup lang="ts">
+import type {LightOrDark, WithSystem} from 'ssr-themes';
+import {useTheme} from 'ssr-themes/vue';
+
+type ThemeName = WithSystem<LightOrDark>;
+
+const {setTheme, theme} = useTheme();
+
+const handleChange = (event: Event) => {
+  const select = event.currentTarget as HTMLSelectElement;
+  setTheme(select.value as ThemeName);
+};
+</script>
+
+<template>
+  <select
+    :value="theme ?? 'system'"
+    @change="handleChange"
+  >
+    <option value="system">System</option>
+    <option value="dark">Dark</option>
+    <option value="light">Light</option>
+  </select>
+</template>
+`,
+    },
   },
   solid: {
     primary: `// src/lib/theme.ts

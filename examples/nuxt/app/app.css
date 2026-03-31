@@ -1,0 +1,7 @@
+@import 'tailwindcss';
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+:root {
+  --font-mono: 'Fira Mono', monospace;
+}

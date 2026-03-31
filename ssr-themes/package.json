@@ -28,6 +28,11 @@
       "import": "./dist/solid.js",
       "require": "./dist/solid.cjs"
     },
+    "./vue": {
+      "types": "./dist/vue.d.ts",
+      "import": "./dist/vue.js",
+      "require": "./dist/vue.cjs"
+    },
     "./svelte": {
       "types": "./dist/svelte/index.d.ts",
       "svelte": "./dist/svelte/index.js",
@@ -57,6 +62,7 @@
     "react": "^19.2.4",
     "solid-js": "^1.9.12",
     "svelte": "^5.0.0",
+    "vue": "^3.5.13",
     "zod": "^3.23.0 || ^4"
   },
   "peerDependenciesMeta": {
@@ -69,6 +75,9 @@
     "svelte": {
       "optional": true
     },
+    "vue": {
+      "optional": true
+    },
     "zod": {
       "optional": true
     }
@@ -79,6 +88,7 @@
     "@sveltejs/vite-plugin-svelte": "^7.0.0",
     "@solidjs/testing-library": "^0.8.10",
     "@vitejs/plugin-react": "^6.0.1",
+    "@vue/test-utils": "^2.4.6",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
     "solid-js": "^1.9.12",
@@ -86,6 +96,7 @@
     "vite": "^8.0.3",
     "vite-plugin-dts": "^4.5.4",
     "vite-plugin-solid": "^2.11.11",
+    "vue": "^3.5.13",
     "zod": "^4.1.12"
   },
   "repository": {

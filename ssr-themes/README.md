@@ -1,13 +1,13 @@
 # ssr-themes [![Version](https://img.shields.io/npm/v/ssr-themes.svg?colorB=green)](https://www.npmjs.com/package/ssr-themes)
 
-Framework-agnostic, SSR-friendly theming, with first-class React, Solid, and Svelte bindings.
+Framework-agnostic, SSR-friendly theming, with first-class React, Solid, Svelte, and Vue bindings.
 
 - Perfect theming with no flashing
 - System setting with `prefers-color-scheme`
 - Themed browser UI with `color-scheme`
 - SSR friendly with cookies
 - Sync theme across tabs
-- Strongly-typed React, Solid, and Svelte bindings
+- Strongly-typed React, Solid, Svelte, and Vue bindings
 - 1.74 kB hydrated client bundle + 537 B inline theme bootstrap, minified and brotlied
 
 Live demos:
@@ -158,11 +158,13 @@ If you render theme-dependent UI during SSR, pass the cookie theme straight thro
 
 Passing `'system'` is fine. In that case, `registerTheme()` leaves the SSR theme attribute alone, and `themeScript()` resolves the active theme before hydration.
 
-### Svelte, Astro, and Others
+### Svelte, Astro, and Vue
 
 Svelte should use `renderThemeAttributes()` instead of `registerTheme()` to directly render a string which can be injected onto the `<html>` tag. Check out the [Svelte example](https://github.com/0xcadams/ssr-themes/tree/main/examples/svelte/).
 
 Astro can use the shared SSR helpers directly and hydrate a tiny React island for the client-side toggle. See the [Astro example](https://github.com/0xcadams/ssr-themes/tree/main/examples/astro/) for more information.
+
+Vue uses the `ssr-themes/vue` exports for providers/hooks. See the [Nuxt example](https://github.com/0xcadams/ssr-themes/tree/main/examples/astro/) for more information.
 
 ## Styling
 
@@ -195,7 +197,7 @@ All examples use Tailwind v4 with a class-based dark mode.
 
 ### Shared theme options
 
-`ThemeProvider` from `ssr-themes/react`, `ssr-themes/solid`, or `ssr-themes/svelte` and `themeScript(options)` from `ssr-themes` share the same core theme config.
+`ThemeProvider` from `ssr-themes/react`, `ssr-themes/solid`, `ssr-themes/svelte`, or `ssr-themes/vue` and `themeScript(options)` from `ssr-themes` share the same core theme config.
 `registerTheme(options)` overlaps with `attribute`, `valueMap`, and `enableColorScheme`.
 
 Keep overlapping options in sync. If your server HTML, bootstrap script, and hydrated provider use different theme settings, they can disagree during SSR or hydration.
@@ -247,6 +249,25 @@ Additional props match the React binding:
 Returns accessors plus a setter: `{theme, setTheme, forcedTheme, resolvedTheme, colorScheme, themes}`.
 
 - call the accessors as functions, like `theme()` or `resolvedTheme()`
+- `setTheme(...)` accepts either a theme value or an updater callback
+
+### ssr-themes/vue
+
+Vue bindings for the core SSR helpers.
+
+### ThemeProvider
+
+Additional props match the React binding:
+
+- `initialTheme`: initial theme to use during SSR and hydration; pass the cookie value through directly, including `'system'`
+- `disableTransitionOnChange`: disable CSS transitions during theme changes (default: `true`)
+- `nonce`: nonce for the temporary inline style tag used when transitions are disabled
+
+### useTheme()
+
+Returns Vue refs plus a setter: `{theme, setTheme, forcedTheme, resolvedTheme, colorScheme, themes}`.
+
+- read the refs with `.value` in script, or directly in templates
 - `setTheme(...)` accepts either a theme value or an updater callback
 
 ### ssr-themes/svelte
