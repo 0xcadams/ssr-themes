@@ -134,7 +134,6 @@ describe('themeFromCookieHeader', () => {
       appliedTheme: 'dark',
     });
   });
-
   it('treats plain system cookie values as invalid', () => {
     expect(
       themeFromCookieHeader('theme=system'),

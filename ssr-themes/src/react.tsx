@@ -287,6 +287,7 @@ const Theme = <
       cookieName,
       enableSystemValue,
       forcedTheme,
+      themes,
     ],
   );
 

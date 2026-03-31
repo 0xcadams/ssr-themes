@@ -633,7 +633,6 @@ const htmlTheme = forcedTheme
 
 // htmlTheme can override the applied SSR theme, while
 // the provider still keeps the logical selectedTheme.
-
 <html suppressHydrationWarning {...registerTheme(htmlTheme)}>
   <body>
     <ThemeProvider

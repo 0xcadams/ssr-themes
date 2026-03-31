@@ -186,7 +186,6 @@ export const getTheme = <
     ) {
       return fallback;
     }
-
     return selectedTheme;
   }
 
@@ -197,7 +196,6 @@ export const getTheme = <
     ) {
       return fallback;
     }
-
     return selectedTheme;
   }
 
