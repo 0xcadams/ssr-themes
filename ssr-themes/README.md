@@ -1,41 +1,38 @@
 # ssr-themes [![Version](https://img.shields.io/npm/v/ssr-themes.svg?colorB=green)](https://www.npmjs.com/package/ssr-themes)
 
-Theming gets hard once SSR is involved.
+Theming is hard with SSR.
 
-If the server renders one theme, the browser prefers another, and hydration fixes it later, users see a flash of the wrong content. Client-only libraries don't fix this problem, because the server needs to be aware of the theme.
+The server is usually unaware of client theme preference. This skew between what the server assumes is the theme and what is hydrated on the client will commonly result in a flash of the wrong content.
 
-`ssr-themes` keeps the server HTML, the bootstrap script, and the hydrated app in sync. It uses cookies to store the current theme and comes with first-party bindings for React, Solid, Svelte, and Vue.
+`ssr-themes` keeps the server HTML, bootstrap script, and hydrated app in sync. It uses cookies to store the current theme and comes with first-party bindings for React, Solid, Svelte, and Vue. This means:
 
-- No flash on first paint
-- Cookie-backed SSR
-- System theme support
-- `color-scheme` support
-- Cross-tab sync
-- Strongly typed bindings
+- ✨ No flash on first paint
+- 🍪 Cookie-driven SSR for 100% correct SSR markup
+- 🌓 System theme support
+- 🔄 Built-in cross-tab sync
+- 🛡️ Strongly typed bindings
 
-See a live demo: [https://ssr-themes.cadams.io/](https://ssr-themes.cadams.io/).
+See the live demo: [https://ssr-themes.cadams.io/](https://ssr-themes.cadams.io/).
 
 ## Install
 
 ```bash
-npm install ssr-themes
-# or
 bun add ssr-themes
 # or
 pnpm add ssr-themes
+# or
+npm install ssr-themes
 # or
 yarn add ssr-themes
 ```
 
 ## How It Works
 
-`ssr-themes` has three pieces:
+`ssr-themes` has three parts:
 
-1. `themeFromCookieHeader()` and `registerTheme()` let the server pre-render the current theme during SSR.
-2. `themeScript()` runs before hydration on the client and makes sure the theme on `<html>` is correct.
+1. `themeFromCookieHeader()` and `registerTheme()` help the server pre-render the correct theme during SSR. This is optional.
+2. `themeScript()` runs before hydration on the client and makes sure the theme on `<html>` is set to the correct value (and fills in the value from the client if it's `system`).
 3. `ThemeProvider` keeps the DOM, the theme cookie, and client state in sync after mount.
-
-Passing `'system'` on the server is fine. In that case, the server does not try to guess whether the browser will resolve to light or dark. `themeScript()` resolves it before hydration.
 
 ```tsx
 import {
@@ -63,7 +60,7 @@ const initialTheme =
 </html>;
 ```
 
-## Why Not `next-themes`?
+## Why not `next-themes`?
 
 `next-themes` is popular because it makes client-side theming in React and Next.js easy.
 
@@ -79,9 +76,9 @@ It gives you helpers to:
 - Pre-render the correct `<html>` attributes on the server
 - Apply the same theme before hydration
 
-If you only need client-side theme state in a React or Next.js app, `next-themes` is a good fit.
+If you only need client-side theme state in a Next.js app, `next-themes` is a good fit.
 
-If your SSR markup depends on the theme, or you don't use Next.js, `ssr-themes` is a good fit.
+If you don't use Next.js or your SSR markup depends on the theme, `ssr-themes` is a good fit.
 
 ## Styling
 
@@ -105,7 +102,7 @@ If you prefer `data-*` attributes, set `attribute` accordingly.
 
 ### Tailwind CSS
 
-All examples in this repo use Tailwind v4 with class-based dark mode - feel free to check those out for more information. Integration with Tailwind is as simple as:
+All examples in this repo use Tailwind v4 with class-based dark mode - feel free to check them out for more detail:
 
 ```css
 @import 'tailwindcss';
@@ -119,7 +116,26 @@ There are two kinds of APIs in `ssr-themes`:
 - Core SSR helpers from `ssr-themes`
 - Framework bindings from `ssr-themes/react`, `ssr-themes/solid`, `ssr-themes/vue`, and `ssr-themes/svelte`
 
-### `themeScript(options)`
+These also have shared types for easy configuration.
+
+### Shared Types
+
+`themeScript()` and every `ThemeProvider` use the same core theme options.
+
+If `themes`, `attribute`, `valueMap`, or `cookie.name` differ between your server HTML, bootstrap script, and hydrated provider, they can disagree during SSR or hydration.
+
+- `themes`: list of available theme names. By default the library uses `dark` and `light`.
+- `defaultTheme`: theme to use when no cookie is set. Defaults to `'system'` when `enableSystem` is enabled, otherwise `'light'`.
+- `forcedTheme`: force the current page to a specific theme. Disable your theme switcher UI when this is set.
+- `enableSystem`: enable the `'system'` theme. Defaults to `true`.
+- `enableColorScheme`: set browser `color-scheme` when the resolved theme is literal `light` or `dark`. Defaults to `true`.
+- `attribute`: where the theme is written on `<html>`. Accepts `class`, a `data-*` attribute, or an array of attributes.
+- `valueMap`: map a theme name to a different DOM value.
+- `cookie`: configure the cookie used to persist the theme. This includes `name`, `path`, `maxAge`, `expires`, `sameSite`, `domain`, and `secure`. Make sure the cookie is available to SSR.
+
+### SSR Helpers
+
+#### `themeScript()`
 
 Use `themeScript()` to generate the inline bootstrap script that runs before hydration.
 
@@ -127,7 +143,9 @@ This script reads the saved theme, resolves `'system'` when needed, updates the 
 
 Pass the same theme options here that you pass to `ThemeProvider`. If these differ, the server HTML, bootstrap script, and hydrated app can disagree.
 
-### `ThemeProvider`
+### Framework Bindings
+
+#### `ThemeProvider`
 
 Use `ThemeProvider` to keep theme state in sync after hydration.
 
@@ -144,22 +162,7 @@ Each binding accepts the shared theme options below, plus these additional props
 - `disableTransitionOnChange`: disable CSS transitions during theme changes. Defaults to `true`.
 - `nonce`: CSP nonce for the temporary inline style used when transitions are disabled.
 
-### Shared Theme Options
-
-`themeScript()` and every `ThemeProvider` use the same core theme options. Keep overlapping options in sync.
-
-If `themes`, `attribute`, `valueMap`, or `cookie.name` differ between your server HTML, bootstrap script, and hydrated provider, they can disagree during SSR or hydration.
-
-- `themes`: list of available theme names. By default the library uses `dark` and `light`.
-- `defaultTheme`: theme to use when no cookie is set. Defaults to `'system'` when `enableSystem` is enabled, otherwise `'light'`.
-- `forcedTheme`: force the current page to a specific theme. Disable your theme switcher UI when this is set.
-- `enableSystem`: enable the `'system'` theme. Defaults to `true`.
-- `enableColorScheme`: set browser `color-scheme` when the resolved theme is literal `light` or `dark`. Defaults to `true`.
-- `attribute`: where the theme is written on `<html>`. Accepts `class`, a `data-*` attribute, or an array of attributes.
-- `valueMap`: map a theme name to a different DOM value.
-- `cookie`: configure the cookie used to persist the theme. This includes `name`, `path`, `maxAge`, `expires`, `sameSite`, `domain`, and `secure`. Make sure the cookie is available to SSR.
-
-### `useTheme()` And `getTheme()`
+#### `useTheme()` & `getTheme()`
 
 Use these helpers to read and update the current theme from your application code.
 
@@ -177,7 +180,7 @@ All bindings expose the same core theme state:
 - `colorScheme`: the current OS preference, `'light'` or `'dark'`, when system support is enabled.
 - `themes`: the list of available themes, plus `'system'` when `enableSystem` is enabled.
 
-### `themeFromCookieHeader(cookieHeader, options)`
+### `themeFromCookieHeader()`
 
 Use `themeFromCookieHeader()` during SSR to read the saved theme
 from a raw `Cookie` header.
@@ -186,18 +189,14 @@ This is the simplest way to make the current theme available to
 server-rendered HTML. It returns `undefined` when the cookie is
 missing, empty, malformed, or not in the allowed theme list.
 
-Options:
-
 - `cookieName`: cookie name to read. Defaults to `'theme'`.
 - `themes`: optional list of allowed theme names for validation.
 
-### `registerTheme(options)`
+### `registerTheme()`
 
 Use `registerTheme()` to pre-render the current theme on `<html>` during SSR.
 
 By default it returns JSX-friendly props you can spread onto `<html>`. Pass `renderMode: 'html-string'` when your framework needs a serialized attribute string instead.
-
-If `initialTheme` is `undefined` or `'system'`, the function does not pre-set a resolved theme on `<html>`. That lets the bootstrap script resolve the final theme before hydration.
 
 ```tsx
 const htmlProps = registerTheme({
@@ -212,7 +211,9 @@ const htmlAttributes = registerTheme({
 // `class="dark"`
 ```
 
-Options:
+If `initialTheme` is `undefined` or `'system'`, the function does not pre-set a resolved theme on `<html>`. That lets the client bootstrap script, `themeScript()`, resolve the final theme before hydration.
+
+The configuration options are:
 
 - `initialTheme`: resolved or system theme to pre-apply to `<html>`.
 - `renderMode`: output format. Defaults to `'jsx'`. Use `'html-string'` for template-based SSR such as SvelteKit `app.html`.
