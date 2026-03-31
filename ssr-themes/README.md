@@ -7,7 +7,7 @@ Framework-agnostic, SSR-friendly theming, with first-class React, Solid, Svelte,
 - Themed browser UI with `color-scheme`
 - SSR friendly with cookies
 - Sync theme across tabs
-- Strongly-typed React, Solid, Svelte, and Vue bindings
+- Strongly-typed bindings
 - 1.74 kB hydrated client bundle + 537 B inline theme bootstrap, minified and brotlied
 
 Live demos:
@@ -17,6 +17,7 @@ Live demos:
 - Solid: [https://solid.ssr-themes.cadams.io](https://solid.ssr-themes.cadams.io)
 - Astro: [https://astro.ssr-themes.cadams.io](https://astro.ssr-themes.cadams.io)
 - Svelte: [https://svelte.ssr-themes.cadams.io](https://svelte.ssr-themes.cadams.io)
+- Vue: [https://vue.ssr-themes.cadams.io](https://vue.ssr-themes.cadams.io)
 
 ## Install
 

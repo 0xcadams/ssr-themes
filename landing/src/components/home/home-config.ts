@@ -84,11 +84,11 @@ export const packageManagerStorageKey =
 
 export const frameworks = [
   {
-    value: 'tanstack',
-    label: 'TanStack Start',
-    secondaryTitle: 'Forced theme routes',
+    value: 'astro',
+    label: 'Astro',
+    secondaryTitle: 'React island',
     secondaryDescription:
-      'Use route staticData to force a theme per route.',
+      'Read the cookie in .astro, pre-set <html>, and hydrate a tiny React switcher with client:load.',
   },
   {
     value: 'next',
@@ -119,11 +119,11 @@ export const frameworks = [
       'Inject html attrs and the bootstrap script via app.html + hooks.server.ts, then read theme stores from getTheme().',
   },
   {
-    value: 'astro',
-    label: 'Astro',
-    secondaryTitle: 'React island',
+    value: 'tanstack',
+    label: 'TanStack Start',
+    secondaryTitle: 'Forced theme routes',
     secondaryDescription:
-      'Read the cookie in .astro, pre-set <html>, and hydrate a tiny React switcher with client:load.',
+      'Use route staticData to force a theme per route.',
   },
   {
     value: 'other',
@@ -147,8 +147,8 @@ export const frameworkStorageKey =
 
 export const liveDemoLinks = [
   {
-    href: 'https://start.ssr-themes.cadams.io',
-    label: 'TanStack Start',
+    href: 'https://astro.ssr-themes.cadams.io',
+    label: 'Astro',
   },
   {
     href: 'https://next.ssr-themes.cadams.io',
@@ -159,7 +159,15 @@ export const liveDemoLinks = [
     label: 'Solid',
   },
   {
-    href: 'https://astro.ssr-themes.cadams.io',
-    label: 'Astro',
+    href: 'https://svelte.ssr-themes.cadams.io',
+    label: 'Svelte',
+  },
+  {
+    href: 'https://start.ssr-themes.cadams.io',
+    label: 'TanStack Start',
+  },
+  {
+    href: 'https://vue.ssr-themes.cadams.io',
+    label: 'Vue',
   },
 ] as const;
