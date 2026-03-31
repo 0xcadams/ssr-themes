@@ -27,19 +27,6 @@ export default function Home() {
         </h1>
 
         <ThemeSwitcher />
-
-        <p class="mx-auto max-w-lg text-sm leading-relaxed text-black/60 dark:text-white/60">
-          Try{' '}
-          <code class="rounded bg-black/5 px-1 py-0.5 dark:bg-white/10">
-            light
-          </code>{' '}
-          on a dark system, then refresh. SSR preloads
-          the select, so it shows{' '}
-          <code class="rounded bg-black/5 px-1 py-0.5 dark:bg-white/10">
-            light
-          </code>{' '}
-          right away, not system first.
-        </p>
       </div>
     </div>
   );
