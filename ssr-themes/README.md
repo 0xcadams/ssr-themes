@@ -201,15 +201,15 @@ If `initialTheme` is `undefined` or `'system'`, the function does not pre-set a 
 
 ```tsx
 const htmlProps = registerTheme({
-  initialTheme,
+  initialTheme: 'dark',
 });
-// {  }
+// { className: 'dark' }
 
 const htmlAttributes = registerTheme({
-  initialTheme,
+  initialTheme: 'dark',
   renderMode: 'html-string',
 });
-// ""
+// `class="dark"`
 ```
 
 Options:
