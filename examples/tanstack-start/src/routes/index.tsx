@@ -2,12 +2,17 @@ import {
   Link,
   createFileRoute,
 } from '@tanstack/react-router';
-import type {ChangeEvent} from 'react';
+import {type ChangeEvent} from 'react';
 import {useTheme} from 'ssr-themes/react';
 
 function IndexPage() {
-  const {theme, setTheme} = useTheme();
+  const {theme, setTheme, colorScheme} = useTheme();
   const value = theme ?? 'system';
+  const deviceTheme = colorScheme ?? 'dark';
+  const suggestedTheme =
+    deviceTheme === 'dark' ? 'light' : 'dark';
+  const codeClassName =
+    'rounded bg-black/5 px-1 py-0.5 dark:bg-white/10';
 
   return (
     <div className="flex min-h-screen w-full items-center justify-center px-6">
@@ -57,15 +62,15 @@ function IndexPage() {
 
         <p className="mx-auto max-w-lg text-sm leading-relaxed text-black/60 dark:text-white/60">
           Try{' '}
-          <code className="rounded bg-black/5 px-1 py-0.5 dark:bg-white/10">
-            light
+          <code className={codeClassName}>
+            {suggestedTheme}
+          </code>
+          , refresh the page, and check that the select
+          never briefly shows{' '}
+          <code className={codeClassName}>
+            {deviceTheme}
           </code>{' '}
-          on a dark system, then refresh. SSR preloads
-          the select, so it shows{' '}
-          <code className="rounded bg-black/5 px-1 py-0.5 dark:bg-white/10">
-            light
-          </code>{' '}
-          right away, not system first.
+          first.
         </p>
 
         <div className="text-lg">
