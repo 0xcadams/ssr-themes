@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import {computed} from 'vue';
 import type {
   LightOrDark,
   WithSystem,
@@ -8,6 +9,10 @@ import {useTheme} from 'ssr-themes/vue';
 type ThemeName = WithSystem<LightOrDark>;
 
 const {forcedTheme, setTheme, theme} = useTheme();
+
+const selectedTheme = computed(
+  () => theme.value ?? 'system',
+);
 
 const handleChange = (event: Event) => {
   const select =
@@ -20,14 +25,28 @@ const handleChange = (event: Event) => {
   <select
     id="theme-selector"
     class="rounded border border-current bg-transparent px-3 py-2 text-xl"
-    :value="theme ?? 'system'"
     :disabled="Boolean(forcedTheme)"
     aria-label="Theme"
     data-test-id="theme-selector"
     @change="handleChange"
   >
-    <option value="system">System</option>
-    <option value="dark">Dark</option>
-    <option value="light">Light</option>
+    <option
+      value="system"
+      :selected="selectedTheme === 'system'"
+    >
+      System
+    </option>
+    <option
+      value="dark"
+      :selected="selectedTheme === 'dark'"
+    >
+      Dark
+    </option>
+    <option
+      value="light"
+      :selected="selectedTheme === 'light'"
+    >
+      Light
+    </option>
   </select>
 </template>

@@ -215,7 +215,11 @@ export default async function RootLayout({
       code: `<!-- app/app.vue -->
 <script setup lang="ts">
 import {computed} from 'vue';
-import type {LightOrDark, WithSystem} from 'ssr-themes';
+import type {
+  LightOrDark,
+  ThemeHtmlProps,
+  WithSystem,
+} from 'ssr-themes';
 import {
   registerTheme,
   themeFromCookieHeader,
@@ -233,16 +237,42 @@ const initialTheme = useState<
   );
 });
 
+const styleToString = (
+  style?: ThemeHtmlProps['style'],
+) => {
+  if (!style) {
+    return undefined;
+  }
+
+  const declarations = Object.entries(style)
+    .filter(([, value]) => value !== undefined)
+    .map(([key, value]) => {
+      const property = key.startsWith('--')
+        ? key
+        : key.replace(
+            /[A-Z]/g,
+            match => \`-\${match.toLowerCase()}\`,
+          );
+
+      return \`\${property}: \${value}\`;
+    });
+
+  return declarations.length
+    ? declarations.join('; ')
+    : undefined;
+};
+
 const htmlAttrs = computed(() => {
   const {className, style, ...dataAttrs} =
     registerTheme({
       initialTheme: initialTheme.value,
     });
+  const styleText = styleToString(style);
 
   return {
     lang: 'en' as const,
     ...(className ? {class: className} : {}),
-    ...(style ? {style} : {}),
+    ...(styleText ? {style: styleText} : {}),
     ...dataAttrs,
   };
 });
@@ -271,12 +301,17 @@ if (import.meta.server) {
       lang: 'vue',
       code: `<!-- app/components/theme-switcher.vue -->
 <script setup lang="ts">
+import {computed} from 'vue';
 import type {LightOrDark, WithSystem} from 'ssr-themes';
 import {useTheme} from 'ssr-themes/vue';
 
 type ThemeName = WithSystem<LightOrDark>;
 
 const {setTheme, theme} = useTheme();
+
+const selectedTheme = computed(
+  () => theme.value ?? 'system',
+);
 
 const handleChange = (event: Event) => {
   const select = event.currentTarget as HTMLSelectElement;
@@ -286,12 +321,26 @@ const handleChange = (event: Event) => {
 
 <template>
   <select
-    :value="theme ?? 'system'"
     @change="handleChange"
   >
-    <option value="system">System</option>
-    <option value="dark">Dark</option>
-    <option value="light">Light</option>
+    <option
+      value="system"
+      :selected="selectedTheme === 'system'"
+    >
+      System
+    </option>
+    <option
+      value="dark"
+      :selected="selectedTheme === 'dark'"
+    >
+      Dark
+    </option>
+    <option
+      value="light"
+      :selected="selectedTheme === 'light'"
+    >
+      Light
+    </option>
   </select>
 </template>
 `,
