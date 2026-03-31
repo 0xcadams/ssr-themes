@@ -145,8 +145,8 @@ function IndexPage() {
               </h1>
               <p className="max-w-xl text-lg text-muted-foreground">
                 Server helpers for any framework, plus
-                first-party React, Solid, and Svelte
-                bindings.
+                first-party React, Solid, Svelte, and
+                Vue bindings.
               </p>
               <div className="space-y-6">
                 <div className="flex flex-col gap-3">
@@ -165,7 +165,7 @@ function IndexPage() {
                   <span className="text-[0.7rem] text-muted-foreground/80">
                     Live demos
                   </span>
-                  <div className="flex gap-2">
+                  <div className="flex flex-wrap gap-2">
                     {liveDemoLinks.map(link => (
                       <Button
                         key={link.href}
