@@ -20,14 +20,17 @@ test.describe('system theme test-suite', () => {
         {
           colorScheme: preferredColorScheme,
           baseURL,
-          cookies: [{name: 'theme', value: 'system'}],
+          cookies: [{name: 'theme', value: '~d'}],
         },
       );
 
       const page = await context.newPage();
       await page.goto(pagePath);
 
-      await checkStoredTheme(page, 'system');
+      await checkStoredTheme(
+        page,
+        preferredColorScheme === 'dark' ? '~d' : '~l',
+      );
       await checkAppliedTheme(page, expectedTheme);
     });
   }

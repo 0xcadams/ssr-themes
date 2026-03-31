@@ -74,7 +74,7 @@ export interface ThemeProviderProps<
 > extends ThemeOptions<TTheme, TEnableSystem> {
   children?: JSX.Element;
   disableTransitionOnChange?: boolean | undefined;
-  initialTheme?:
+  selectedTheme?:
     | WithSystem<TTheme, TEnableSystem>
     | undefined;
   nonce?: string;
@@ -140,7 +140,7 @@ export const ThemeProvider = <
     getTheme(
       cookieName,
       resolvedDefaultTheme(),
-      props.initialTheme,
+      props.selectedTheme,
     ),
   );
   const [systemTheme, setSystemTheme] = createSignal<
@@ -259,13 +259,26 @@ export const ThemeProvider = <
       const nextTheme = getSystemTheme(
         event,
       ) as Exclude<TTheme, 'system'>;
+      const isChangeEvent = 'type' in event;
+      const hasSystemCookie =
+        getTheme<TTheme, TEnableSystem>(
+          cookieName,
+          undefined,
+          undefined,
+        ) === 'system';
       setSystemTheme(() => nextTheme);
 
       if (
+        (isChangeEvent || hasSystemCookie) &&
         theme() === 'system' &&
         enableSystemValue() &&
         !props.forcedTheme
       ) {
+        saveToCookie(
+          cookieName,
+          'system',
+          props.cookie,
+        );
         applyTheme(
           'system' as WithSystem<
             TTheme,

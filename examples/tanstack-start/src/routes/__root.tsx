@@ -14,7 +14,7 @@ import {
   themeFromCookieHeader,
   themeScript,
   type LightOrDark,
-  type WithSystem,
+  type ThemeCookieState,
 } from 'ssr-themes';
 import {ThemeProvider} from 'ssr-themes/react';
 import appCss from '../styles.css?url';
@@ -23,7 +23,7 @@ type ThemeStaticData = {
   theme?: LightOrDark;
 };
 
-const getInitialTheme = createServerFn({
+const getThemeState = createServerFn({
   method: 'GET',
 }).handler(() =>
   themeFromCookieHeader(getRequestHeader('cookie')),
@@ -32,16 +32,23 @@ const getInitialTheme = createServerFn({
 function RootDocument({
   children,
   forcedTheme,
-  initialTheme,
+  themeState,
 }: {
   children: React.ReactNode;
   forcedTheme?: LightOrDark;
-  initialTheme?: WithSystem<LightOrDark>;
+  themeState?: ThemeCookieState<LightOrDark>;
 }) {
+  const registerThemeOptions = forcedTheme
+    ? {
+        ...(themeState ?? {}),
+        appliedTheme: forcedTheme,
+      }
+    : themeState;
+
   return (
     <html
       suppressHydrationWarning
-      {...registerTheme({initialTheme})}
+      {...registerTheme(registerThemeOptions)}
     >
       <head>
         <HeadContent />
@@ -49,9 +56,11 @@ function RootDocument({
       <body className="min-h-screen bg-white text-black dark:bg-black dark:text-white antialiased font-mono">
         <ThemeProvider
           forcedTheme={forcedTheme}
-          initialTheme={initialTheme}
+          selectedTheme={themeState?.selectedTheme}
         >
-          <ScriptOnce children={themeScript()} />
+          <ScriptOnce
+            children={themeScript({forcedTheme})}
+          />
           {children}
         </ThemeProvider>
         <Scripts />
@@ -62,7 +71,7 @@ function RootDocument({
 
 function RootComponent() {
   const matches = useMatches();
-  const {initialTheme} = Route.useLoaderData();
+  const {themeState} = Route.useLoaderData();
   const forcedTheme = React.useMemo(() => {
     return matches.reduce<LightOrDark | undefined>(
       (theme, match) => {
@@ -74,11 +83,10 @@ function RootComponent() {
       undefined,
     );
   }, [matches]);
-
   return (
     <RootDocument
       forcedTheme={forcedTheme}
-      initialTheme={initialTheme}
+      themeState={themeState}
     >
       <Outlet />
     </RootDocument>
@@ -87,7 +95,7 @@ function RootComponent() {
 
 export const Route = createRootRoute({
   loader: async () => ({
-    initialTheme: await getInitialTheme(),
+    themeState: await getThemeState(),
   }),
   staleTime: Infinity,
   shouldReload: false,

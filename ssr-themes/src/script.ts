@@ -40,6 +40,7 @@ export const script = <
   const attributes = Array.isArray(attribute)
     ? attribute
     : [attribute];
+  const themeNames = new Set(themes);
   const themeValues: Array<{
     theme: TTheme;
     value: string;
@@ -70,28 +71,34 @@ export const script = <
     return undefined;
   };
 
-  const getThemeFromDOM = () => {
-    for (const attr of attributes) {
-      if (attr === 'class') {
-        for (const entry of themeValues) {
-          if (el.classList.contains(entry.value)) {
-            return entry.theme;
-          }
-        }
-        continue;
-      }
-
-      const attrValue = el.getAttribute(attr);
-      if (!attrValue) continue;
-
-      for (const entry of themeValues) {
-        if (entry.value === attrValue) {
-          return entry.theme;
-        }
-      }
+  const decodeTheme = (
+    value: string | undefined,
+  ): WithSystem<TTheme, TEnableSystem> | undefined => {
+    if (!value) {
+      return undefined;
     }
 
-    return undefined;
+    if (value === '~d' || value === '~l') {
+      return 'system' as WithSystem<
+        TTheme,
+        TEnableSystem
+      >;
+    }
+
+    if (value === 'system') {
+      return 'system' as WithSystem<
+        TTheme,
+        TEnableSystem
+      >;
+    }
+
+    if (value.startsWith('~')) {
+      return undefined;
+    }
+
+    return themeNames.has(value as TTheme)
+      ? (value as WithSystem<TTheme, TEnableSystem>)
+      : undefined;
   };
 
   function updateDOM(theme: TTheme) {
@@ -137,20 +144,15 @@ export const script = <
       ? (getBrowserTheme() as TTheme)
       : (themeName as TTheme);
 
-  const themeName = getThemeFromDOM();
-  if (themeName) {
-    updateDOM(getThemeOrSystem(themeName));
-    return;
-  }
-
   try {
-    const themeName = (getCookie(cookieName) ||
-      defaultTheme) as WithSystem<
-      TTheme,
-      TEnableSystem
-    >;
+    const themeName =
+      decodeTheme(getCookie(cookieName)) ??
+      (defaultTheme as WithSystem<
+        TTheme,
+        TEnableSystem
+      >);
     updateDOM(getThemeOrSystem(themeName));
-  } catch (e) {
+  } catch {
     //
   }
 };

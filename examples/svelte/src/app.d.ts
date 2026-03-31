@@ -1,16 +1,16 @@
 import type {
   LightOrDark,
-  WithSystem,
+  ThemeCookieState,
 } from 'ssr-themes';
 
 declare global {
   namespace App {
     interface Locals {
-      initialTheme?: WithSystem<LightOrDark>;
+      themeState?: ThemeCookieState<LightOrDark>;
     }
 
     interface PageData {
-      initialTheme?: WithSystem<LightOrDark>;
+      themeState?: ThemeCookieState<LightOrDark>;
     }
   }
 }

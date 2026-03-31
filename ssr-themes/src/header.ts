@@ -1,8 +1,9 @@
 import type {
   LightOrDark,
-  WithSystem,
+  ThemeCookieState,
   ThemeOptions,
 } from './types';
+import {decodeThemeCookieValue} from './theme-cookie';
 
 type ThemeFromCookieHeaderOptions<
   TTheme extends string = LightOrDark,
@@ -24,7 +25,9 @@ export const themeFromCookieHeader = <
     TTheme,
     TEnableSystem
   > = {},
-): WithSystem<TTheme, TEnableSystem> | undefined => {
+):
+  | ThemeCookieState<TTheme, TEnableSystem>
+  | undefined => {
   if (!cookieHeader) return undefined;
 
   const cookieName = options.cookieName ?? 'theme';
@@ -37,21 +40,14 @@ export const themeFromCookieHeader = <
     let value: string;
     try {
       value = decodeURIComponent(rest.join('='));
-    } catch (error) {
+    } catch {
       return undefined;
     }
 
-    if (!value) return undefined;
-
-    if (
-      options.themes &&
-      value !== 'system' &&
-      !options.themes.includes(value as TTheme)
-    ) {
-      return undefined;
-    }
-
-    return value as WithSystem<TTheme, TEnableSystem>;
+    return decodeThemeCookieValue<
+      TTheme,
+      TEnableSystem
+    >(value, options.themes);
   }
 
   return undefined;

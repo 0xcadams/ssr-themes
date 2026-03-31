@@ -50,6 +50,16 @@ export type WithSystem<
   ? TTheme | 'system'
   : TTheme;
 
+export interface ThemeCookieState<
+  TTheme extends string = LightOrDark,
+  TEnableSystem extends boolean = true,
+> {
+  /** Selected theme name stored by the app */
+  selectedTheme: WithSystem<TTheme, TEnableSystem>;
+  /** Literal theme name that should be applied to html */
+  appliedTheme: TTheme;
+}
+
 export interface ThemeOptions<
   TTheme extends string = LightOrDark,
   TEnableSystem extends boolean = true,
@@ -106,10 +116,12 @@ export interface RegisterThemeOptions<
   ThemeOptions<TTheme, TEnableSystem>,
   'valueMap' | 'enableColorScheme'
 > {
-  /** Resolved initial theme name to apply to the html element */
-  initialTheme?:
+  /** Selected theme name for SSR and hydration state */
+  selectedTheme?:
     | WithSystem<TTheme, TEnableSystem>
     | undefined;
+  /** Literal theme name to apply to the html element */
+  appliedTheme?: TTheme | undefined;
   /** Render output as JSX props or an HTML attribute string */
   renderMode?: 'jsx' | 'html-string' | undefined;
   /** Same attribute config used by ThemeProvider and themeScript() */

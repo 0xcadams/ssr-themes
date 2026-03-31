@@ -8,7 +8,6 @@ const entries = {
   react: resolve(import.meta.dirname, 'src/react.tsx'),
   solid: resolve(import.meta.dirname, 'src/solid.ts'),
   vue: resolve(import.meta.dirname, 'src/vue.ts'),
-  zod: resolve(import.meta.dirname, 'src/zod.ts'),
 } as const;
 
 const format =
@@ -38,8 +37,6 @@ export default defineConfig({
         'solid-js',
         'solid-js/web',
         'vue',
-        'zod',
-        'zod/mini',
       ],
       output:
         format === 'es'

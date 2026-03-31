@@ -1,12 +1,12 @@
 import {
   themeFromCookieHeader,
   type LightOrDark,
-  type WithSystem,
+  type ThemeCookieState,
 } from 'ssr-themes';
 import {getRequestEvent, isServer} from 'solid-js/web';
 
-export const getInitialTheme = ():
-  | WithSystem<LightOrDark>
+export const getThemeState = ():
+  | ThemeCookieState<LightOrDark>
   | undefined => {
   const cookieHeader = isServer
     ? getRequestEvent()?.request.headers.get('cookie')

@@ -3,7 +3,7 @@ import {
   themeFromCookieHeader,
   themeScript,
   type LightOrDark,
-  type WithSystem,
+  type ThemeCookieState,
 } from 'ssr-themes';
 
 export const htmlAttributesPlaceholder =
@@ -19,19 +19,19 @@ export const themeConfig = {
   themes,
 };
 
-export const getInitialTheme = (
+export const getThemeState = (
   cookieHeader: string | null | undefined,
-): WithSystem<LightOrDark> | undefined =>
+): ThemeCookieState<LightOrDark> | undefined =>
   themeFromCookieHeader(cookieHeader, {
     themes,
   });
 
 export const renderThemeHtmlAttributes = (
-  initialTheme?: WithSystem<LightOrDark>,
+  themeState?: ThemeCookieState<LightOrDark>,
 ) =>
   registerTheme({
     ...themeConfig,
-    initialTheme,
+    ...themeState,
     renderMode: 'html-string',
   });
 

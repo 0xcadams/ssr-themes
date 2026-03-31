@@ -60,8 +60,8 @@ export interface ThemeProviderProps<
   children?: React.ReactNode | undefined;
   /** Disable all CSS transitions when switching themes */
   disableTransitionOnChange?: boolean | undefined;
-  /** Theme name to use for server rendering */
-  initialTheme?:
+  /** Selected theme name to use for server rendering */
+  selectedTheme?:
     | WithSystem<TTheme, TEnableSystem>
     | undefined;
   /** Nonce string to pass to the inline style elements for CSP headers */
@@ -110,7 +110,7 @@ const Theme = <
   disableTransitionOnChange = true,
   enableColorScheme = true,
   cookie,
-  initialTheme,
+  selectedTheme,
   themes = defaultThemes as unknown as readonly TTheme[],
   defaultTheme,
   attribute = 'class',
@@ -132,7 +132,7 @@ const Theme = <
     getTheme(
       cookieName,
       resolvedDefaultTheme,
-      initialTheme,
+      selectedTheme,
     ),
   );
   const [resolvedTheme, setResolvedTheme] =
@@ -154,10 +154,7 @@ const Theme = <
   const broadcastRef =
     React.useRef<BroadcastChannel | null>(null);
   const themeRef = React.useRef(theme);
-
-  React.useEffect(() => {
-    themeRef.current = theme;
-  }, [theme]);
+  themeRef.current = theme;
 
   const applyTheme = React.useCallback(
     (
@@ -256,13 +253,22 @@ const Theme = <
   const handleMediaQuery = React.useCallback(
     (e: MediaQueryListEvent | MediaQueryList) => {
       const resolved = getSystemTheme(e) as TTheme;
+      const isChangeEvent = 'type' in e;
+      const hasSystemCookie =
+        getTheme<TTheme, TEnableSystem>(
+          cookieName,
+          undefined,
+          undefined,
+        ) === 'system';
       setResolvedTheme(resolved);
 
       if (
-        theme === 'system' &&
+        (isChangeEvent || hasSystemCookie) &&
+        themeRef.current === 'system' &&
         enableSystemValue &&
         !forcedTheme
       ) {
+        saveToCookie(cookieName, 'system', cookie);
         applyTheme(
           'system' as WithSystem<
             TTheme,
@@ -273,9 +279,10 @@ const Theme = <
     },
     [
       applyTheme,
+      cookie,
+      cookieName,
       enableSystemValue,
       forcedTheme,
-      theme,
     ],
   );
 

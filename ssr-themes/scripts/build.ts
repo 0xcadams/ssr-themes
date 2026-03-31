@@ -13,11 +13,12 @@ const cjsEntries = [
   'react',
   'solid',
   'vue',
-  'zod',
 ] as const;
 const generatedDeclarationFiles = [
   'src/theme-dom.d.ts',
   'src/theme-dom.d.ts.map',
+  'src/theme-cookie.d.ts',
+  'src/theme-cookie.d.ts.map',
   'src/theme-runtime.d.ts',
   'src/theme-runtime.d.ts.map',
   'src/types.d.ts',

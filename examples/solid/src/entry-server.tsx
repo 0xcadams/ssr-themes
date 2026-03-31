@@ -4,13 +4,13 @@ import {
   StartServer,
 } from '@solidjs/start/server';
 import {registerTheme, themeScript} from 'ssr-themes';
-import {getInitialTheme} from '~/lib/theme';
+import {getThemeState} from '~/lib/theme';
 
 export default createHandler(() => (
   <StartServer
     document={({assets, children, scripts}) => {
-      const initialTheme = getInitialTheme();
-      const htmlProps = registerTheme({initialTheme});
+      const themeState = getThemeState();
+      const htmlProps = registerTheme(themeState);
 
       return (
         <html

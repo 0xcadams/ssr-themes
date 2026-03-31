@@ -80,7 +80,7 @@ const renderTheme = (
       name: 'ThemeHarness',
       setup() {
         return () =>
-          h(ThemeProvider, providerProps, {
+          h(ThemeProvider, providerProps as never, {
             default: () =>
               h(ThemeReporter, reporterProps),
           });

@@ -18,12 +18,18 @@ describe('themeFromCookieHeader', () => {
   it('reads the theme from the default cookie name regardless of cookie order', () => {
     expect(
       themeFromCookieHeader('session=abc; theme=dark'),
-    ).toBe('dark');
+    ).toEqual({
+      selectedTheme: 'dark',
+      appliedTheme: 'dark',
+    });
     expect(
       themeFromCookieHeader(
         'theme=light; session=abc',
       ),
-    ).toBe('light');
+    ).toEqual({
+      selectedTheme: 'light',
+      appliedTheme: 'light',
+    });
   });
 
   it('trims cookie whitespace before matching the cookie name', () => {
@@ -31,7 +37,10 @@ describe('themeFromCookieHeader', () => {
       themeFromCookieHeader(
         'session=abc;   theme=dark',
       ),
-    ).toBe('dark');
+    ).toEqual({
+      selectedTheme: 'dark',
+      appliedTheme: 'dark',
+    });
   });
 
   it('supports a custom cookie name', () => {
@@ -42,7 +51,10 @@ describe('themeFromCookieHeader', () => {
           cookieName: 'color-mode',
         },
       ),
-    ).toBe('light');
+    ).toEqual({
+      selectedTheme: 'light',
+      appliedTheme: 'light',
+    });
   });
 
   it('decodes URL-encoded cookie values, including encoded separators', () => {
@@ -50,12 +62,18 @@ describe('themeFromCookieHeader', () => {
       themeFromCookieHeader<'solarized light'>(
         'theme=solarized%20light',
       ),
-    ).toBe('solarized light');
+    ).toEqual({
+      selectedTheme: 'solarized light',
+      appliedTheme: 'solarized light',
+    });
     expect(
       themeFromCookieHeader<'solarized=light'>(
         'theme=solarized%3Dlight',
       ),
-    ).toBe('solarized=light');
+    ).toEqual({
+      selectedTheme: 'solarized=light',
+      appliedTheme: 'solarized=light',
+    });
   });
 
   it('validates cookie values against the provided theme list', () => {
@@ -66,7 +84,10 @@ describe('themeFromCookieHeader', () => {
           themes: ['light', 'pink'],
         },
       ),
-    ).toBe('pink');
+    ).toEqual({
+      selectedTheme: 'pink',
+      appliedTheme: 'pink',
+    });
 
     expect(
       themeFromCookieHeader<'light' | 'pink'>(
@@ -81,12 +102,28 @@ describe('themeFromCookieHeader', () => {
   it('allows system when system support is enabled, even if themes omits it', () => {
     expect(
       themeFromCookieHeader<'light' | 'dark'>(
-        'theme=system',
+        'theme=~d',
         {
           themes: ['light', 'dark'],
         },
       ),
-    ).toBe('system');
+    ).toEqual({
+      selectedTheme: 'system',
+      appliedTheme: 'dark',
+    });
+  });
+
+  it('reads compact system values from the cookie', () => {
+    expect(themeFromCookieHeader('theme=~l')).toEqual({
+      selectedTheme: 'system',
+      appliedTheme: 'light',
+    });
+  });
+
+  it('treats plain system cookie values as invalid', () => {
+    expect(
+      themeFromCookieHeader('theme=system'),
+    ).toBeUndefined();
   });
 
   it('returns undefined for empty cookie values', () => {

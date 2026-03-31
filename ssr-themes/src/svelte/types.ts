@@ -47,7 +47,7 @@ export interface ThemeProviderProps<
 > extends ThemeOptions<TTheme, TEnableSystem> {
   children?: Snippet | undefined;
   disableTransitionOnChange?: boolean | undefined;
-  initialTheme?:
+  selectedTheme?:
     | WithSystem<TTheme, TEnableSystem>
     | undefined;
   nonce?: string | undefined;

@@ -8,7 +8,7 @@ import {
   type ThemeHtmlProps,
 } from 'ssr-themes';
 
-const initialTheme = themeFromCookieHeader(
+const themeState = themeFromCookieHeader(
   Astro.request.headers.get('cookie'),
 );
 
@@ -37,7 +37,7 @@ const {
   className,
   style,
   ...themeHtmlProps
-} = registerTheme({initialTheme});
+} = registerTheme({ ...themeState });
 ---
 
 <html
@@ -98,7 +98,7 @@ const {
 
         <ThemeSwitcher
           client:load
-          initialTheme={initialTheme}
+          selectedTheme={themeState?.selectedTheme}
         />
 
         <p class="mx-auto max-w-lg text-sm leading-relaxed text-black/60 dark:text-white/60">

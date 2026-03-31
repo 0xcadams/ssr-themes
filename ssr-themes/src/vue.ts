@@ -78,7 +78,7 @@ export interface ThemeProviderProps<
   TEnableSystem extends boolean = true,
 > extends ThemeOptions<TTheme, TEnableSystem> {
   disableTransitionOnChange?: boolean | undefined;
-  initialTheme?:
+  selectedTheme?:
     | WithSystem<TTheme, TEnableSystem>
     | undefined;
   nonce?: string;
@@ -116,7 +116,9 @@ const themeProviderProps = {
     type: Boolean as PropType<boolean | undefined>,
     default: undefined,
   },
-  initialTheme: String as PropType<string | undefined>,
+  selectedTheme: String as PropType<
+    string | undefined
+  >,
   nonce: String as PropType<string | undefined>,
 } as const;
 
@@ -168,7 +170,7 @@ export const ThemeProvider = defineComponent({
       getTheme(
         cookieName.value,
         resolvedDefaultTheme.value,
-        props.initialTheme,
+        props.selectedTheme,
       ),
     );
     const systemTheme = ref<string | undefined>(
@@ -291,13 +293,26 @@ export const ThemeProvider = defineComponent({
       cleanupSystemTheme = subscribeToSystemTheme(
         event => {
           const nextTheme = getSystemTheme(event);
+          const isChangeEvent = 'type' in event;
+          const hasSystemCookie =
+            getTheme(
+              cookieName.value,
+              undefined,
+              undefined,
+            ) === 'system';
           systemTheme.value = nextTheme;
 
           if (
+            (isChangeEvent || hasSystemCookie) &&
             theme.value === 'system' &&
             enableSystemValue.value &&
             !forcedTheme.value
           ) {
+            saveToCookie(
+              cookieName.value,
+              'system',
+              props.cookie,
+            );
             applyTheme('system');
           }
         },
