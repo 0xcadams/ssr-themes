@@ -40,8 +40,8 @@
         class="rounded bg-black/5 px-1 py-0.5 dark:bg-white/10"
         >light</code
       >
-      on a dark system, then refresh. SSR preloads the
-      select, so it shows
+      on a dark system, then refresh. SSR preloads the select,
+      so it shows
       <code
         class="rounded bg-black/5 px-1 py-0.5 dark:bg-white/10"
         >light</code

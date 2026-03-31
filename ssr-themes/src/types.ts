@@ -25,6 +25,20 @@ type DataAttribute = `data-${string}`;
 
 export type Attribute = DataAttribute | 'class';
 
+type RegisterThemeAttribute =
+  | Attribute
+  | readonly Attribute[];
+
+type ThemeAttributeUnion<
+  TAttribute extends
+    | RegisterThemeAttribute
+    | undefined,
+> = TAttribute extends readonly (infer TMember)[]
+  ? Extract<TMember, Attribute>
+  : TAttribute extends Attribute
+    ? TAttribute
+    : never;
+
 type ThemeValueMap<TTheme extends string> = Partial<
   Record<TTheme, string>
 >;
@@ -65,20 +79,41 @@ type ThemeStyle = Record<
   string | number | undefined
 >;
 
-export type ThemeHtmlProps = {
+export type ThemeHtmlProps<
+  TAttribute extends
+    | RegisterThemeAttribute
+    | undefined = 'class',
+> = {
   className?: string;
   style?: ThemeStyle;
-} & Partial<Record<DataAttribute, string>>;
+} & Partial<
+  Record<
+    Extract<
+      ThemeAttributeUnion<TAttribute>,
+      DataAttribute
+    >,
+    string
+  >
+>;
 
 export interface RegisterThemeOptions<
   TTheme extends string = LightOrDark,
   TEnableSystem extends boolean = true,
+  TAttribute extends
+    | RegisterThemeAttribute
+    | undefined = 'class',
 > extends Pick<
   ThemeOptions<TTheme, TEnableSystem>,
-  'attribute' | 'valueMap' | 'enableColorScheme'
+  'valueMap' | 'enableColorScheme'
 > {
   /** Resolved initial theme name to apply to the html element */
-  initialTheme?: TTheme | undefined;
+  initialTheme?:
+    | WithSystem<TTheme, TEnableSystem>
+    | undefined;
+  /** Render output as JSX props or an HTML attribute string */
+  renderMode?: 'jsx' | 'html-string' | undefined;
+  /** Same attribute config used by ThemeProvider and themeScript() */
+  attribute?: TAttribute | undefined;
   /** Optional class name to merge with the theme class */
   className?: string | undefined;
   /** Optional style object to merge with color-scheme */
