@@ -40,6 +40,7 @@ export const script = <
   const attributes = Array.isArray(attribute)
     ? attribute
     : [attribute];
+  const themeNames = new Set(themes);
   const themeValues: Array<{
     theme: TTheme;
     value: string;
@@ -70,6 +71,58 @@ export const script = <
     return undefined;
   };
 
+  const decodeTheme = (
+    value: string | undefined,
+  ): WithSystem<TTheme, TEnableSystem> | undefined => {
+    if (!value) {
+      return undefined;
+    }
+
+    const compactTheme =
+      value === '~d'
+        ? 'dark'
+        : value === '~l'
+          ? 'light'
+          : undefined;
+
+    if (compactTheme) {
+      if (!themeNames.has(compactTheme as TTheme)) {
+        return undefined;
+      }
+
+      if (!enableSystem) {
+        return compactTheme as WithSystem<
+          TTheme,
+          TEnableSystem
+        >;
+      }
+
+      return 'system' as WithSystem<
+        TTheme,
+        TEnableSystem
+      >;
+    }
+
+    if (value === 'system') {
+      if (!enableSystem) {
+        return undefined;
+      }
+
+      return 'system' as WithSystem<
+        TTheme,
+        TEnableSystem
+      >;
+    }
+
+    if (value.startsWith('~')) {
+      return undefined;
+    }
+
+    return themeNames.has(value as TTheme)
+      ? (value as WithSystem<TTheme, TEnableSystem>)
+      : undefined;
+  };
+
   const getThemeFromDOM = () => {
     for (const attr of attributes) {
       if (attr === 'class') {
@@ -82,7 +135,9 @@ export const script = <
       }
 
       const attrValue = el.getAttribute(attr);
-      if (!attrValue) continue;
+      if (!attrValue) {
+        continue;
+      }
 
       for (const entry of themeValues) {
         if (entry.value === attrValue) {
@@ -137,20 +192,27 @@ export const script = <
       ? (getBrowserTheme() as TTheme)
       : (themeName as TTheme);
 
-  const themeName = getThemeFromDOM();
-  if (themeName) {
-    updateDOM(getThemeOrSystem(themeName));
-    return;
-  }
-
   try {
-    const themeName = (getCookie(cookieName) ||
-      defaultTheme) as WithSystem<
+    const cookieTheme = decodeTheme(
+      getCookie(cookieName),
+    );
+    if (cookieTheme) {
+      updateDOM(getThemeOrSystem(cookieTheme));
+      return;
+    }
+
+    const domTheme = getThemeFromDOM();
+    if (domTheme) {
+      updateDOM(domTheme);
+      return;
+    }
+
+    const themeName = defaultTheme as WithSystem<
       TTheme,
       TEnableSystem
     >;
     updateDOM(getThemeOrSystem(themeName));
-  } catch (e) {
+  } catch {
     //
   }
 };

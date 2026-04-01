@@ -10,7 +10,7 @@ import {
 type ThemeName = WithSystem<LightOrDark>;
 
 type ThemeSwitcherProps = {
-  initialTheme?: ThemeName;
+  selectedTheme?: ThemeName;
 };
 
 function ThemeSelect() {
@@ -60,10 +60,10 @@ function ThemeSelect() {
 }
 
 export default function ThemeSwitcher({
-  initialTheme,
+  selectedTheme,
 }: ThemeSwitcherProps) {
   return (
-    <ThemeProvider initialTheme={initialTheme}>
+    <ThemeProvider selectedTheme={selectedTheme}>
       <ThemeSelect />
     </ThemeProvider>
   );

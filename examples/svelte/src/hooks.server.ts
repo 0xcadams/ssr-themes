@@ -1,7 +1,7 @@
 import type {Handle} from '@sveltejs/kit';
 
 import {
-  getInitialTheme,
+  getThemeState,
   htmlAttributesPlaceholder,
   renderThemeHtmlAttributes,
   renderThemeScript,
@@ -12,17 +12,17 @@ export const handle: Handle = async ({
   event,
   resolve,
 }) => {
-  const initialTheme = getInitialTheme(
+  const themeState = getThemeState(
     event.request.headers.get('cookie'),
   );
-  event.locals.initialTheme = initialTheme;
+  event.locals.themeState = themeState;
 
   return resolve(event, {
     transformPageChunk: ({html}) =>
       html
         .replace(
           htmlAttributesPlaceholder,
-          renderThemeHtmlAttributes(initialTheme),
+          renderThemeHtmlAttributes(themeState),
         )
         .replace(
           themeScriptPlaceholder,

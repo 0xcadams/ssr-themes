@@ -2,8 +2,8 @@
 import {computed} from 'vue';
 import type {
   LightOrDark,
+  ThemeCookieState,
   ThemeHtmlProps,
-  WithSystem,
 } from 'ssr-themes';
 import {
   registerTheme,
@@ -12,8 +12,8 @@ import {
 } from 'ssr-themes';
 import {ThemeProvider} from 'ssr-themes/vue';
 
-const initialTheme = useState<
-  WithSystem<LightOrDark> | undefined
+const themeState = useState<
+  ThemeCookieState<LightOrDark> | undefined
 >('theme', () => {
   if (import.meta.client) {
     return undefined;
@@ -23,6 +23,10 @@ const initialTheme = useState<
     useRequestHeaders(['cookie']).cookie,
   );
 });
+
+const selectedTheme = computed(
+  () => themeState.value?.selectedTheme,
+);
 
 const styleToString = (
   style?: ThemeHtmlProps['style'],
@@ -51,9 +55,7 @@ const styleToString = (
 
 const htmlAttrs = computed(() => {
   const {className, style, ...dataAttrs} =
-    registerTheme({
-      initialTheme: initialTheme.value,
-    });
+    registerTheme(themeState.value);
   const styleText = styleToString(style);
 
   return {
@@ -108,7 +110,7 @@ if (import.meta.server) {
 </script>
 
 <template>
-  <ThemeProvider :initial-theme="initialTheme">
+  <ThemeProvider :selected-theme="selectedTheme">
     <NuxtPage />
   </ThemeProvider>
 </template>

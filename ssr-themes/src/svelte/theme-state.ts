@@ -112,7 +112,9 @@ export const createThemeController = <
   let theme = getTheme(
     options.cookieName,
     options.resolvedDefaultTheme,
-    options.initialTheme,
+    options.selectedTheme,
+    options.themesValue,
+    options.enableSystemValue,
   );
   let systemTheme = !isServer
     ? (getSystemTheme() as Exclude<TTheme, 'system'>)
@@ -290,13 +292,28 @@ export const createThemeController = <
           TTheme,
           'system'
         >;
+        const isChangeEvent = 'type' in event;
+        const hasSystemCookie =
+          getTheme<TTheme, TEnableSystem>(
+            options.cookieName,
+            undefined,
+            undefined,
+            options.themesValue,
+            options.enableSystemValue,
+          ) === 'system';
         updateDerivedStores();
 
         if (
+          (isChangeEvent || hasSystemCookie) &&
           theme === 'system' &&
           options.enableSystemValue &&
           !options.forcedTheme
         ) {
+          saveToCookie(
+            options.cookieName,
+            'system',
+            options.cookie,
+          );
           applyTheme(
             'system' as WithSystem<
               TTheme,
@@ -321,9 +338,9 @@ export const createThemeController = <
 
     if (
       theme === undefined &&
-      options.initialTheme !== undefined
+      options.selectedTheme !== undefined
     ) {
-      theme = options.initialTheme;
+      theme = options.selectedTheme;
       themeStore.set(theme);
     }
 

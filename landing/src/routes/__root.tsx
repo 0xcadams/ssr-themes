@@ -24,7 +24,7 @@ const themes = [
   'abyss',
 ] as const;
 
-const getInitialTheme = createServerFn({
+const getThemeState = createServerFn({
   method: 'GET',
 }).handler(() =>
   themeFromCookieHeader(getRequestHeader('cookie'), {
@@ -33,12 +33,12 @@ const getInitialTheme = createServerFn({
 );
 
 function RootComponent() {
-  const {initialTheme} = Route.useLoaderData();
+  const {themeState} = Route.useLoaderData();
 
   return (
     <html
       suppressHydrationWarning
-      {...registerTheme({initialTheme})}
+      {...registerTheme(themeState)}
     >
       <head>
         <HeadContent />
@@ -46,7 +46,7 @@ function RootComponent() {
       <body className="min-h-screen bg-background text-foreground antialiased">
         <ThemeProvider
           themes={themes}
-          initialTheme={initialTheme}
+          selectedTheme={themeState?.selectedTheme}
         >
           <ScriptOnce
             children={themeScript({
@@ -65,7 +65,7 @@ function RootComponent() {
 
 export const Route = createRootRoute({
   loader: async () => ({
-    initialTheme: await getInitialTheme(),
+    themeState: await getThemeState(),
   }),
   staleTime: Infinity,
   shouldReload: false,

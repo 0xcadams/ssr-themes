@@ -1,9 +1,12 @@
 import type {Metadata} from 'next';
-import {cookies} from 'next/headers';
+import {cookies, headers} from 'next/headers';
 import Script from 'next/script';
 import type {ReactNode} from 'react';
-import {registerTheme, themeScript} from 'ssr-themes';
-import {lightOrDarkWithSystemSchema} from 'ssr-themes/zod';
+import {
+  registerTheme,
+  themeFromCookieHeader,
+  themeScript,
+} from 'ssr-themes';
 
 import './globals.css';
 
@@ -18,19 +21,14 @@ export default async function RootLayout({
 }: {
   children: ReactNode;
 }) {
-  const themeCookie = (await cookies()).get(
-    'theme',
-  )?.value;
-  const parsedCookie =
-    lightOrDarkWithSystemSchema.safeParse(themeCookie);
-  const initialTheme = parsedCookie.success
-    ? parsedCookie.data
-    : undefined;
+  const themeState = themeFromCookieHeader(
+    (await headers()).get('cookie'),
+  );
 
   return (
     <html
       suppressHydrationWarning
-      {...registerTheme({initialTheme})}
+      {...registerTheme(themeState)}
     >
       <head>
         <link

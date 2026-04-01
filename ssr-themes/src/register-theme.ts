@@ -125,7 +125,8 @@ export function registerTheme<
   > = {},
 ): string | ThemeHtmlProps<TAttribute> {
   const {
-    initialTheme,
+    selectedTheme,
+    appliedTheme,
     valueMap,
     enableColorScheme = true,
     className,
@@ -145,13 +146,19 @@ export function registerTheme<
     props.style = {...style};
   }
 
-  if (!initialTheme || initialTheme === 'system') {
+  const resolvedTheme =
+    appliedTheme ??
+    (selectedTheme === 'system'
+      ? undefined
+      : selectedTheme);
+
+  if (!resolvedTheme) {
     return toRegisterThemeOutput(props, renderMode);
   }
 
   const name = valueMap
-    ? valueMap[initialTheme as TTheme]
-    : initialTheme;
+    ? valueMap[resolvedTheme as TTheme]
+    : resolvedTheme;
   if (!name) {
     return toRegisterThemeOutput(props, renderMode);
   }
@@ -172,12 +179,12 @@ export function registerTheme<
 
   if (
     enableColorScheme &&
-    (initialTheme === 'light' ||
-      initialTheme === 'dark')
+    (resolvedTheme === 'light' ||
+      resolvedTheme === 'dark')
   ) {
     props.style = {
       ...(props.style ?? {}),
-      colorScheme: initialTheme,
+      colorScheme: resolvedTheme,
     };
   }
 

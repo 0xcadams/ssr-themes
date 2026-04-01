@@ -6,6 +6,7 @@ import {
   render,
   renderHook,
   screen,
+  waitFor,
 } from '@testing-library/react';
 import {
   vi,
@@ -151,10 +152,21 @@ describe('storage', () => {
 
     expect(getCookieValue('theme')).toBe('dark');
   });
+
+  test('should encode system theme when switching themes', () => {
+    setDeviceTheme('dark');
+
+    const {result} = renderHook(() => useTheme(), {
+      wrapper: makeWrapper({enableSystem: true}),
+    });
+    result.current.setTheme('system');
+
+    expect(getCookieValue('theme')).toBe('~d');
+  });
 });
 
 describe('custom cookie name', () => {
-  test("should save to cookie with 'theme' name when using default settings", () => {
+  test("should save to cookie with 'theme' name when using default settings", async () => {
     act(() => {
       render(
         <ThemeProvider>
@@ -163,10 +175,12 @@ describe('custom cookie name', () => {
       );
     });
 
-    expect(getCookieValue('theme')).toBe('light');
+    await waitFor(() => {
+      expect(getCookieValue('theme')).toBe('light');
+    });
   });
 
-  test("should save to cookie with 'customKey' when setting prop 'cookie.name' to 'customKey'", () => {
+  test("should save to cookie with 'customKey' when setting prop 'cookie.name' to 'customKey'", async () => {
     act(() => {
       render(
         <ThemeProvider cookie={{name: 'customKey'}}>
@@ -175,7 +189,11 @@ describe('custom cookie name', () => {
       );
     });
 
-    expect(getCookieValue('customKey')).toBe('light');
+    await waitFor(() => {
+      expect(getCookieValue('customKey')).toBe(
+        'light',
+      );
+    });
   });
 });
 
@@ -470,9 +488,26 @@ describe('system theme', () => {
     expect(result.current.forcedTheme).toBeUndefined();
   });
 
+  test('compact system cookie falls back to a literal theme when enableSystem is false', () => {
+    setCookieValue('theme', '~d');
+    setDeviceTheme('light');
+
+    const {result} = renderHook(() => useTheme(), {
+      wrapper: makeWrapper({
+        enableSystem: false,
+        defaultTheme: 'light',
+      }),
+    });
+
+    expect(result.current.theme).toBe('dark');
+    expect(result.current.colorScheme).toBeUndefined();
+    expect(result.current.resolvedTheme).toBe('dark');
+    expect(result.current.forcedTheme).toBeUndefined();
+  });
+
   test('should keep system theme when dom is resolved', () => {
     setDeviceTheme('dark');
-    setCookieValue('theme', 'system');
+    setCookieValue('theme', '~d');
     document.documentElement.classList.add('dark');
 
     const {result} = renderHook(() => useTheme(), {
@@ -495,12 +530,12 @@ describe('system theme', () => {
     expect(result.current.resolvedTheme).toBe('dark');
   });
 
-  test('should keep initialTheme when dom is already resolved', () => {
+  test('should keep selectedTheme when dom is already resolved', () => {
     setDeviceTheme('dark');
     document.documentElement.classList.add('dark');
 
     const {result} = renderHook(() => useTheme(), {
-      wrapper: makeWrapper({initialTheme: 'system'}),
+      wrapper: makeWrapper({selectedTheme: 'system'}),
     });
 
     expect(result.current.theme).toBe('system');
@@ -600,14 +635,18 @@ describe('setTheme', () => {
       theme === 'light' ? 'dark' : 'light',
     );
 
-    result.current.setTheme(toggleTheme);
+    act(() => {
+      result.current.setTheme(toggleTheme);
+    });
     expect(toggleTheme).toBeCalledTimes(1);
     rerender();
 
     expect(result.current.theme).toBe('dark');
     expect(result.current.resolvedTheme).toBe('dark');
 
-    result.current.setTheme(toggleTheme);
+    act(() => {
+      result.current.setTheme(toggleTheme);
+    });
     expect(toggleTheme).toBeCalledTimes(2);
     rerender();
 
@@ -660,6 +699,67 @@ describe('bootstrap script', () => {
     const scriptContent = themeScript({
       attribute: 'class',
       defaultTheme: 'light',
+    });
+
+    Function(scriptContent)();
+
+    expect(
+      document.documentElement.classList.contains(
+        'dark',
+      ),
+    ).toBeTruthy();
+  });
+
+  test('themeScript prefers the compact cookie over stale dom', () => {
+    setCookieValue('theme', '~d');
+    setDeviceTheme('dark');
+    document.documentElement.classList.add('light');
+
+    const scriptContent = themeScript({
+      attribute: 'class',
+      defaultTheme: 'light',
+    });
+
+    Function(scriptContent)();
+
+    expect(
+      document.documentElement.classList.contains(
+        'dark',
+      ),
+    ).toBeTruthy();
+  });
+
+  test('themeScript treats compact cookies as literal themes when system is disabled', () => {
+    setCookieValue('theme', '~d');
+    setDeviceTheme('light');
+
+    const scriptContent = themeScript({
+      attribute: 'class',
+      defaultTheme: 'light',
+      enableSystem: false,
+    });
+
+    Function(scriptContent)();
+
+    expect(
+      document.documentElement.classList.contains(
+        'dark',
+      ),
+    ).toBeTruthy();
+    expect(
+      document.documentElement.classList.contains(
+        'system',
+      ),
+    ).toBeFalsy();
+  });
+
+  test('themeScript preserves an SSR-applied theme when no cookie is set', () => {
+    setDeviceTheme('light');
+    document.documentElement.classList.add('dark');
+
+    const scriptContent = themeScript({
+      attribute: 'class',
+      defaultTheme: 'system',
     });
 
     Function(scriptContent)();

@@ -18,7 +18,7 @@
 
 <ThemeProvider
   {...themeConfig}
-  initialTheme={data.initialTheme}
+  selectedTheme={data.themeState?.selectedTheme}
 >
   <div
     class="min-h-screen bg-white font-mono text-black antialiased dark:bg-black dark:text-white"

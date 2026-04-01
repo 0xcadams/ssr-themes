@@ -5,6 +5,10 @@ import type {
   ThemeOptions,
   WithSystem,
 } from './types';
+import {
+  decodeThemeCookieValue,
+  encodeThemeCookieValue,
+} from './theme-cookie';
 
 export type ThemeBroadcastMessage = {
   key: string;
@@ -70,7 +74,7 @@ export const formatSameSite = (
 
 export const saveToCookie = (
   cookieName: string,
-  value: string,
+  selectedTheme: string,
   options?: CookieOptions,
 ) => {
   if (typeof document === 'undefined') {
@@ -78,12 +82,23 @@ export const saveToCookie = (
   }
 
   try {
+    const cookieValue = encodeThemeCookieValue(
+      selectedTheme,
+      selectedTheme === 'system'
+        ? getSystemTheme()
+        : undefined,
+    );
+    if (!cookieValue) {
+      return;
+    }
+
     const cookieOptions = {
       ...defaultCookieOptions,
       ...(options ?? {}),
     };
-    const cookieValue = encodeURIComponent(value);
-    const parts = [`${cookieName}=${cookieValue}`];
+    const parts = [
+      `${cookieName}=${encodeURIComponent(cookieValue)}`,
+    ];
 
     if (cookieOptions.path) {
       parts.push(`Path=${cookieOptions.path}`);
@@ -152,16 +167,38 @@ export const getTheme = <
   fallback:
     | WithSystem<TTheme, TEnableSystem>
     | undefined,
-  initialTheme:
+  selectedTheme:
     | WithSystem<TTheme, TEnableSystem>
     | undefined,
+  themes?: ThemeOptions<
+    TTheme,
+    TEnableSystem
+  >['themes'],
+  enableSystem?: ThemeOptions<
+    TTheme,
+    TEnableSystem
+  >['enableSystem'],
 ) => {
   if (typeof window === 'undefined') {
-    return initialTheme;
+    if (
+      selectedTheme === 'system' &&
+      enableSystem === false
+    ) {
+      return fallback;
+    }
+
+    return selectedTheme;
   }
 
-  if (initialTheme) {
-    return initialTheme;
+  if (selectedTheme) {
+    if (
+      selectedTheme === 'system' &&
+      enableSystem === false
+    ) {
+      return fallback;
+    }
+
+    return selectedTheme;
   }
 
   let theme:
@@ -169,10 +206,14 @@ export const getTheme = <
     | undefined;
 
   try {
-    theme = getCookieValue(cookieName) as WithSystem<
+    theme = decodeThemeCookieValue<
       TTheme,
       TEnableSystem
-    >;
+    >(
+      getCookieValue(cookieName),
+      themes,
+      enableSystem,
+    )?.selectedTheme;
   } catch {}
 
   if (theme) {

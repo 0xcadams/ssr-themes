@@ -16,7 +16,7 @@ describe('registerTheme', () => {
       registerTheme({
         attribute: ['class', 'data-theme'],
         className: 'app-shell',
-        initialTheme: 'dark',
+        selectedTheme: 'dark',
         style: {
           '--accent': '#fff',
         },
@@ -38,7 +38,7 @@ describe('registerTheme', () => {
     expect(
       registerTheme({
         className: 'app-shell',
-        initialTheme: 'system',
+        selectedTheme: 'system',
         style: {
           '--accent': '#fff',
         },
@@ -56,7 +56,7 @@ describe('registerTheme', () => {
       registerTheme({
         attribute: ['class', 'data-theme'],
         className: 'app-shell',
-        initialTheme: 'dark',
+        selectedTheme: 'dark',
         renderMode: 'html-string',
         style: {
           '--accent': '#fff',
@@ -72,7 +72,7 @@ describe('registerTheme', () => {
       registerTheme({
         attribute: 'class',
         className: 'quote"test',
-        initialTheme: 'light',
+        selectedTheme: 'light',
         renderMode: 'html-string',
         style: {
           '--content': '<tag>&"',
@@ -86,17 +86,17 @@ describe('registerTheme', () => {
   it('infers return types from the render mode', () => {
     const jsxProps = registerTheme({
       attribute: ['class', 'data-theme'] as const,
-      initialTheme: 'dark',
+      selectedTheme: 'dark',
     });
     const htmlString = registerTheme({
-      initialTheme: 'dark',
+      selectedTheme: 'dark',
       renderMode: 'html-string',
     });
     const explicitHtmlString = registerTheme<
       'light' | 'dark',
       true
     >({
-      initialTheme: 'system',
+      selectedTheme: 'system',
       renderMode: 'html-string',
     });
 
@@ -107,5 +107,21 @@ describe('registerTheme', () => {
     expectTypeOf(
       explicitHtmlString,
     ).toEqualTypeOf<string>();
+  });
+
+  it('uses appliedTheme when selectedTheme is system', () => {
+    expect(
+      registerTheme({
+        attribute: ['class', 'data-theme'],
+        selectedTheme: 'system',
+        appliedTheme: 'dark',
+      }),
+    ).toEqual({
+      'data-theme': 'dark',
+      'className': 'dark',
+      'style': {
+        colorScheme: 'dark',
+      },
+    });
   });
 });

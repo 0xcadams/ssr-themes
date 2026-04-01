@@ -6,6 +6,7 @@ export type {
   CookieOptions,
   LightOrDark,
   RegisterThemeOptions,
+  ThemeCookieState,
   ThemeHtmlProps,
   ThemeOptions,
   WithSystem,

@@ -1,5 +1,6 @@
-import {cookies} from 'next/headers';
+import {headers} from 'next/headers';
 import type {ReactNode} from 'react';
+import {themeFromCookieHeader} from 'ssr-themes';
 import {ThemeProvider} from 'ssr-themes/react';
 
 export default async function BaseLayout({
@@ -7,17 +8,14 @@ export default async function BaseLayout({
 }: {
   children: ReactNode;
 }) {
-  const cookieStore = await cookies();
-  const themeCookie = cookieStore.get('theme')?.value;
-  const initialTheme =
-    themeCookie === 'dark' ||
-    themeCookie === 'light' ||
-    themeCookie === 'system'
-      ? themeCookie
-      : undefined;
+  const themeState = themeFromCookieHeader(
+    (await headers()).get('cookie'),
+  );
 
   return (
-    <ThemeProvider initialTheme={initialTheme}>
+    <ThemeProvider
+      selectedTheme={themeState?.selectedTheme}
+    >
       {children}
     </ThemeProvider>
   );
