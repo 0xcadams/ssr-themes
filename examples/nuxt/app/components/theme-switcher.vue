@@ -8,10 +8,19 @@ import {useTheme} from 'ssr-themes/vue';
 
 type ThemeName = WithSystem<LightOrDark>;
 
-const {forcedTheme, setTheme, theme} = useTheme();
+const {forcedTheme, setTheme, theme, colorScheme} =
+  useTheme();
+const codeClassName =
+  'rounded bg-black/5 px-1 py-0.5 dark:bg-white/10';
 
 const selectedTheme = computed(
   () => theme.value ?? 'system',
+);
+const deviceTheme = computed(
+  () => colorScheme.value ?? 'dark',
+);
+const suggestedTheme = computed(() =>
+  deviceTheme.value === 'dark' ? 'light' : 'dark',
 );
 
 const handleChange = (event: Event) => {
@@ -49,4 +58,19 @@ const handleChange = (event: Event) => {
       Light
     </option>
   </select>
+
+  <p
+    class="mx-auto max-w-lg text-sm leading-relaxed text-black/60 dark:text-white/60"
+  >
+    Try
+    <code :class="codeClassName">{{
+      suggestedTheme
+    }}</code
+    >, refresh the page, and check that the select
+    never briefly shows
+    <code :class="codeClassName">{{
+      deviceTheme
+    }}</code>
+    first.
+  </p>
 </template>
