@@ -57,6 +57,9 @@ const themeState = themeFromCookieHeader(cookieHeader);
   </head>
   <body>
     <ThemeProvider
+      // Keep the logical theme choice for hydration and UI.
+      // `registerTheme(themeState)` already uses `appliedTheme`
+      // when it can pre-render <html>.
       selectedTheme={themeState?.selectedTheme}
     >
       {children}
@@ -163,7 +166,7 @@ It updates `<html>`, writes the selected theme to a cookie, reacts to system the
 
 Each binding accepts the shared theme options below, plus these additional props:
 
-- `selectedTheme`: theme to use during SSR and hydration. Pass the cookie value through directly, including `'system'`.
+- `selectedTheme`: logical theme choice for hydration and UI state. Pass `themeState?.selectedTheme` through directly, including `'system'`.
 - `disableTransitionOnChange`: disable CSS transitions during theme changes. Defaults to `true`.
 - `nonce`: CSP nonce for the temporary inline style used when transitions are disabled.
 
@@ -203,7 +206,12 @@ When present, the return value has:
 The cookie stores explicit themes as-is and stores system mode in a
 compact form with the last resolved hint, such as `~d` or `~l`.
 
+Pass the full `themeState` object to `registerTheme()` so SSR can use
+`appliedTheme`, and pass `themeState?.selectedTheme` to
+`ThemeProvider` so hydrated UI keeps the logical theme choice.
+
 - `cookieName`: cookie name to read. Defaults to `'theme'`.
+- `enableSystem`: whether `'system'` is allowed. Defaults to `true`.
 - `themes`: optional list of allowed theme names for validation.
 
 ### `registerTheme()`

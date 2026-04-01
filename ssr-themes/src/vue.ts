@@ -171,6 +171,8 @@ export const ThemeProvider = defineComponent({
         cookieName.value,
         resolvedDefaultTheme.value,
         props.selectedTheme,
+        themes.value,
+        enableSystemValue.value,
       ),
     );
     const systemTheme = ref<string | undefined>(
@@ -299,6 +301,8 @@ export const ThemeProvider = defineComponent({
               cookieName.value,
               undefined,
               undefined,
+              themes.value,
+              enableSystemValue.value,
             ) === 'system';
           systemTheme.value = nextTheme;
 

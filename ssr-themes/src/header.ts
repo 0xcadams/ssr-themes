@@ -10,6 +10,10 @@ type ThemeFromCookieHeaderOptions<
   TEnableSystem extends boolean = true,
 > = {
   cookieName?: string;
+  enableSystem?: ThemeOptions<
+    TTheme,
+    TEnableSystem
+  >['enableSystem'];
   themes?: ThemeOptions<
     TTheme,
     TEnableSystem
@@ -47,7 +51,7 @@ export const themeFromCookieHeader = <
     return decodeThemeCookieValue<
       TTheme,
       TEnableSystem
-    >(value, options.themes);
+    >(value, options.themes, options.enableSystem);
   }
 
   return undefined;

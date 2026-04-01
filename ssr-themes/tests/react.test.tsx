@@ -488,6 +488,23 @@ describe('system theme', () => {
     expect(result.current.forcedTheme).toBeUndefined();
   });
 
+  test('compact system cookie falls back to a literal theme when enableSystem is false', () => {
+    setCookieValue('theme', '~d');
+    setDeviceTheme('light');
+
+    const {result} = renderHook(() => useTheme(), {
+      wrapper: makeWrapper({
+        enableSystem: false,
+        defaultTheme: 'light',
+      }),
+    });
+
+    expect(result.current.theme).toBe('dark');
+    expect(result.current.colorScheme).toBeUndefined();
+    expect(result.current.resolvedTheme).toBe('dark');
+    expect(result.current.forcedTheme).toBeUndefined();
+  });
+
   test('should keep system theme when dom is resolved', () => {
     setDeviceTheme('dark');
     setCookieValue('theme', '~d');
@@ -701,6 +718,48 @@ describe('bootstrap script', () => {
     const scriptContent = themeScript({
       attribute: 'class',
       defaultTheme: 'light',
+    });
+
+    Function(scriptContent)();
+
+    expect(
+      document.documentElement.classList.contains(
+        'dark',
+      ),
+    ).toBeTruthy();
+  });
+
+  test('themeScript treats compact cookies as literal themes when system is disabled', () => {
+    setCookieValue('theme', '~d');
+    setDeviceTheme('light');
+
+    const scriptContent = themeScript({
+      attribute: 'class',
+      defaultTheme: 'light',
+      enableSystem: false,
+    });
+
+    Function(scriptContent)();
+
+    expect(
+      document.documentElement.classList.contains(
+        'dark',
+      ),
+    ).toBeTruthy();
+    expect(
+      document.documentElement.classList.contains(
+        'system',
+      ),
+    ).toBeFalsy();
+  });
+
+  test('themeScript preserves an SSR-applied theme when no cookie is set', () => {
+    setDeviceTheme('light');
+    document.documentElement.classList.add('dark');
+
+    const scriptContent = themeScript({
+      attribute: 'class',
+      defaultTheme: 'system',
     });
 
     Function(scriptContent)();

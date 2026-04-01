@@ -170,12 +170,34 @@ export const getTheme = <
   selectedTheme:
     | WithSystem<TTheme, TEnableSystem>
     | undefined,
+  themes?: ThemeOptions<
+    TTheme,
+    TEnableSystem
+  >['themes'],
+  enableSystem?: ThemeOptions<
+    TTheme,
+    TEnableSystem
+  >['enableSystem'],
 ) => {
   if (typeof window === 'undefined') {
+    if (
+      selectedTheme === 'system' &&
+      enableSystem === false
+    ) {
+      return fallback;
+    }
+
     return selectedTheme;
   }
 
   if (selectedTheme) {
+    if (
+      selectedTheme === 'system' &&
+      enableSystem === false
+    ) {
+      return fallback;
+    }
+
     return selectedTheme;
   }
 
@@ -187,7 +209,11 @@ export const getTheme = <
     theme = decodeThemeCookieValue<
       TTheme,
       TEnableSystem
-    >(getCookieValue(cookieName))?.selectedTheme;
+    >(
+      getCookieValue(cookieName),
+      themes,
+      enableSystem,
+    )?.selectedTheme;
   } catch {}
 
   if (theme) {

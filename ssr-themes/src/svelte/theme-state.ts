@@ -113,6 +113,8 @@ export const createThemeController = <
     options.cookieName,
     options.resolvedDefaultTheme,
     options.selectedTheme,
+    options.themesValue,
+    options.enableSystemValue,
   );
   let systemTheme = !isServer
     ? (getSystemTheme() as Exclude<TTheme, 'system'>)
@@ -296,6 +298,8 @@ export const createThemeController = <
             options.cookieName,
             undefined,
             undefined,
+            options.themesValue,
+            options.enableSystemValue,
           ) === 'system';
         updateDerivedStores();
 

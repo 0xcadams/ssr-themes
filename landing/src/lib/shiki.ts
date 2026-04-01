@@ -75,6 +75,10 @@ const {
   style,
   ...themeHtmlProps
 } = registerTheme(themeState);
+
+// registerTheme(themeState) can use appliedTheme
+// to pre-render <html>. Pass only selectedTheme
+// into the client provider.
 ---
 
 <html
@@ -187,6 +191,9 @@ export default async function RootLayout({
     (await headers()).get('cookie'),
   );
 
+  // Use the full themeState for <html>, and keep the
+  // logical selection for hydrated UI state.
+
   return (
     <html
       suppressHydrationWarning
@@ -236,6 +243,9 @@ const themeState = useState<
     useRequestHeaders(['cookie']).cookie,
   );
 });
+
+// Use the full themeState for SSR htmlAttrs, and pass
+// only selectedTheme into the provider.
 
 const styleToString = (
   style?: ThemeHtmlProps['style'],
@@ -368,6 +378,9 @@ import {getThemeState} from '~/lib/theme';
 export default function App() {
   const themeState = getThemeState();
 
+  // registerTheme(themeState) handles SSR html state.
+  // selectedTheme keeps the logical client choice.
+
   return (
     <ThemeProvider
       selectedTheme={themeState?.selectedTheme}
@@ -479,6 +492,8 @@ export const handle: Handle = async ({event, resolve}) => {
 <script lang="ts">
   import {ThemeProvider} from 'ssr-themes/svelte';
 
+  // registerTheme() uses the full themeState during SSR.
+  // Pass only selectedTheme to hydrated UI state.
   let {data, children} = $props();
 </script>
 
@@ -559,6 +574,9 @@ export const Route = createRootRoute({
 function RootComponent() {
   const {themeState} = Route.useLoaderData();
 
+  // Use the full themeState for SSR html props, and keep
+  // selectedTheme for hydrated UI state.
+
   return (
     <html
       suppressHydrationWarning
@@ -612,6 +630,9 @@ const htmlTheme = forcedTheme
       appliedTheme: forcedTheme,
     }
   : themeState;
+
+// htmlTheme can override the applied SSR theme, while
+// the provider still keeps the logical selectedTheme.
 
 <html suppressHydrationWarning {...registerTheme(htmlTheme)}>
   <body>

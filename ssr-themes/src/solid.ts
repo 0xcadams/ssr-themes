@@ -141,6 +141,8 @@ export const ThemeProvider = <
       cookieName,
       resolvedDefaultTheme(),
       props.selectedTheme,
+      themes(),
+      enableSystemValue(),
     ),
   );
   const [systemTheme, setSystemTheme] = createSignal<
@@ -265,6 +267,8 @@ export const ThemeProvider = <
           cookieName,
           undefined,
           undefined,
+          themes(),
+          enableSystemValue(),
         ) === 'system';
       setSystemTheme(() => nextTheme);
 

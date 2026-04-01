@@ -133,6 +133,8 @@ const Theme = <
       cookieName,
       resolvedDefaultTheme,
       selectedTheme,
+      themes,
+      enableSystemValue,
     ),
   );
   const [resolvedTheme, setResolvedTheme] =
@@ -259,6 +261,8 @@ const Theme = <
           cookieName,
           undefined,
           undefined,
+          themes,
+          enableSystemValue,
         ) === 'system';
       setResolvedTheme(resolved);
 

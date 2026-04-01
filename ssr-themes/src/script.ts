@@ -78,7 +78,25 @@ export const script = <
       return undefined;
     }
 
-    if (value === '~d' || value === '~l') {
+    const compactTheme =
+      value === '~d'
+        ? 'dark'
+        : value === '~l'
+          ? 'light'
+          : undefined;
+
+    if (compactTheme) {
+      if (!themeNames.has(compactTheme as TTheme)) {
+        return undefined;
+      }
+
+      if (!enableSystem) {
+        return compactTheme as WithSystem<
+          TTheme,
+          TEnableSystem
+        >;
+      }
+
       return 'system' as WithSystem<
         TTheme,
         TEnableSystem
@@ -86,6 +104,10 @@ export const script = <
     }
 
     if (value === 'system') {
+      if (!enableSystem) {
+        return undefined;
+      }
+
       return 'system' as WithSystem<
         TTheme,
         TEnableSystem
@@ -99,6 +121,32 @@ export const script = <
     return themeNames.has(value as TTheme)
       ? (value as WithSystem<TTheme, TEnableSystem>)
       : undefined;
+  };
+
+  const getThemeFromDOM = () => {
+    for (const attr of attributes) {
+      if (attr === 'class') {
+        for (const entry of themeValues) {
+          if (el.classList.contains(entry.value)) {
+            return entry.theme;
+          }
+        }
+        continue;
+      }
+
+      const attrValue = el.getAttribute(attr);
+      if (!attrValue) {
+        continue;
+      }
+
+      for (const entry of themeValues) {
+        if (entry.value === attrValue) {
+          return entry.theme;
+        }
+      }
+    }
+
+    return undefined;
   };
 
   function updateDOM(theme: TTheme) {
@@ -145,12 +193,24 @@ export const script = <
       : (themeName as TTheme);
 
   try {
-    const themeName =
-      decodeTheme(getCookie(cookieName)) ??
-      (defaultTheme as WithSystem<
-        TTheme,
-        TEnableSystem
-      >);
+    const cookieTheme = decodeTheme(
+      getCookie(cookieName),
+    );
+    if (cookieTheme) {
+      updateDOM(getThemeOrSystem(cookieTheme));
+      return;
+    }
+
+    const domTheme = getThemeFromDOM();
+    if (domTheme) {
+      updateDOM(domTheme);
+      return;
+    }
+
+    const themeName = defaultTheme as WithSystem<
+      TTheme,
+      TEnableSystem
+    >;
     updateDOM(getThemeOrSystem(themeName));
   } catch {
     //

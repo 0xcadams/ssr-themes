@@ -120,6 +120,21 @@ describe('themeFromCookieHeader', () => {
     });
   });
 
+  it('falls back to the resolved theme when system support is disabled', () => {
+    expect(
+      themeFromCookieHeader<'light' | 'dark', false>(
+        'theme=~d',
+        {
+          enableSystem: false,
+          themes: ['light', 'dark'],
+        },
+      ),
+    ).toEqual({
+      selectedTheme: 'dark',
+      appliedTheme: 'dark',
+    });
+  });
+
   it('treats plain system cookie values as invalid', () => {
     expect(
       themeFromCookieHeader('theme=system'),

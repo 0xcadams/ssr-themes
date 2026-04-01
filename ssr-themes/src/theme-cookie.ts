@@ -19,6 +19,10 @@ export const decodeThemeCookieValue = <
     TTheme,
     TEnableSystem
   >['themes'],
+  enableSystem: ThemeOptions<
+    TTheme,
+    TEnableSystem
+  >['enableSystem'] = true as TEnableSystem,
 ):
   | ThemeCookieState<TTheme, TEnableSystem>
   | undefined => {
@@ -27,6 +31,20 @@ export const decodeThemeCookieValue = <
   }
 
   if (value === systemCookieValueMap.dark) {
+    if (themes && !themes.includes('dark' as TTheme)) {
+      return undefined;
+    }
+
+    if (enableSystem === false) {
+      return {
+        selectedTheme: 'dark' as WithSystem<
+          TTheme,
+          TEnableSystem
+        >,
+        appliedTheme: 'dark' as TTheme,
+      };
+    }
+
     return {
       selectedTheme: 'system' as WithSystem<
         TTheme,
@@ -37,6 +55,23 @@ export const decodeThemeCookieValue = <
   }
 
   if (value === systemCookieValueMap.light) {
+    if (
+      themes &&
+      !themes.includes('light' as TTheme)
+    ) {
+      return undefined;
+    }
+
+    if (enableSystem === false) {
+      return {
+        selectedTheme: 'light' as WithSystem<
+          TTheme,
+          TEnableSystem
+        >,
+        appliedTheme: 'light' as TTheme,
+      };
+    }
+
     return {
       selectedTheme: 'system' as WithSystem<
         TTheme,
