@@ -260,6 +260,7 @@ export const postThemeBroadcast = (
 
 export const subscribeToSystemTheme = (
   listener: SystemThemeListener,
+  emitInitial = true,
 ) => {
   if (typeof window === 'undefined') {
     return () => {};
@@ -275,7 +276,9 @@ export const subscribeToSystemTheme = (
     };
 
     media.addListener(handleLegacyChange);
-    listener(media);
+    if (emitInitial) {
+      listener(media);
+    }
 
     return () => {
       media.removeListener(handleLegacyChange);
@@ -289,7 +292,9 @@ export const subscribeToSystemTheme = (
   };
 
   media.addEventListener('change', handleChange);
-  listener(media);
+  if (emitInitial) {
+    listener(media);
+  }
 
   return () => {
     media.removeEventListener('change', handleChange);

@@ -122,6 +122,16 @@ describe('vue bindings', () => {
     ).toBe('dark');
   });
 
+  test('persists the default system theme with a compact cookie value', async () => {
+    setDeviceTheme('dark');
+
+    renderTheme({});
+
+    await nextTick();
+
+    expect(getCookieValue('theme')).toBe('~d');
+  });
+
   test('updates the DOM and cookie when setting a theme', async () => {
     const wrapper = renderTheme(
       {},

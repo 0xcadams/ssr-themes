@@ -65,6 +65,16 @@ describe('svelte bindings', () => {
     ]);
   });
 
+  test('persists the default system theme with a compact cookie value', () => {
+    setDeviceTheme('dark');
+
+    const controller = createController();
+
+    controller.start();
+
+    expect(getCookieValue('theme')).toBe('~d');
+  });
+
   test('updates the DOM and cookie when setting a theme', () => {
     const controller = createController();
 

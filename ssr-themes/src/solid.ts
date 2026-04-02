@@ -3,30 +3,16 @@ import {
   createComponent,
   createContext,
   createEffect,
-  createMemo,
   createSignal,
   onCleanup,
   onMount,
-  untrack,
   useContext,
 } from 'solid-js';
-import {isServer} from 'solid-js/web';
 import {
-  disableThemeTransitions,
-  updateThemeAttributes,
-  updateThemeColorScheme,
-} from './theme-dom';
-import {
-  createThemeBroadcastSubscription,
-  defaultThemes,
-  getCookieName,
-  getSystemTheme,
-  getTheme,
-  postThemeBroadcast,
-  resolveDefaultTheme,
-  saveToCookie,
-  subscribeToSystemTheme,
-} from './theme-runtime';
+  createThemeController,
+  pickThemeControllerOptions,
+  type ThemeControllerSetValue,
+} from './theme-controller';
 import type {
   LightOrDark,
   ThemeOptions,
@@ -118,231 +104,62 @@ export const ThemeProvider = <
     return props.children;
   }
 
-  const enableSystemValue = createMemo(
-    () =>
-      (props.enableSystem ?? true) as TEnableSystem,
+  const controller = createThemeController<
+    TTheme,
+    TEnableSystem
+  >(pickThemeControllerOptions(props));
+  const [snapshot, setSnapshot] = createSignal(
+    controller.getSnapshot(),
   );
-  const themes = createMemo(
-    () =>
-      (props.themes ??
-        (defaultThemes as unknown as readonly TTheme[])) as readonly TTheme[],
-  );
-  const resolvedDefaultTheme = createMemo(() =>
-    resolveDefaultTheme<TTheme, TEnableSystem>(
-      props.defaultTheme,
-      enableSystemValue(),
-    ),
-  );
-  const cookieName = getCookieName(props.cookie);
-  const [theme, setThemeState] = createSignal<
-    WithSystem<TTheme, TEnableSystem> | undefined
-  >(
-    getTheme(
-      cookieName,
-      resolvedDefaultTheme(),
-      props.selectedTheme,
-      themes(),
-      enableSystemValue(),
-    ),
-  );
-  const [systemTheme, setSystemTheme] = createSignal<
-    Exclude<TTheme, 'system'> | undefined
-  >(
-    theme() === 'system' && !isServer
-      ? (getSystemTheme() as Exclude<TTheme, 'system'>)
-      : (theme() as
-          | Exclude<TTheme, 'system'>
-          | undefined),
-  );
-  const themeValues = createMemo(
-    () =>
-      (!props.valueMap
-        ? themes()
-        : Object.values(props.valueMap).filter(
-            (value): value is string => Boolean(value),
-          )) as readonly string[],
-  );
-  const availableThemes = createMemo(
-    () =>
-      (enableSystemValue()
-        ? [...themes(), 'system']
-        : themes()) as ReadonlyArray<
-        WithSystem<TTheme, TEnableSystem>
-      >,
-  );
-  const resolvedTheme = createMemo(() => {
-    const appliedTheme = props.forcedTheme ?? theme();
-    return appliedTheme === 'system' &&
-      enableSystemValue()
-      ? systemTheme()
-      : (appliedTheme as
-          | Exclude<TTheme, 'system'>
-          | undefined);
-  });
-  const colorScheme = createMemo(
-    () =>
-      (enableSystemValue()
-        ? (systemTheme() as unknown as LightOrDark)
-        : undefined) as TEnableSystem extends true
-        ? LightOrDark
-        : undefined,
-  );
-  let broadcastChannel: BroadcastChannel | null = null;
-
-  const applyTheme = (
-    value:
-      | WithSystem<TTheme, TEnableSystem>
-      | undefined,
-  ) => {
-    if (!value) return undefined;
-
-    let resolved = value;
-    if (resolved === 'system' && enableSystemValue()) {
-      resolved = getSystemTheme() as TTheme;
-    }
-
-    const nextTheme = resolved as TTheme;
-    const nextName = props.valueMap
-      ? props.valueMap[nextTheme]
-      : nextTheme;
-    const restoreTransitions =
-      (props.disableTransitionOnChange ?? true)
-        ? disableThemeTransitions(props.nonce)
-        : null;
-    const element = document.documentElement;
-    const attributes = Array.isArray(props.attribute)
-      ? props.attribute
-      : [props.attribute ?? 'class'];
-
-    updateThemeAttributes(
-      element,
-      attributes,
-      themeValues(),
-      nextName,
-    );
-    updateThemeColorScheme(
-      element,
-      nextTheme,
-      props.enableColorScheme ?? true,
-    );
-
-    restoreTransitions?.();
-    return resolved;
-  };
-
-  const broadcastTheme = (value: string) => {
-    postThemeBroadcast(
-      broadcastChannel,
-      cookieName,
-      value,
-    );
+  const syncSnapshot = () => {
+    setSnapshot(() => controller.getSnapshot());
   };
 
   const setTheme: ThemeSetter<
     TTheme,
     TEnableSystem
-  > = value => {
-    const nextTheme =
-      typeof value === 'function'
-        ? value(untrack(theme))
-        : value;
-
-    setThemeState(() => nextTheme);
-    saveToCookie(cookieName, nextTheme, props.cookie);
-    broadcastTheme(nextTheme);
-
-    return nextTheme;
-  };
-
-  onMount(() => {
-    const handleMediaQuery = (
-      event: MediaQueryList | MediaQueryListEvent,
-    ) => {
-      const nextTheme = getSystemTheme(
-        event,
-      ) as Exclude<TTheme, 'system'>;
-      const isChangeEvent = 'type' in event;
-      const hasSystemCookie =
-        getTheme<TTheme, TEnableSystem>(
-          cookieName,
-          undefined,
-          undefined,
-          themes(),
-          enableSystemValue(),
-        ) === 'system';
-      setSystemTheme(() => nextTheme);
-
-      if (
-        (isChangeEvent || hasSystemCookie) &&
-        theme() === 'system' &&
-        enableSystemValue() &&
-        !props.forcedTheme
-      ) {
-        saveToCookie(
-          cookieName,
-          'system',
-          props.cookie,
-        );
-        applyTheme(
-          'system' as WithSystem<
-            TTheme,
-            TEnableSystem
-          >,
-        );
-      }
-    };
-
-    onCleanup(
-      subscribeToSystemTheme(handleMediaQuery),
+  > = value =>
+    controller.setTheme(
+      value as ThemeControllerSetValue<
+        TTheme,
+        TEnableSystem
+      >,
     );
+
+  createEffect(() => {
+    controller.update(
+      pickThemeControllerOptions(props),
+    );
+    syncSnapshot();
   });
 
   onMount(() => {
-    const {channel, cleanup} =
-      createThemeBroadcastSubscription(
-        cookieName,
-        value => {
-          if (!value) {
-            setThemeState(() =>
-              resolvedDefaultTheme(),
-            );
-            return;
-          }
+    const unsubscribe =
+      controller.subscribe(syncSnapshot);
 
-          setThemeState(
-            () =>
-              value as
-                | WithSystem<TTheme, TEnableSystem>
-                | undefined,
-          );
-        },
-      );
-    broadcastChannel = channel;
+    controller.start();
+    syncSnapshot();
 
     onCleanup(() => {
-      cleanup();
-      if (broadcastChannel === channel) {
-        broadcastChannel = null;
-      }
+      unsubscribe();
+      controller.stop();
     });
   });
-
-  if (!isServer) {
-    createEffect(() => {
-      applyTheme(props.forcedTheme ?? theme());
-    });
-  }
 
   const providerValue: ThemeResult<
     TTheme,
     TEnableSystem
   > = {
-    theme,
+    theme: () => snapshot().theme,
     setTheme,
-    forcedTheme: () => props.forcedTheme,
-    resolvedTheme,
-    themes: availableThemes,
-    colorScheme,
+    forcedTheme: () => snapshot().forcedTheme,
+    resolvedTheme: () => snapshot().resolvedTheme,
+    themes: () => snapshot().themes,
+    colorScheme: () =>
+      snapshot()
+        .colorScheme as TEnableSystem extends true
+        ? LightOrDark
+        : undefined,
   };
 
   return createComponent(ThemeContext.Provider, {

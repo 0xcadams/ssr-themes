@@ -144,6 +144,18 @@ describe('storage', () => {
     expect(getCookieValue('theme')).toBeNull();
   });
 
+  test('should persist the default system theme with a compact cookie value', async () => {
+    setDeviceTheme('dark');
+
+    renderHook(() => useTheme(), {
+      wrapper: makeWrapper({}),
+    });
+
+    await waitFor(() => {
+      expect(getCookieValue('theme')).toBe('~d');
+    });
+  });
+
   test('should set cookie when switching themes', () => {
     const {result} = renderHook(() => useTheme(), {
       wrapper: makeWrapper({}),
