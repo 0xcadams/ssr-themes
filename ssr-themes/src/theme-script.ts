@@ -1,10 +1,11 @@
-import {script} from './script';
 import {
   defaultThemes,
   getCookieName,
   resolveDefaultTheme,
 } from './theme-runtime';
 import type {LightOrDark, ThemeOptions} from './types';
+
+const inlineScriptSource = '__INLINE_THEME_SCRIPT__';
 
 export const themeScript = <
   TTheme extends string = LightOrDark,
@@ -41,5 +42,5 @@ export const themeScript = <
     enableColorScheme,
   ]).slice(1, -1);
 
-  return `(${script.toString().replaceAll(`\n`, '')})(${scriptArgs})`;
+  return `(${inlineScriptSource})(${scriptArgs})`;
 };

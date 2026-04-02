@@ -44,7 +44,6 @@ export const decodeThemeCookieValue = <
         appliedTheme: 'dark' as TTheme,
       };
     }
-
     return {
       selectedTheme: 'system' as WithSystem<
         TTheme,
@@ -71,7 +70,6 @@ export const decodeThemeCookieValue = <
         appliedTheme: 'light' as TTheme,
       };
     }
-
     return {
       selectedTheme: 'system' as WithSystem<
         TTheme,

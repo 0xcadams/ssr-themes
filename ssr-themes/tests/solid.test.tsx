@@ -98,6 +98,15 @@ describe('solid bindings', () => {
     });
   });
 
+  test('persists the default system theme with a compact cookie value', async () => {
+    setDeviceTheme('dark');
+    renderTheme({});
+
+    await waitFor(() => {
+      expect(getCookieValue('theme')).toBe('~d');
+    });
+  });
+
   test('updates the DOM and cookie when setting a theme', async () => {
     renderTheme({}, {forceSetTheme: 'dark'});
 

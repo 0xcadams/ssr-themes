@@ -48,9 +48,17 @@
   },
   "size-limit": [
     {
-      "name": "react",
-      "path": "dist/react.js",
-      "import": "{ ThemeProvider, useTheme }"
+      "name": "client",
+      "path": "dist/theme-controller.js"
+    },
+    {
+      "name": "script",
+      "path": "dist/theme-script.js",
+      "import": "{ themeScript }"
+    },
+    {
+      "name": "server",
+      "path": "dist/index.js"
     }
   ],
   "peerDependencies": {
@@ -80,6 +88,7 @@
     "@solidjs/testing-library": "^0.8.10",
     "@vitejs/plugin-react": "^6.0.1",
     "@vue/test-utils": "^2.4.6",
+    "esbuild": "^0.27.4",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
     "solid-js": "^1.9.12",

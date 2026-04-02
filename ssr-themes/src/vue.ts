@@ -15,21 +15,10 @@ import type {
   Ref,
 } from 'vue';
 import {
-  disableThemeTransitions,
-  updateThemeAttributes,
-  updateThemeColorScheme,
-} from './theme-dom';
-import {
-  createThemeBroadcastSubscription,
-  defaultThemes,
-  getCookieName,
-  getSystemTheme,
-  getTheme,
-  postThemeBroadcast,
-  resolveDefaultTheme,
-  saveToCookie,
-  subscribeToSystemTheme,
-} from './theme-runtime';
+  createThemeController,
+  pickThemeControllerOptions,
+  type ThemeControllerSetValue,
+} from './theme-controller';
 import type {
   Attribute,
   CookieOptions,
@@ -84,7 +73,6 @@ export interface ThemeProviderProps<
   nonce?: string;
 }
 
-const isServer = typeof window === 'undefined';
 type ThemeContextValue = ThemeResult<string, boolean>;
 
 const ThemeContext = Symbol(
@@ -149,199 +137,58 @@ export const ThemeProvider = defineComponent({
       return () => slots.default?.();
     }
 
-    const enableSystemValue = computed(
-      () => props.enableSystem ?? true,
+    const controller = createThemeController(
+      pickThemeControllerOptions(props),
     );
-    const themes = computed(
-      () =>
-        (props.themes ??
-          (defaultThemes as readonly string[])) as readonly string[],
-    );
-    const resolvedDefaultTheme = computed(() =>
-      resolveDefaultTheme(
-        props.defaultTheme,
-        enableSystemValue.value,
-      ),
-    );
-    const cookieName = computed(() =>
-      getCookieName(props.cookie),
-    );
-    const theme = ref<string | undefined>(
-      getTheme(
-        cookieName.value,
-        resolvedDefaultTheme.value,
-        props.selectedTheme,
-        themes.value,
-        enableSystemValue.value,
-      ),
-    );
-    const systemTheme = ref<string | undefined>(
-      theme.value === 'system' && !isServer
-        ? getSystemTheme()
-        : theme.value,
-    );
-    const themeValues = computed(() =>
-      !props.valueMap
-        ? themes.value
-        : Object.values(props.valueMap).filter(
-            (value): value is string => Boolean(value),
-          ),
-    );
-    const availableThemes = computed(
-      () =>
-        (enableSystemValue.value
-          ? [...themes.value, 'system']
-          : themes.value) as ReadonlyArray<string>,
-    );
+    const snapshot = ref(controller.getSnapshot());
+    const syncSnapshot = () => {
+      snapshot.value = controller.getSnapshot();
+    };
+    const theme = computed(
+      () => snapshot.value.theme,
+    ) as Readonly<Ref<string | undefined>>;
     const forcedTheme = computed(
-      () => props.forcedTheme,
+      () => snapshot.value.forcedTheme,
     );
-    const resolvedTheme = computed(() => {
-      const appliedTheme =
-        forcedTheme.value ?? theme.value;
-      return appliedTheme === 'system' &&
-        enableSystemValue.value
-        ? systemTheme.value
-        : appliedTheme;
-    });
-    const colorScheme = computed(() =>
-      enableSystemValue.value
-        ? (systemTheme.value as
-            | LightOrDark
-            | undefined)
-        : undefined,
+    const resolvedTheme = computed(
+      () => snapshot.value.resolvedTheme,
     );
-    let broadcastChannel: BroadcastChannel | null =
-      null;
-    let cleanupSystemTheme = () => {};
-    let cleanupBroadcast = () => {};
-
-    const applyTheme = (value: string | undefined) => {
-      if (!value) {
-        return undefined;
-      }
-
-      let resolved = value;
-      if (
-        resolved === 'system' &&
-        enableSystemValue.value
-      ) {
-        resolved = getSystemTheme();
-      }
-
-      const nextName = props.valueMap
-        ? props.valueMap[resolved]
-        : resolved;
-      const restoreTransitions =
-        (props.disableTransitionOnChange ?? true)
-          ? disableThemeTransitions(props.nonce)
-          : null;
-      const element = document.documentElement;
-      const attributes = Array.isArray(props.attribute)
-        ? props.attribute
-        : [props.attribute ?? 'class'];
-
-      updateThemeAttributes(
-        element,
-        attributes,
-        themeValues.value,
-        nextName,
-      );
-      updateThemeColorScheme(
-        element,
-        resolved,
-        props.enableColorScheme ?? true,
-      );
-
-      restoreTransitions?.();
-      return resolved;
-    };
-
-    const broadcastTheme = (value: string) => {
-      postThemeBroadcast(
-        broadcastChannel,
-        cookieName.value,
-        value,
-      );
-    };
+    const colorScheme = computed(
+      () => snapshot.value.colorScheme,
+    ) as ComputedRef<LightOrDark | undefined>;
+    const themes = computed(
+      () => snapshot.value.themes,
+    );
 
     const setTheme: ThemeSetter<
       string,
       boolean
-    > = value => {
-      const nextTheme =
-        typeof value === 'function'
-          ? value(theme.value)
-          : value;
-
-      theme.value = nextTheme;
-      saveToCookie(
-        cookieName.value,
-        nextTheme,
-        props.cookie,
+    > = value =>
+      controller.setTheme(
+        value as ThemeControllerSetValue<
+          string,
+          boolean
+        >,
       );
-      broadcastTheme(nextTheme);
 
-      return nextTheme;
-    };
+    watchEffect(() => {
+      controller.update(
+        pickThemeControllerOptions(props),
+      );
+      syncSnapshot();
+    });
 
-    if (!isServer) {
-      watchEffect(() => {
-        applyTheme(forcedTheme.value ?? theme.value);
-      });
-    }
+    let unsubscribe = () => {};
 
     onMounted(() => {
-      cleanupSystemTheme = subscribeToSystemTheme(
-        event => {
-          const nextTheme = getSystemTheme(event);
-          const isChangeEvent = 'type' in event;
-          const hasSystemCookie =
-            getTheme(
-              cookieName.value,
-              undefined,
-              undefined,
-              themes.value,
-              enableSystemValue.value,
-            ) === 'system';
-          systemTheme.value = nextTheme;
-
-          if (
-            (isChangeEvent || hasSystemCookie) &&
-            theme.value === 'system' &&
-            enableSystemValue.value &&
-            !forcedTheme.value
-          ) {
-            saveToCookie(
-              cookieName.value,
-              'system',
-              props.cookie,
-            );
-            applyTheme('system');
-          }
-        },
-      );
-
-      const {channel, cleanup} =
-        createThemeBroadcastSubscription(
-          cookieName.value,
-          value => {
-            theme.value =
-              value ?? resolvedDefaultTheme.value;
-          },
-        );
-      broadcastChannel = channel;
-      cleanupBroadcast = () => {
-        cleanup();
-        if (broadcastChannel === channel) {
-          broadcastChannel = null;
-        }
-      };
+      unsubscribe = controller.subscribe(syncSnapshot);
+      controller.start();
+      syncSnapshot();
     });
 
     onUnmounted(() => {
-      cleanupSystemTheme();
-      cleanupBroadcast();
+      unsubscribe();
+      controller.stop();
     });
 
     const providerValue: ThemeContextValue = {
@@ -349,7 +196,7 @@ export const ThemeProvider = defineComponent({
       setTheme,
       forcedTheme,
       resolvedTheme,
-      themes: availableThemes,
+      themes,
       colorScheme,
     };
 

@@ -3,6 +3,7 @@
   generics="TTheme extends string = LightOrDark, TEnableSystem extends boolean = true"
 >
   import {onDestroy, onMount} from 'svelte';
+  import {pickThemeControllerOptions} from '../theme-controller';
   import type {LightOrDark} from '../types';
   import {
     maybeGetTheme,
@@ -34,17 +35,19 @@
     TEnableSystem
   >();
   const getOptions = () => ({
-    attribute,
-    cookie,
-    defaultTheme,
-    disableTransitionOnChange,
-    enableColorScheme,
-    enableSystem,
-    forcedTheme,
-    selectedTheme,
-    nonce,
-    themes,
-    valueMap,
+    ...pickThemeControllerOptions({
+      attribute,
+      cookie,
+      defaultTheme,
+      disableTransitionOnChange,
+      enableColorScheme,
+      enableSystem,
+      forcedTheme,
+      nonce,
+      selectedTheme,
+      themes,
+      valueMap,
+    }),
   });
   const controller = parentTheme
     ? null
