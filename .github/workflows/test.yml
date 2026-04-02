@@ -1,4 +1,4 @@
-name: Unit - Test
+name: Unit Tests
 
 on:
   push:
@@ -22,8 +22,6 @@ jobs:
           node-version: 20.x
 
       - run: bun install
-        env:
-          CI: true
 
       - name: Run tests
         run: bun run test
