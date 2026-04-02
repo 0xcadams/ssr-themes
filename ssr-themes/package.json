@@ -48,9 +48,17 @@
   },
   "size-limit": [
     {
-      "name": "react",
-      "path": "dist/react.js",
-      "import": "{ ThemeProvider, useTheme }"
+      "name": "client",
+      "path": "dist/theme-controller.js"
+    },
+    {
+      "name": "script",
+      "path": "dist/theme-script.js",
+      "import": "{ themeScript }"
+    },
+    {
+      "name": "server",
+      "path": "dist/index.js"
     }
   ],
   "peerDependencies": {
