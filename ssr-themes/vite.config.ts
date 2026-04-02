@@ -2,6 +2,7 @@ import {resolve, sep} from 'node:path';
 import react from '@vitejs/plugin-react';
 import {defineConfig} from 'vite';
 import dts from 'vite-plugin-dts';
+import {inlineScriptPlugin} from './inline-script-plugin';
 
 const entries = {
   index: resolve(import.meta.dirname, 'src/index.ts'),
@@ -28,7 +29,7 @@ export default defineConfig({
       entry: libEntries,
       formats: [format],
     },
-    minify: true,
+    minify: false,
     target: 'es2018',
     rollupOptions: {
       external: [
@@ -55,6 +56,7 @@ export default defineConfig({
     },
   },
   plugins: [
+    inlineScriptPlugin(),
     react(),
     ...(format === 'es'
       ? [
@@ -74,7 +76,10 @@ export default defineConfig({
               };
             },
             entryRoot: 'src',
-            exclude: ['src/svelte/**/*'],
+            exclude: [
+              'src/svelte/**/*',
+              'src/script.ts',
+            ],
             include: ['src/**/*.{ts,tsx}'],
             outDir: 'dist',
             tsconfigPath: './tsconfig.build.json',

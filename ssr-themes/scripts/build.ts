@@ -21,6 +21,8 @@ const generatedDeclarationFiles = [
   'src/theme-cookie.d.ts.map',
   'src/theme-runtime.d.ts',
   'src/theme-runtime.d.ts.map',
+  'src/theme-controller.d.ts',
+  'src/theme-controller.d.ts.map',
   'src/types.d.ts',
   'src/types.d.ts.map',
 ];

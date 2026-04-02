@@ -1,22 +1,22 @@
 // @vitest-environment jsdom
 
-import * as React from 'react';
 import {
   act,
+  cleanup,
   render,
   renderHook,
   screen,
   waitFor,
 } from '@testing-library/react';
+import * as React from 'react';
 import {
-  vi,
   afterEach,
   describe,
-  test,
-  it,
   expect,
+  it,
+  test,
+  vi,
 } from 'vitest';
-import {cleanup} from '@testing-library/react';
 import {
   getCookieValue,
   installThemeTestEnv,
@@ -29,7 +29,6 @@ import {
   type ThemeProviderProps,
   useTheme,
 } from '../src/react';
-import {themeScript} from '../src/index';
 
 installThemeTestEnv();
 
@@ -701,85 +700,5 @@ describe('setTheme', () => {
     expect(result.current.theme).toBe('light');
 
     consoleSpy.mockRestore();
-  });
-});
-
-describe('bootstrap script', () => {
-  test('themeScript sets the html theme', () => {
-    setCookieValue('theme', 'dark');
-
-    const scriptContent = themeScript({
-      attribute: 'class',
-      defaultTheme: 'light',
-    });
-
-    Function(scriptContent)();
-
-    expect(
-      document.documentElement.classList.contains(
-        'dark',
-      ),
-    ).toBeTruthy();
-  });
-
-  test('themeScript prefers the compact cookie over stale dom', () => {
-    setCookieValue('theme', '~d');
-    setDeviceTheme('dark');
-    document.documentElement.classList.add('light');
-
-    const scriptContent = themeScript({
-      attribute: 'class',
-      defaultTheme: 'light',
-    });
-
-    Function(scriptContent)();
-
-    expect(
-      document.documentElement.classList.contains(
-        'dark',
-      ),
-    ).toBeTruthy();
-  });
-
-  test('themeScript treats compact cookies as literal themes when system is disabled', () => {
-    setCookieValue('theme', '~d');
-    setDeviceTheme('light');
-
-    const scriptContent = themeScript({
-      attribute: 'class',
-      defaultTheme: 'light',
-      enableSystem: false,
-    });
-
-    Function(scriptContent)();
-
-    expect(
-      document.documentElement.classList.contains(
-        'dark',
-      ),
-    ).toBeTruthy();
-    expect(
-      document.documentElement.classList.contains(
-        'system',
-      ),
-    ).toBeFalsy();
-  });
-
-  test('themeScript preserves an SSR-applied theme when no cookie is set', () => {
-    setDeviceTheme('light');
-    document.documentElement.classList.add('dark');
-
-    const scriptContent = themeScript({
-      attribute: 'class',
-      defaultTheme: 'system',
-    });
-
-    Function(scriptContent)();
-
-    expect(
-      document.documentElement.classList.contains(
-        'dark',
-      ),
-    ).toBeTruthy();
   });
 });

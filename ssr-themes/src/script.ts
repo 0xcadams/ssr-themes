@@ -4,7 +4,7 @@ import type {
   ThemeOptions,
 } from './types';
 
-export const script = <
+export default <
   TTheme extends string,
   TEnableSystem extends boolean = true,
 >(
