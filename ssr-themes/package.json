@@ -12,6 +12,7 @@
     "README.md",
     "package.json"
   ],
+  "sideEffects": false,
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
@@ -36,8 +37,10 @@
     "./svelte": {
       "types": "./dist/svelte/index.d.ts",
       "svelte": "./dist/svelte/index.js",
+      "import": "./dist/svelte/index.js",
       "default": "./dist/svelte/index.js"
-    }
+    },
+    "./package.json": "./package.json"
   },
   "scripts": {
     "prepublish": "bun run build",
