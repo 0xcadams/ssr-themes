@@ -2,9 +2,9 @@
 
 Theming is hard with SSR.
 
-The server is usually unaware of client theme preference. This skew between what the server assumes is the theme and what is hydrated on the client will commonly result in a flash of the wrong content.
+The server is usually unaware of client theme preference. This skew between what the server defaults to and what is hydrated on the client will commonly result in a flash of the wrong content.
 
-`ssr-themes` keeps the server HTML, bootstrap script, and hydrated app in sync. It uses cookies to store the current theme and comes with first-party bindings for React, Solid, Svelte, and Vue. This means:
+`ssr-themes` keeps the server HTML, bootstrap script, and hydrated app in sync. It uses cookies to store the correct theme (including the browser's system theme) and has first-party bindings for React, Svelte, Vue, and more. This means:
 
 - ✨ No flash on first paint
 - 🍪 Cookie-driven SSR for correct SSR markup
@@ -13,6 +13,8 @@ The server is usually unaware of client theme preference. This skew between what
 - 🛡️ Strongly typed bindings
 
 See the live demo: [https://ssr-themes.cadams.io/](https://ssr-themes.cadams.io/).
+
+![Demo of ssr themes not flashing](./.github/ssr-theme.gif)
 
 ## Install
 
@@ -155,7 +157,7 @@ Pass the same theme options here that you pass to `ThemeProvider`. If these diff
 
 #### `ThemeProvider`
 
-Use `ThemeProvider` to keep theme state in sync after hydration.
+`ThemeProvider` keeps theme state in sync after hydration.
 
 It updates `<html>`, writes the selected theme to a cookie, reacts to system theme changes, and syncs theme changes across tabs.
 
