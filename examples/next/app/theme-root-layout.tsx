@@ -1,14 +1,15 @@
 import type {Metadata} from 'next';
-import {cookies, headers} from 'next/headers';
+import {headers} from 'next/headers';
 import Script from 'next/script';
 import type {ReactNode} from 'react';
 import {
   registerTheme,
   themeFromCookieHeader,
   themeScript,
+  type LightOrDark,
+  type ThemeCookieState,
 } from 'ssr-themes';
-
-import './globals.css';
+import {ThemeProvider} from 'ssr-themes/react';
 
 export const metadata: Metadata = {
   title: 'ssr-themes example',
@@ -16,11 +17,28 @@ export const metadata: Metadata = {
     'App Router theme switching with forced routes.',
 };
 
-export default async function RootLayout({
-  children,
-}: {
+type ThemeRootLayoutProps = {
   children: ReactNode;
-}) {
+  forcedTheme?: LightOrDark;
+};
+
+const getRegisterThemeOptions = (
+  themeState:
+    | ThemeCookieState<LightOrDark>
+    | undefined,
+  forcedTheme?: LightOrDark,
+) =>
+  forcedTheme
+    ? {
+        ...(themeState ?? {}),
+        appliedTheme: forcedTheme,
+      }
+    : themeState;
+
+export async function ThemeRootLayout({
+  children,
+  forcedTheme,
+}: ThemeRootLayoutProps) {
   const themeState = themeFromCookieHeader(
     (await headers()).get('cookie'),
   );
@@ -28,7 +46,12 @@ export default async function RootLayout({
   return (
     <html
       suppressHydrationWarning
-      {...registerTheme(themeState)}
+      {...registerTheme(
+        getRegisterThemeOptions(
+          themeState,
+          forcedTheme,
+        ),
+      )}
     >
       <head>
         <link
@@ -50,9 +73,14 @@ export default async function RootLayout({
           id="ssr-themes"
           strategy="beforeInteractive"
         >
-          {themeScript()}
+          {themeScript({forcedTheme})}
         </Script>
-        {children}
+        <ThemeProvider
+          forcedTheme={forcedTheme}
+          selectedTheme={themeState?.selectedTheme}
+        >
+          {children}
+        </ThemeProvider>
       </body>
     </html>
   );

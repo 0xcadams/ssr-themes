@@ -12,7 +12,7 @@ The server is usually unaware of client theme preference. This skew between what
 - 🔄 Built-in cross-tab sync
 - 🛡️ Strongly typed bindings
 
-![Demo of ssr-themes not flashing vs next-themes](./.github/ssr-theme.gif)
+![Demo of ssr-themes not flashing vs next-themes](https://raw.githubusercontent.com/0xcadams/ssr-themes/main/.github/ssr-theme.gif)
 
 See the live demo: [https://ssr-themes.cadams.io/](https://ssr-themes.cadams.io/).
 

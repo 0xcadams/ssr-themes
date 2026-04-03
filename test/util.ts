@@ -53,6 +53,7 @@ type MakeBrowserContextOptions = {
   baseURL?: string;
   colorScheme?: 'light' | 'dark' | 'no-preference';
   cookies?: {name: string; value: string}[];
+  javaScriptEnabled?: boolean;
 };
 
 export async function makeBrowserContext(
@@ -75,6 +76,8 @@ export async function makeBrowserContext(
   const context = await browser.newContext({
     colorScheme:
       options.colorScheme ?? 'no-preference',
+    javaScriptEnabled:
+      options.javaScriptEnabled ?? true,
   });
 
   if (cookies.length) {

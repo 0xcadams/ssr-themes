@@ -11,7 +11,7 @@ test.describe('forced theme test-suite', async () => {
     storedTheme: string,
     expectedTheme: string,
   ) {
-    test(`should render forced-theme (${expectedTheme}) instead of stored theme (${expectedTheme})`, async ({
+    test(`should render forced-theme (${expectedTheme}) instead of stored theme (${storedTheme})`, async ({
       browser,
       baseURL,
     }) => {
@@ -32,6 +32,35 @@ test.describe('forced theme test-suite', async () => {
     });
   }
 
+  function makeForcedSsrThemeTest(
+    pageUrl: string,
+    storedTheme: string,
+    expectedTheme: string,
+  ) {
+    test(`should pre-render forced-theme (${expectedTheme}) without JavaScript`, async ({
+      browser,
+      baseURL,
+    }) => {
+      const context = await makeBrowserContext(
+        browser,
+        {
+          baseURL,
+          cookies: [
+            {name: 'theme', value: storedTheme},
+          ],
+          javaScriptEnabled: false,
+        },
+      );
+      const page = await context.newPage();
+      await page.goto(pageUrl);
+
+      await checkStoredTheme(page, storedTheme);
+      await checkAppliedTheme(page, expectedTheme);
+    });
+  }
+
   makeForcedThemeTest('/light', 'dark', 'light');
   makeForcedThemeTest('/dark', 'light', 'dark');
+  makeForcedSsrThemeTest('/light', 'dark', 'light');
+  makeForcedSsrThemeTest('/dark', 'light', 'dark');
 });
