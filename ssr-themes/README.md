@@ -12,9 +12,9 @@ The server is usually unaware of client theme preference. This skew between what
 - 🔄 Built-in cross-tab sync
 - 🛡️ Strongly typed bindings
 
-See the live demo: [https://ssr-themes.cadams.io/](https://ssr-themes.cadams.io/).
-
 ![Demo of ssr-themes not flashing vs next-themes](./.github/ssr-theme.gif)
+
+See the live demo: [https://ssr-themes.cadams.io/](https://ssr-themes.cadams.io/).
 
 ## Install
 
@@ -83,7 +83,7 @@ Its docs explicitly warn that reading `theme` before mount is hydration-unsafe, 
 - Read the theme from the request cookie during SSR
 - Pre-render the correct `<html>` attributes on the server (and render `<select>`, etc. correctly)
 
-You don't even *need* to use the SSR helpers. They are optional if/when you need to start rendering conditional UI based on the theme. You'll probably do this with a theme picker.
+You don't even _need_ to use the SSR helpers. They are optional if/when you need to start rendering conditional UI based on the theme. You'll probably do this with a theme picker.
 
 If you only need client-side theme state in a Next.js app, `next-themes` is a good fit.
 
