@@ -1,4 +1,4 @@
-name: Playwright Tests
+name: Local Playwright Tests
 
 on:
   push:
@@ -9,25 +9,25 @@ on:
 jobs:
   test:
     name: Run Playwright tests
-    timeout-minutes: 5
+    timeout-minutes: 10
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
       - uses: oven-sh/setup-bun@v2
         with:
-          bun-version: 1.3.6
+          bun-version: 1.3.11
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 20.x
+          node-version: 24
 
-      - run: bun install
-        env:
-          CI: true
+      - run: bun install --frozen-lockfile
 
       - name: Setup Playwright
         run: bunx playwright install --with-deps
 
       - name: Run tests
         run: bun run test:e2e
+        env:
+          PLAYWRIGHT_APP: next

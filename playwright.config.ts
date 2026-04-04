@@ -3,20 +3,16 @@ import {
   devices,
 } from '@playwright/test';
 
+const remoteBaseURL = process.env.PLAYWRIGHT_BASE_URL;
+
 const config: PlaywrightTestConfig = {
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
   reporter: process.env.CI ? 'github' : 'list',
   testDir: './test',
-  webServer: {
-    command: 'bun --filter @ssr-themes/next dev',
-    port: 4041,
-    reuseExistingServer: !process.env.CI,
-    timeout: 120 * 1000,
-  },
   use: {
     trace: 'on-first-retry',
-    baseURL: 'http://localhost:4041',
+    baseURL: remoteBaseURL ?? 'http://localhost:4041',
   },
   projects: [
     {
@@ -24,6 +20,16 @@ const config: PlaywrightTestConfig = {
       use: {...devices['Desktop Chrome']},
     },
   ],
+  ...(remoteBaseURL
+    ? {}
+    : {
+        webServer: {
+          command: 'bun --cwd examples/next dev',
+          port: 4041,
+          reuseExistingServer: !process.env.CI,
+          timeout: 120 * 1000,
+        },
+      }),
 };
 
 export default config;

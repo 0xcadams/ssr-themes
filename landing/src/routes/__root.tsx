@@ -80,7 +80,7 @@ export const Route = createRootRoute({
       {
         name: 'description',
         content:
-          'Framework-agnostic, SSR-friendly theming with system preference, cross-tab sync, and no flash.',
+          'SSR-safe dark mode and theming for TanStack Start, Next.js, and more',
       },
     ],
     links: [

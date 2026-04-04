@@ -3,8 +3,9 @@
 ## Scope
 
 - Bun workspace for the `ssr-themes` library, the `landing/` app, and the `examples/` apps.
-- Package manager is `bun@1.3.6`; runtime baseline is Node `>=20`.
+- Package manager is `bun@1.3.11`; runtime baseline is Node `>=20`.
 - CI runs from the repo root and covers unit tests plus Playwright.
+- GitHub Actions CI and release jobs run on Node `24`.
 
 ## Repo Map
 
@@ -27,6 +28,7 @@
 - Root scripts use Bun workspace filters; there is no Turbo/Nx layer.
 - There is no ESLint, Biome, or Rome config today.
 - Formatting is controlled by `.prettierrc`; standalone typecheck uses `tsc --noEmit`.
+- npm publishing uses `.github/workflows/release.yml` with npm trusted publishing; keep that filename aligned with the npm trusted publisher config.
 
 ## Commands
 
@@ -52,8 +54,11 @@ bun --filter @ssr-themes/tanstack-start build
 bun --filter @ssr-themes/landing build
 # format / lint-equivalent / typecheck
 bun run format
-bunx prettier . --check
+bun run check-format
 bunx prettier . --write
+bun run check-types
+# underlying commands
+bunx prettier . --check
 bunx tsc --noEmit -p ssr-themes/tsconfig.json
 bunx tsc --noEmit -p landing/tsconfig.json
 bunx tsc --noEmit -p examples/next/tsconfig.json
@@ -72,12 +77,21 @@ bunx playwright test test/system-theme.test.ts -g "should render dark theme if p
 bunx playwright test --list test/system-theme.test.ts
 ```
 
-- `bun run format` is the only scripted formatter command.
-- Treat `bunx prettier . --check` as the repo's lint-equivalent check.
+- `bun run format` is the write-mode formatter command.
+- `bun run check-format` is the repo's lint-equivalent formatting check.
+- `bun run check-types` runs the repo's typecheck suite.
 - `bun run test` mainly runs the library's Vitest suite.
 - `bun run test:e2e` first builds `ssr-themes`, then runs Playwright.
 - Playwright boots `@ssr-themes/next` on port `4041`.
 - Use Vitest `-t` and Playwright `-g` to target a single test; use Playwright `--list` to inspect titles.
+
+## Publishing
+
+- Create releases from a tag that matches `ssr-themes/package.json` as `v<version>`, for example `gh release create v0.2.1 --target main --notes "..."`.
+- `.github/workflows/release.yml` runs on GitHub Release publish and optional manual dispatch; it checks the tag/version match before publishing.
+- The release workflow installs with `bun install --frozen-lockfile`, runs unit tests, Prettier check, workspace type checks, Playwright, a full workspace build, dry-runs `npm pack`, and publishes from `ssr-themes/`.
+- npm authentication is handled by trusted publishing with GitHub-hosted runners and `id-token: write`; no `NPM_TOKEN` should be added for normal releases.
+- If the workflow filename, repository, or optional environment changes, update the npm trusted publisher settings to match exactly before the next release.
 
 ## Code Style
 

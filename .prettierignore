@@ -1,6 +1,13 @@
 .next
+.svelte-kit
+.astro
+.nuxt
+.vinxi
 dist
 build
 .output
 .vercel
 .tanstack
+examples/next/next-env.d.ts
+examples/tanstack-start/src/routeTree.gen.ts
+landing/src/routeTree.gen.ts

@@ -1,10 +1,11 @@
 {
-  "name": "@ssr-themes/solid",
+  "name": "@ssr-themes/solid-example",
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "vinxi dev --port 4042",
+    "dev": "vinxi dev --port 4044",
     "build": "vinxi build",
+    "check-types": "tsc --noEmit -p tsconfig.json",
     "start": "vinxi start",
     "preview": "vinxi preview",
     "clean": "rm -rf node_modules .output .vinxi .nitro"
