@@ -1,4 +1,4 @@
-name: Vercel Preview Playwright
+name: Vercel Deployment Playwright
 
 on:
   repository_dispatch:
@@ -6,19 +6,10 @@ on:
       - vercel.deployment.success
 
 jobs:
-  test-preview:
+  test-deployment:
     name: >-
       Test ${{ github.event.client_payload.project.name }}
-    if: >-
-      github.event.client_payload.environment == 'preview' &&
-      (
-        github.event.client_payload.project.name == 'ssr-themes-next' ||
-        github.event.client_payload.project.name == 'ssr-themes-solid' ||
-        github.event.client_payload.project.name == 'ssr-themes-start' ||
-        github.event.client_payload.project.name == 'ssr-themes-astro' ||
-        github.event.client_payload.project.name == 'ssr-themes-vue' ||
-        github.event.client_payload.project.name == 'ssr-themes-svelte'
-      )
+    if: github.event.client_payload.project.name != 'ssr-themes'
     timeout-minutes: 20
     runs-on: ubuntu-latest
     steps:
@@ -63,6 +54,10 @@ jobs:
               ;;
             ssr-themes-svelte)
               app=svelte
+              ;;
+            *)
+              printf 'Unsupported Vercel project: %s\n' "$VERCEL_PROJECT" >&2
+              exit 1
               ;;
           esac
 
