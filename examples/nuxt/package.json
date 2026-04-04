@@ -1,10 +1,11 @@
 {
-  "name": "@ssr-themes/nuxt",
+  "name": "@ssr-themes/nuxt-example",
   "private": true,
   "type": "module",
   "scripts": {
     "dev": "nuxt dev --port 4045",
     "build": "nuxt build",
+    "check-types": "nuxt typecheck",
     "start": "nuxt preview",
     "clean": "rm -rf node_modules .nuxt .output"
   },
@@ -16,7 +17,9 @@
   "devDependencies": {
     "@tailwindcss/vite": "^4.2.2",
     "tailwindcss": "^4.2.2",
-    "typescript": "^6.0.2"
+    "typescript": "^6.0.2",
+    "vue-router": "^5.0.4",
+    "vue-tsc": "^3.2.6"
   },
   "engines": {
     "node": ">=20"

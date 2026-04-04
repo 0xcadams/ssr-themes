@@ -16,7 +16,7 @@ jobs:
   verify:
     name: Verify release
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
         with:
@@ -50,14 +50,20 @@ jobs:
       - name: Run unit tests
         run: bun run test
 
+      - name: Run format check
+        run: bun run check-format
+
+      - name: Run type checks
+        run: bun run check-types
+
       - name: Install Playwright browsers
         run: bunx playwright install --with-deps
 
       - name: Run end-to-end tests
         run: bun run test:e2e
 
-      - name: Build package
-        run: bun --filter ssr-themes build
+      - name: Build workspace
+        run: bun run build
 
       - name: Check npm package contents
         run: npm pack --dry-run

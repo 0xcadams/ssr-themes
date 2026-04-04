@@ -1,5 +1,5 @@
 {
-  "name": "@ssr-themes/astro",
+  "name": "@ssr-themes/astro-example",
   "private": true,
   "type": "module",
   "scripts": {
@@ -7,6 +7,7 @@
     "build": "astro build",
     "start": "astro preview",
     "preview": "astro preview",
+    "check-types": "astro check",
     "check": "astro check",
     "clean": "rm -rf node_modules .astro dist .vercel"
   },

@@ -1,9 +1,10 @@
 {
-  "name": "@ssr-themes/next",
+  "name": "@ssr-themes/next-example",
   "private": true,
   "scripts": {
     "dev": "next dev --port 4041",
     "build": "next build",
+    "check-types": "tsc --noEmit --incremental false -p tsconfig.json",
     "start": "next start",
     "clean": "rm -rf node_modules .next"
   },

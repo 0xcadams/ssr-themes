@@ -1,10 +1,11 @@
 {
-  "name": "@ssr-themes/tanstack-start",
+  "name": "@ssr-themes/tanstack-start-example",
   "private": true,
   "type": "module",
   "scripts": {
     "dev": "vite dev",
     "build": "vite build",
+    "check-types": "tsc --noEmit -p tsconfig.json",
     "preview": "vite preview",
     "clean": "rm -rf node_modules .vercel"
   },

@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "vite dev --port 4042",
     "build": "vite build",
+    "check-types": "tsc --noEmit -p tsconfig.json",
     "preview": "vite preview",
     "clean": "rm -rf node_modules .output"
   },

@@ -9,7 +9,7 @@ on:
 jobs:
   test:
     name: Run Playwright tests
-    timeout-minutes: 5
+    timeout-minutes: 10
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -31,3 +31,5 @@ jobs:
 
       - name: Run tests
         run: bun run test:e2e
+        env:
+          PLAYWRIGHT_APP: next

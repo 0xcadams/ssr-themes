@@ -1,4 +1,51 @@
-import {Page, expect, Browser} from '@playwright/test';
+import {
+  type Browser,
+  expect,
+  type Locator,
+  type Page,
+} from '@playwright/test';
+
+export type PlaywrightApp =
+  | 'astro'
+  | 'next'
+  | 'nuxt'
+  | 'solid'
+  | 'svelte'
+  | 'tanstack-start';
+
+export const playwrightApp = (process.env
+  .PLAYWRIGHT_APP ?? 'next') as PlaywrightApp;
+
+export const supportsForcedRoutes =
+  playwrightApp === 'next' ||
+  playwrightApp === 'tanstack-start';
+
+export function getThemeSelector(page: Page): Locator {
+  return page.locator(
+    '[data-test-id="theme-selector"]',
+  );
+}
+
+export async function gotoHome(page: Page) {
+  await page.goto('/');
+  await getThemeSelector(page).waitFor();
+}
+
+export async function selectTheme(
+  page: Page,
+  theme: 'dark' | 'light' | 'system',
+) {
+  await getThemeSelector(page).selectOption(theme);
+}
+
+export async function checkSelectedTheme(
+  page: Page,
+  theme: 'dark' | 'light' | 'system',
+) {
+  await expect(getThemeSelector(page)).toHaveValue(
+    theme,
+  );
+}
 
 export async function checkAppliedTheme(
   page: Page,
@@ -24,6 +71,22 @@ export async function checkAppliedTheme(
       );
     })
     .toBe(theme);
+}
+
+export async function checkServerRenderedTheme(
+  page: Page,
+  theme: string,
+) {
+  const html = page.locator('html');
+
+  await expect(html).toHaveAttribute(
+    'class',
+    new RegExp(`(^|\\s)${theme}(\\s|$)`),
+  );
+  await expect(html).toHaveAttribute(
+    'style',
+    new RegExp(`color-scheme:\\s*${theme}`),
+  );
 }
 
 export async function checkStoredTheme(
@@ -61,7 +124,9 @@ export async function makeBrowserContext(
   options: MakeBrowserContextOptions,
 ) {
   const origin =
-    options.baseURL ?? 'http://localhost:3000';
+    options.baseURL ??
+    process.env.PLAYWRIGHT_BASE_URL ??
+    'http://localhost:4041';
   const cookies = (options.cookies ?? []).map(
     cookie => ({
       name: cookie.name,

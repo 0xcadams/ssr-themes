@@ -54,8 +54,11 @@ bun --filter @ssr-themes/tanstack-start build
 bun --filter @ssr-themes/landing build
 # format / lint-equivalent / typecheck
 bun run format
-bunx prettier . --check
+bun run check-format
 bunx prettier . --write
+bun run check-types
+# underlying commands
+bunx prettier . --check
 bunx tsc --noEmit -p ssr-themes/tsconfig.json
 bunx tsc --noEmit -p landing/tsconfig.json
 bunx tsc --noEmit -p examples/next/tsconfig.json
@@ -74,8 +77,9 @@ bunx playwright test test/system-theme.test.ts -g "should render dark theme if p
 bunx playwright test --list test/system-theme.test.ts
 ```
 
-- `bun run format` is the only scripted formatter command.
-- Treat `bunx prettier . --check` as the repo's lint-equivalent check.
+- `bun run format` is the write-mode formatter command.
+- `bun run check-format` is the repo's lint-equivalent formatting check.
+- `bun run check-types` runs the repo's typecheck suite.
 - `bun run test` mainly runs the library's Vitest suite.
 - `bun run test:e2e` first builds `ssr-themes`, then runs Playwright.
 - Playwright boots `@ssr-themes/next` on port `4041`.
@@ -85,7 +89,7 @@ bunx playwright test --list test/system-theme.test.ts
 
 - Create releases from a tag that matches `ssr-themes/package.json` as `v<version>`, for example `gh release create v0.2.1 --target main --notes "..."`.
 - `.github/workflows/release.yml` runs on GitHub Release publish and optional manual dispatch; it checks the tag/version match before publishing.
-- The release workflow installs with `bun install --frozen-lockfile`, runs unit tests plus Playwright, builds `ssr-themes`, dry-runs `npm pack`, and publishes from `ssr-themes/`.
+- The release workflow installs with `bun install --frozen-lockfile`, runs unit tests, Prettier check, workspace type checks, Playwright, a full workspace build, dry-runs `npm pack`, and publishes from `ssr-themes/`.
 - npm authentication is handled by trusted publishing with GitHub-hosted runners and `id-token: write`; no `NPM_TOKEN` should be added for normal releases.
 - If the workflow filename, repository, or optional environment changes, update the npm trusted publisher settings to match exactly before the next release.
 

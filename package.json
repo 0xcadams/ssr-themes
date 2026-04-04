@@ -13,6 +13,8 @@
     "start": "bun --filter '*' start",
     "dev": "bun --filter '*' dev",
     "size": "bun --filter ssr-themes size",
+    "check-format": "prettier . --check",
+    "check-types": "bun --filter '*' check-types",
     "test": "bun --filter '*' test",
     "test:e2e": "bun --filter ssr-themes build && bunx playwright test",
     "clean": "rm -rf node_modules .next dist coverage playwright-report test-results && bun --filter '*' clean",
