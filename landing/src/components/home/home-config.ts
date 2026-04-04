@@ -147,8 +147,8 @@ export const frameworkStorageKey =
 
 export const liveDemoLinks = [
   {
-    href: 'https://astro.ssr-themes.cadams.io',
-    label: 'Astro',
+    href: 'https://start.ssr-themes.cadams.io',
+    label: 'TanStack Start',
   },
   {
     href: 'https://next.ssr-themes.cadams.io',
@@ -163,11 +163,11 @@ export const liveDemoLinks = [
     label: 'Svelte',
   },
   {
-    href: 'https://start.ssr-themes.cadams.io',
-    label: 'TanStack Start',
-  },
-  {
     href: 'https://vue.ssr-themes.cadams.io',
     label: 'Vue',
+  },
+  {
+    href: 'https://astro.ssr-themes.cadams.io',
+    label: 'Astro',
   },
 ] as const;

@@ -140,13 +140,12 @@ function IndexPage() {
           <div className="grid items-start gap-14 lg:grid-cols-[1.05fr_0.95fr] lg:gap-20">
             <section className="min-w-0 space-y-6 animate-rise animate-delay-2">
               <h1 className="font-display text-4xl leading-tight text-foreground sm:text-5xl">
-                Framework-agnostic, SSR-friendly
-                theming
+                SSR-safe theming
               </h1>
               <p className="max-w-xl text-lg text-muted-foreground">
-                Server helpers for any framework, plus
-                first-party React, Solid, Svelte, and
-                Vue bindings.
+                Theming for apps where the theme needs
+                to affect server-rendered HTML, not
+                just client state.
               </p>
               <div className="space-y-6">
                 <div className="flex flex-col gap-3">
