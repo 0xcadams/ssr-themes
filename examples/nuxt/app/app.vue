@@ -8,9 +8,9 @@ import type {
 import {
   registerTheme,
   themeFromCookieHeader,
+  ThemeProvider,
   themeScript,
-} from 'ssr-themes';
-import {ThemeProvider} from 'ssr-themes/vue';
+} from './lib/theme';
 
 const themeState = useState<
   ThemeCookieState<LightOrDark> | undefined

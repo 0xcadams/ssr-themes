@@ -1,7 +1,5 @@
 <script lang="ts">
-  import {ThemeProvider} from 'ssr-themes/svelte';
-
-  import {themeConfig} from '$lib/theme';
+  import {ThemeProvider} from '$lib/theme';
   import '../app.css';
   import type {LayoutProps} from './$types';
 
@@ -17,7 +15,6 @@
 </svelte:head>
 
 <ThemeProvider
-  {...themeConfig}
   selectedTheme={data.themeState?.selectedTheme}
 >
   <div

@@ -1,8 +1,15 @@
 import type {
   LightOrDark,
-  WithSystem,
   ThemeOptions,
+  ThemeScriptRuntimeOptions,
+  WithSystem,
 } from './types';
+
+type ThemeScriptOptions<
+  TTheme extends string,
+  TEnableSystem extends boolean,
+> = ThemeOptions<TTheme, TEnableSystem> &
+  ThemeScriptRuntimeOptions<TTheme>;
 
 export default <
   TTheme extends string,
@@ -15,7 +22,7 @@ export default <
   defaultTheme: NonNullable<
     ThemeOptions<TTheme, TEnableSystem>['defaultTheme']
   >,
-  forcedTheme: ThemeOptions<
+  forcedTheme: ThemeScriptOptions<
     TTheme,
     TEnableSystem
   >['forcedTheme'],

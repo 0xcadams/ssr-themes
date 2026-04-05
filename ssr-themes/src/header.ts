@@ -51,7 +51,10 @@ export const themeFromCookieHeader = <
     return decodeThemeCookieValue<
       TTheme,
       TEnableSystem
-    >(value, options.themes, options.enableSystem);
+    >(value, {
+      enableSystem: options.enableSystem,
+      themes: options.themes,
+    });
   }
 
   return undefined;

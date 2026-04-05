@@ -3,8 +3,11 @@ import {
   createHandler,
   StartServer,
 } from '@solidjs/start/server';
-import {registerTheme, themeScript} from 'ssr-themes';
-import {getThemeState} from '~/lib/theme';
+import {
+  getThemeState,
+  registerTheme,
+  themeScript,
+} from '~/lib/theme';
 
 export default createHandler(() => (
   <StartServer

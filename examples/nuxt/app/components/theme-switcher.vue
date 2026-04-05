@@ -4,7 +4,7 @@ import type {
   LightOrDark,
   WithSystem,
 } from 'ssr-themes';
-import {useTheme} from 'ssr-themes/vue';
+import {useTheme} from '../lib/theme';
 
 type ThemeName = WithSystem<LightOrDark>;
 

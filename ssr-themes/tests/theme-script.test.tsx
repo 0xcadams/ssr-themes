@@ -6,13 +6,13 @@ import {
   setCookieValue,
   setDeviceTheme,
 } from './helpers/theme-test-env';
-
-import {themeScript} from '../src/index';
+import {initTheme as createTheme} from '../src/index';
 
 installThemeTestEnv();
 
 describe('bootstrap script', () => {
   test('themeScript inlines the bootstrap source', () => {
+    const {themeScript} = createTheme();
     const scriptContent = themeScript();
 
     expect(scriptContent).not.toContain(
@@ -25,10 +25,11 @@ describe('bootstrap script', () => {
   test('themeScript sets the html theme', () => {
     setCookieValue('theme', 'dark');
 
-    const scriptContent = themeScript({
+    const {themeScript} = createTheme({
       attribute: 'class',
       defaultTheme: 'light',
     });
+    const scriptContent = themeScript();
 
     Function(scriptContent)();
 
@@ -44,10 +45,11 @@ describe('bootstrap script', () => {
     setDeviceTheme('dark');
     document.documentElement.classList.add('light');
 
-    const scriptContent = themeScript({
+    const {themeScript} = createTheme({
       attribute: 'class',
       defaultTheme: 'light',
     });
+    const scriptContent = themeScript();
 
     Function(scriptContent)();
 
@@ -62,11 +64,12 @@ describe('bootstrap script', () => {
     setCookieValue('theme', '~d');
     setDeviceTheme('light');
 
-    const scriptContent = themeScript({
+    const {themeScript} = createTheme({
       attribute: 'class',
       defaultTheme: 'light',
       enableSystem: false,
     });
+    const scriptContent = themeScript();
 
     Function(scriptContent)();
 
@@ -86,9 +89,28 @@ describe('bootstrap script', () => {
     setDeviceTheme('light');
     document.documentElement.classList.add('dark');
 
-    const scriptContent = themeScript({
+    const {themeScript} = createTheme({
       attribute: 'class',
       defaultTheme: 'system',
+    });
+    const scriptContent = themeScript();
+
+    Function(scriptContent)();
+
+    expect(
+      document.documentElement.classList.contains(
+        'dark',
+      ),
+    ).toBeTruthy();
+  });
+
+  test('themeScript supports forcedTheme runtime overrides', () => {
+    const {themeScript} = createTheme({
+      attribute: 'class',
+      defaultTheme: 'light',
+    });
+    const scriptContent = themeScript({
+      forcedTheme: 'dark',
     });
 
     Function(scriptContent)();

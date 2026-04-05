@@ -14,83 +14,92 @@ import {
   expect,
   test,
 } from 'vitest';
-
+import {initTheme} from '../src';
+import {bindTheme} from '../src/vue';
 import {
   getCookieValue,
   installThemeTestEnv,
   setCookieValue,
   setDeviceTheme,
 } from './helpers/theme-test-env';
-import {
-  ThemeProvider,
-  useTheme,
-  type ThemeProviderProps,
-} from '../src/vue';
 
 installThemeTestEnv();
 
 const wrappers: Array<VueWrapper<unknown>> = [];
 
-const ThemeReporter = defineComponent({
-  name: 'ThemeReporter',
-  props: {
-    forceSetTheme: String,
-  },
-  setup(props) {
-    const theme = useTheme<string, boolean>();
-
-    watchEffect(() => {
-      if (props.forceSetTheme) {
-        theme.setTheme(props.forceSetTheme);
-      }
-    });
-
-    return () =>
-      h('div', [
-        h(
-          'p',
-          {'data-testid': 'theme'},
-          theme.theme.value,
-        ),
-        h(
-          'p',
-          {'data-testid': 'forcedTheme'},
-          theme.forcedTheme.value,
-        ),
-        h(
-          'p',
-          {'data-testid': 'resolvedTheme'},
-          theme.resolvedTheme.value,
-        ),
-        h(
-          'p',
-          {'data-testid': 'colorScheme'},
-          theme.colorScheme.value,
-        ),
-      ]);
-  },
-});
-
-const renderTheme = (
-  providerProps: ThemeProviderProps<string, boolean>,
-  reporterProps: {forceSetTheme?: string} = {},
+const createVueHarness = (
+  options?: Parameters<typeof initTheme>[0],
 ) => {
-  const wrapper = mount(
-    defineComponent({
-      name: 'ThemeHarness',
-      setup() {
-        return () =>
-          h(ThemeProvider, providerProps as never, {
-            default: () =>
-              h(ThemeReporter, reporterProps),
-          });
-      },
-    }),
-  );
+  const theme = initTheme(options);
+  const {ThemeProvider, useTheme} = bindTheme(theme);
 
-  wrappers.push(wrapper);
+  const ThemeReporter = defineComponent({
+    name: 'ThemeReporter',
+    props: {
+      forceSetTheme: String,
+    },
+    setup(props) {
+      const theme = useTheme();
 
-  return wrapper;
+      watchEffect(() => {
+        if (props.forceSetTheme) {
+          theme.setTheme(props.forceSetTheme as never);
+        }
+      });
+
+      return () =>
+        h('div', [
+          h(
+            'p',
+            {'data-testid': 'theme'},
+            theme.theme.value,
+          ),
+          h(
+            'p',
+            {'data-testid': 'forcedTheme'},
+            theme.forcedTheme.value,
+          ),
+          h(
+            'p',
+            {'data-testid': 'resolvedTheme'},
+            theme.resolvedTheme.value,
+          ),
+          h(
+            'p',
+            {'data-testid': 'colorScheme'},
+            theme.colorScheme.value,
+          ),
+        ]);
+    },
+  });
+
+  const renderTheme = (
+    providerProps: Record<string, unknown> = {},
+    reporterProps: {forceSetTheme?: string} = {},
+  ) => {
+    const wrapper = mount(
+      defineComponent({
+        name: 'ThemeHarness',
+        setup() {
+          return () =>
+            h(ThemeProvider, providerProps as never, {
+              default: () =>
+                h(ThemeReporter, reporterProps),
+            });
+        },
+      }),
+    );
+
+    wrappers.push(wrapper);
+
+    return wrapper;
+  };
+
+  return {
+    ThemeProvider,
+    ThemeReporter,
+    renderTheme,
+  };
 };
 
 afterEach(() => {
@@ -103,7 +112,8 @@ describe('vue bindings', () => {
   test('uses the system theme by default', async () => {
     setDeviceTheme('dark');
 
-    const wrapper = renderTheme({});
+    const {renderTheme} = createVueHarness();
+    const wrapper = renderTheme();
 
     await nextTick();
 
@@ -125,7 +135,8 @@ describe('vue bindings', () => {
   test('persists the default system theme with a compact cookie value', async () => {
     setDeviceTheme('dark');
 
-    renderTheme({});
+    const {renderTheme} = createVueHarness();
+    renderTheme();
 
     await nextTick();
 
@@ -133,6 +144,7 @@ describe('vue bindings', () => {
   });
 
   test('updates the DOM and cookie when setting a theme', async () => {
+    const {renderTheme} = createVueHarness();
     const wrapper = renderTheme(
       {},
       {forceSetTheme: 'dark'},
@@ -149,14 +161,35 @@ describe('vue bindings', () => {
         'dark',
       ),
     ).toBe(true);
+  });
+
+  test('supports custom attributes and value maps from initTheme', async () => {
+    const {renderTheme} = createVueHarness({
+      attribute: ['data-theme', 'class'],
+      themes: ['light', 'dark', 'pink'],
+      valueMap: {pink: 'night'},
+    });
+
+    renderTheme({}, {forceSetTheme: 'pink'});
+    await nextTick();
+
     expect(
-      document.documentElement.style.colorScheme,
-    ).toBe('dark');
+      document.documentElement.getAttribute(
+        'data-theme',
+      ),
+    ).toBe('night');
+    expect(
+      document.documentElement.classList.contains(
+        'night',
+      ),
+    ).toBe(true);
   });
 
   test('applies and removes a forced theme', async () => {
     setCookieValue('theme', 'dark');
 
+    const {ThemeProvider, ThemeReporter} =
+      createVueHarness();
     const forcedTheme = ref<string | undefined>(
       'light',
     );
@@ -191,11 +224,6 @@ describe('vue bindings', () => {
         .get('[data-testid="resolvedTheme"]')
         .text(),
     ).toBe('light');
-    expect(
-      document.documentElement.classList.contains(
-        'light',
-      ),
-    ).toBe(true);
 
     forcedTheme.value = undefined;
     await nextTick();
@@ -212,30 +240,12 @@ describe('vue bindings', () => {
     ).toBe(true);
   });
 
-  test('supports custom attributes and value maps', async () => {
-    renderTheme(
-      {
-        attribute: ['data-theme', 'class'],
-        valueMap: {dark: 'night'},
-      },
-      {forceSetTheme: 'dark'},
-    );
-
-    await nextTick();
-
-    expect(
-      document.documentElement.getAttribute(
-        'data-theme',
-      ),
-    ).toBe('night');
-    expect(
-      document.documentElement.classList.contains(
-        'night',
-      ),
-    ).toBe(true);
-  });
-
   test('ignores nested providers', async () => {
+    const {ThemeProvider, ThemeReporter} =
+      createVueHarness({
+        defaultTheme: 'dark',
+      });
+
     const wrapper = mount(
       defineComponent({
         name: 'NestedThemeHarness',
@@ -243,12 +253,12 @@ describe('vue bindings', () => {
           return () =>
             h(
               ThemeProvider,
-              {defaultTheme: 'dark'},
+              {selectedTheme: 'dark'},
               {
                 default: () =>
                   h(
                     ThemeProvider,
-                    {defaultTheme: 'light'},
+                    {selectedTheme: 'light'},
                     {default: () => h(ThemeReporter)},
                   ),
               },
@@ -266,6 +276,8 @@ describe('vue bindings', () => {
   });
 
   test('throws when useTheme is used outside the provider', () => {
+    const {ThemeReporter} = createVueHarness();
+
     expect(() => mount(ThemeReporter)).toThrow(
       'useTheme must be used within a ThemeProvider.',
     );

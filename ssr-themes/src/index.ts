@@ -1,13 +1,21 @@
-export {themeFromCookieHeader} from './header';
-export {registerTheme} from './register-theme';
-export {themeScript} from './theme-script';
+export {initTheme} from './init-theme';
 export type {
   Attribute,
+  AttributeFromOptions,
+  BindThemeInput,
   CookieOptions,
+  EnableSystemFromOptions,
+  InitializedTheme,
   LightOrDark,
-  RegisterThemeOptions,
   ThemeCookieState,
   ThemeHtmlProps,
   ThemeOptions,
+  ThemeProviderRuntimeProps,
+  ThemeNameFromOptions,
+  ThemeOptionsFromBindInput,
+  ThemeState,
+  ThemeVariant,
+  ThemeScriptRuntimeOptions,
+  RegisterThemeRuntimeOptions,
   WithSystem,
 } from './types';

@@ -3,12 +3,9 @@
     LightOrDark,
     WithSystem,
   } from 'ssr-themes';
-  import {getTheme} from 'ssr-themes/svelte';
+  import {useTheme} from '$lib/theme';
 
-  const {setTheme, theme, colorScheme} = getTheme<
-    LightOrDark,
-    true
-  >();
+  const {setTheme, theme, colorScheme} = useTheme();
   const codeClassName =
     'rounded bg-black/5 px-1 py-0.5 dark:bg-white/10';
 

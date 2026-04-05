@@ -17,8 +17,10 @@ export const playwrightApp = (process.env
   .PLAYWRIGHT_APP ?? 'next') as PlaywrightApp;
 
 export const supportsForcedRoutes =
-  playwrightApp === 'next' ||
   playwrightApp === 'tanstack-start';
+
+export const usesExplicitLightDefault =
+  playwrightApp === 'next';
 
 export function getThemeSelector(page: Page): Locator {
   return page.locator(
@@ -110,6 +112,29 @@ export async function checkStoredTheme(
       }, storageKey);
     })
     .toBe(expectedTheme);
+}
+
+export async function checkStoredThemeMissing(
+  page: Page,
+  storageKey = 'theme',
+) {
+  await expect
+    .poll(async () => {
+      return await page.evaluate(key => {
+        const cookies = document.cookie
+          ? document.cookie.split('; ')
+          : [];
+        for (const cookie of cookies) {
+          const [name] = cookie.split('=');
+          if (name === key) {
+            return false;
+          }
+        }
+
+        return true;
+      }, storageKey);
+    })
+    .toBe(true);
 }
 
 type MakeBrowserContextOptions = {

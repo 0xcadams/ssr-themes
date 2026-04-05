@@ -3,9 +3,11 @@ import {
   checkAppliedTheme,
   checkSelectedTheme,
   checkStoredTheme,
+  checkStoredThemeMissing,
   gotoHome,
   makeBrowserContext,
   selectTheme,
+  usesExplicitLightDefault,
 } from './util';
 
 test.describe('basic theming test-suite', () => {
@@ -78,18 +80,15 @@ test.describe('basic theming test-suite', () => {
   shouldUpdateTheme('light', 'dark');
   shouldUpdateTheme('dark', 'light');
 
-  function makeDefaultSystemThemeTest(
-    preferredColorScheme: 'light' | 'dark',
-    expectedTheme: 'light' | 'dark',
-  ) {
-    test(`should default to system and persist ${expectedTheme} theme when preferred-colorscheme is ${preferredColorScheme}`, async ({
+  if (usesExplicitLightDefault) {
+    test('should default to light without persisting a cookie', async ({
       browser,
       baseURL,
     }) => {
       const context = await makeBrowserContext(
         browser,
         {
-          colorScheme: preferredColorScheme,
+          colorScheme: 'dark',
           baseURL,
         },
       );
@@ -97,17 +96,42 @@ test.describe('basic theming test-suite', () => {
 
       await gotoHome(page);
 
-      await checkSelectedTheme(page, 'system');
-      await checkStoredTheme(
-        page,
-        expectedTheme === 'dark' ? '~d' : '~l',
-      );
-      await checkAppliedTheme(page, expectedTheme);
+      await checkSelectedTheme(page, 'light');
+      await checkStoredThemeMissing(page);
+      await checkAppliedTheme(page, 'light');
     });
-  }
+  } else {
+    function makeDefaultSystemThemeTest(
+      preferredColorScheme: 'light' | 'dark',
+      expectedTheme: 'light' | 'dark',
+    ) {
+      test(`should default to system and persist ${expectedTheme} theme when preferred-colorscheme is ${preferredColorScheme}`, async ({
+        browser,
+        baseURL,
+      }) => {
+        const context = await makeBrowserContext(
+          browser,
+          {
+            colorScheme: preferredColorScheme,
+            baseURL,
+          },
+        );
+        const page = await context.newPage();
 
-  makeDefaultSystemThemeTest('light', 'light');
-  makeDefaultSystemThemeTest('dark', 'dark');
+        await gotoHome(page);
+
+        await checkSelectedTheme(page, 'system');
+        await checkStoredTheme(
+          page,
+          expectedTheme === 'dark' ? '~d' : '~l',
+        );
+        await checkAppliedTheme(page, expectedTheme);
+      });
+    }
+
+    makeDefaultSystemThemeTest('light', 'light');
+    makeDefaultSystemThemeTest('dark', 'dark');
+  }
 
   test('should switch back to system and persist the resolved theme after reload', async ({
     browser,

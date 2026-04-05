@@ -18,6 +18,7 @@ import type {
   Attribute,
   LightOrDark,
   ThemeOptions,
+  ThemeScriptRuntimeOptions,
   WithSystem,
 } from './types';
 
@@ -26,7 +27,10 @@ const isServer = typeof window === 'undefined';
 export interface ThemeControllerOptions<
   TTheme extends string = LightOrDark,
   TEnableSystem extends boolean = true,
-> extends ThemeOptions<TTheme, TEnableSystem> {
+>
+  extends
+    ThemeOptions<TTheme, TEnableSystem>,
+    ThemeScriptRuntimeOptions<TTheme> {
   disableTransitionOnChange?: boolean | undefined;
   selectedTheme?:
     | WithSystem<TTheme, TEnableSystem>
@@ -50,9 +54,9 @@ export interface ThemeControllerSnapshot<
   theme: WithSystem<TTheme, TEnableSystem> | undefined;
   forcedTheme: TTheme | undefined;
   resolvedTheme: Exclude<TTheme, 'system'> | undefined;
-  colorScheme: TEnableSystem extends true
-    ? LightOrDark | undefined
-    : undefined;
+  colorScheme: TEnableSystem extends false
+    ? undefined
+    : LightOrDark | undefined;
   themes: ReadonlyArray<
     WithSystem<TTheme, TEnableSystem>
   >;
@@ -390,9 +394,9 @@ export const createThemeController = <
       forcedTheme: options.forcedTheme,
       resolvedTheme: state.resolvedTheme,
       colorScheme:
-        state.colorScheme as TEnableSystem extends true
-          ? LightOrDark | undefined
-          : undefined,
+        state.colorScheme as TEnableSystem extends false
+          ? undefined
+          : LightOrDark | undefined,
       themes: options.publicThemes,
     };
 

@@ -9,15 +9,17 @@ import {
 import {createServerFn} from '@tanstack/react-start';
 import {getRequestHeader} from '@tanstack/react-start/server';
 import * as React from 'react';
+import appCss from '../styles.css?url';
 import {
   registerTheme,
+  ThemeProvider,
   themeFromCookieHeader,
   themeScript,
-  type LightOrDark,
-  type ThemeCookieState,
+} from '../lib/theme';
+import type {
+  LightOrDark,
+  ThemeCookieState,
 } from 'ssr-themes';
-import {ThemeProvider} from 'ssr-themes/react';
-import appCss from '../styles.css?url';
 
 type ThemeStaticData = {
   theme?: LightOrDark;
@@ -38,17 +40,10 @@ function RootDocument({
   forcedTheme?: LightOrDark;
   themeState?: ThemeCookieState<LightOrDark>;
 }) {
-  const registerThemeOptions = forcedTheme
-    ? {
-        ...(themeState ?? {}),
-        appliedTheme: forcedTheme,
-      }
-    : themeState;
-
   return (
     <html
       suppressHydrationWarning
-      {...registerTheme(registerThemeOptions)}
+      {...registerTheme(themeState, {forcedTheme})}
     >
       <head>
         <HeadContent />

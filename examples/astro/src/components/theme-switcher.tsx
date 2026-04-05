@@ -5,7 +5,7 @@ import type {
 import {
   ThemeProvider,
   useTheme,
-} from 'ssr-themes/react';
+} from '../lib/theme-react';
 
 type ThemeName = WithSystem<LightOrDark>;
 
@@ -15,7 +15,7 @@ type ThemeSwitcherProps = {
 
 function ThemeSelect() {
   const {theme, setTheme, forcedTheme, colorScheme} =
-    useTheme<LightOrDark>();
+    useTheme();
 
   const disabled = Boolean(forcedTheme);
   const value = theme ?? 'system';

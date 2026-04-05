@@ -207,11 +207,10 @@ export const getTheme = <
     theme = decodeThemeCookieValue<
       TTheme,
       TEnableSystem
-    >(
-      getCookieValue(cookieName),
-      themes,
+    >(getCookieValue(cookieName), {
       enableSystem,
-    )?.selectedTheme;
+      themes,
+    })?.selectedTheme;
   } catch {}
 
   if (theme) {

@@ -24,7 +24,7 @@ export const maybeGetTheme = <
       )
     : undefined;
 
-export const getTheme = <
+export const useTheme = <
   TTheme extends string,
   TEnableSystem extends boolean,
 >() => {
@@ -40,3 +40,5 @@ export const getTheme = <
 
   return context;
 };
+
+export const getTheme = useTheme;
