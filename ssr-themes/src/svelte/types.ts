@@ -5,6 +5,7 @@ import type {
   CookieOptions,
   LightOrDark,
   ThemeOptions,
+  ThemeProviderRuntimeProps,
   WithSystem,
 } from '../types';
 
@@ -29,9 +30,9 @@ export interface ThemeContext<
     Exclude<TTheme, 'system'> | undefined
   >;
   colorScheme: Readable<
-    TEnableSystem extends true
-      ? LightOrDark | undefined
-      : undefined
+    TEnableSystem extends false
+      ? undefined
+      : LightOrDark | undefined
   >;
   themes: Readable<
     ReadonlyArray<WithSystem<TTheme, TEnableSystem>>
@@ -44,13 +45,11 @@ export interface ThemeContext<
 export interface ThemeProviderProps<
   TTheme extends string = LightOrDark,
   TEnableSystem extends boolean = true,
-> extends ThemeOptions<TTheme, TEnableSystem> {
+>
+  extends
+    ThemeOptions<TTheme, TEnableSystem>,
+    ThemeProviderRuntimeProps<TTheme, TEnableSystem> {
   children?: Snippet | undefined;
-  disableTransitionOnChange?: boolean | undefined;
-  selectedTheme?:
-    | WithSystem<TTheme, TEnableSystem>
-    | undefined;
-  nonce?: string | undefined;
 }
 
 export type {

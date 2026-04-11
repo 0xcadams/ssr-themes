@@ -1,6 +1,4 @@
-import Link from 'next/link';
-
-import ThemeSwitcher from '../theme-switcher';
+import ThemeSwitcher from '../../theme-switcher';
 
 export default function Page() {
   return (
@@ -28,23 +26,6 @@ export default function Page() {
           ssr-themes next.js example
         </h1>
         <ThemeSwitcher />
-        <div className="text-lg">
-          <Link
-            className="underline underline-offset-4"
-            href="/dark"
-          >
-            Forced Dark Page
-          </Link>
-          <span className="px-2 text-black/50 dark:text-white/50">
-            •
-          </span>
-          <Link
-            className="underline underline-offset-4"
-            href="/light"
-          >
-            Forced Light Page
-          </Link>
-        </div>
       </div>
     </main>
   );

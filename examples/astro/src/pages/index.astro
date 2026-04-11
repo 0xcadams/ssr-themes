@@ -1,51 +1,22 @@
 ---
 import ThemeSwitcher from '../components/theme-switcher';
-import '../styles.css';
 import {
   registerTheme,
   themeFromCookieHeader,
   themeScript,
-  type ThemeHtmlProps,
-} from 'ssr-themes';
+} from '../lib/theme';
+import '../styles.css';
 
 const themeState = themeFromCookieHeader(
   Astro.request.headers.get('cookie'),
 );
 
-const styleToString = (
-  style?: ThemeHtmlProps['style'],
-) => {
-  if (!style) return undefined;
-
-  const declarations = Object.entries(style)
-    .filter(([, value]) => value !== undefined)
-    .map(([key, value]) => {
-      const property = key.replace(
-        /[A-Z]/g,
-        match => `-${match.toLowerCase()}`,
-      );
-
-      return `${property}: ${value}`;
-    });
-
-  return declarations.length
-    ? declarations.join('; ')
-    : undefined;
-};
-
-const {
-  className,
-  style,
-  ...themeHtmlProps
-} = registerTheme({ ...themeState });
+const themeHtmlProps = registerTheme(themeState, {
+  renderMode: 'html-attrs',
+});
 ---
 
-<html
-  lang="en"
-  class={className}
-  style={styleToString(style)}
-  {...themeHtmlProps}
->
+<html lang="en" {...themeHtmlProps}>
   <head>
     <meta charset="utf-8" />
     <meta
@@ -98,7 +69,7 @@ const {
 
         <ThemeSwitcher
           client:load
-          selectedTheme={themeState?.selectedTheme}
+          themeState={themeState}
         />
       </div>
     </main>

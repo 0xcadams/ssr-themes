@@ -82,7 +82,7 @@ describe('svelte bindings', () => {
     controller.context.setTheme('dark');
 
     expect(get(controller.context.theme)).toBe('dark');
-    expect(getCookieValue('theme')).toBe('dark');
+    expect(getCookieValue('theme')).toBe('dark~l');
     expect(
       document.documentElement.classList.contains(
         'dark',

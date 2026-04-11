@@ -1,21 +1,22 @@
 import type {
   LightOrDark,
+  ThemeState,
   WithSystem,
 } from 'ssr-themes';
 import {
   ThemeProvider,
   useTheme,
-} from 'ssr-themes/react';
+} from '../lib/theme-react';
 
 type ThemeName = WithSystem<LightOrDark>;
 
 type ThemeSwitcherProps = {
-  selectedTheme?: ThemeName;
+  themeState?: ThemeState<LightOrDark>;
 };
 
 function ThemeSelect() {
   const {theme, setTheme, forcedTheme, colorScheme} =
-    useTheme<LightOrDark>();
+    useTheme();
 
   const disabled = Boolean(forcedTheme);
   const value = theme ?? 'system';
@@ -60,10 +61,10 @@ function ThemeSelect() {
 }
 
 export default function ThemeSwitcher({
-  selectedTheme,
+  themeState,
 }: ThemeSwitcherProps) {
   return (
-    <ThemeProvider selectedTheme={selectedTheme}>
+    <ThemeProvider {...(themeState ?? {})}>
       <ThemeSelect />
     </ThemeProvider>
   );

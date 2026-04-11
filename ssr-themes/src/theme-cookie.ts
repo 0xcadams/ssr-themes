@@ -1,81 +1,142 @@
 import type {
   LightOrDark,
+  LightOrDarkTuple,
   ThemeCookieState,
   ThemeOptions,
+  ThemeState,
+  ThemeVariant,
   WithSystem,
 } from './types';
+
+type ThemeCodecOptions<
+  TTheme extends string = LightOrDark,
+  TEnableSystem extends boolean = true,
+> = Pick<
+  ThemeOptions<TTheme, TEnableSystem>,
+  'themes' | 'enableSystem'
+>;
+
+const defaultThemes = [
+  'dark',
+  'light',
+] as const satisfies LightOrDarkTuple;
 
 const systemCookieValueMap = {
   dark: '~d',
   light: '~l',
 } as const;
 
-export const decodeThemeCookieValue = <
+const parseColorSchemeToken = (
+  value: string | undefined,
+): LightOrDark | undefined => {
+  if (value === '~d') {
+    return 'dark';
+  }
+
+  if (value === '~l') {
+    return 'light';
+  }
+
+  return undefined;
+};
+
+const parseExplicitThemeToken = (
+  value: string,
+):
+  | {
+      colorScheme: LightOrDark;
+      theme: string;
+    }
+  | undefined => {
+  const suffix = parseColorSchemeToken(
+    value.slice(-2),
+  );
+
+  if (!suffix) {
+    return undefined;
+  }
+
+  const theme = value.slice(0, -2);
+
+  if (!theme) {
+    return undefined;
+  }
+
+  return {
+    colorScheme: suffix,
+    theme,
+  };
+};
+
+export const decodeTheme = <
   TTheme extends string = LightOrDark,
   TEnableSystem extends boolean = true,
 >(
   value: string | undefined,
-  themes?: ThemeOptions<
+  options: ThemeCodecOptions<
     TTheme,
     TEnableSystem
-  >['themes'],
-  enableSystem: ThemeOptions<
-    TTheme,
-    TEnableSystem
-  >['enableSystem'] = true as TEnableSystem,
+  > = {},
 ):
   | ThemeCookieState<TTheme, TEnableSystem>
   | undefined => {
+  const {
+    themes,
+    enableSystem = true as TEnableSystem,
+  } = options;
+
   if (!value) {
     return undefined;
   }
 
-  if (value === systemCookieValueMap.dark) {
-    if (themes && !themes.includes('dark' as TTheme)) {
-      return undefined;
-    }
+  const compactTheme = parseColorSchemeToken(value);
 
-    if (enableSystem === false) {
-      return {
-        selectedTheme: 'dark' as WithSystem<
-          TTheme,
-          TEnableSystem
-        >,
-        appliedTheme: 'dark' as TTheme,
-      };
-    }
-    return {
-      selectedTheme: 'system' as WithSystem<
-        TTheme,
-        TEnableSystem
-      >,
-      appliedTheme: 'dark' as TTheme,
-    };
-  }
-
-  if (value === systemCookieValueMap.light) {
+  if (compactTheme) {
     if (
       themes &&
-      !themes.includes('light' as TTheme)
+      !themes.includes(compactTheme as TTheme)
     ) {
       return undefined;
     }
 
     if (enableSystem === false) {
       return {
-        selectedTheme: 'light' as WithSystem<
+        selectedTheme: compactTheme as WithSystem<
           TTheme,
           TEnableSystem
         >,
-        appliedTheme: 'light' as TTheme,
+        appliedTheme: compactTheme as TTheme,
+        colorScheme: compactTheme,
       };
     }
+
     return {
       selectedTheme: 'system' as WithSystem<
         TTheme,
         TEnableSystem
       >,
-      appliedTheme: 'light' as TTheme,
+      appliedTheme: compactTheme as TTheme,
+      colorScheme: compactTheme,
+    };
+  }
+
+  const explicitTheme = parseExplicitThemeToken(value);
+
+  if (explicitTheme) {
+    if (
+      themes &&
+      !themes.includes(explicitTheme.theme as TTheme)
+    ) {
+      return undefined;
+    }
+
+    return {
+      selectedTheme: explicitTheme.theme as WithSystem<
+        TTheme,
+        TEnableSystem
+      >,
+      appliedTheme: explicitTheme.theme as TTheme,
+      colorScheme: explicitTheme.colorScheme,
     };
   }
 
@@ -104,6 +165,127 @@ export const decodeThemeCookieValue = <
   };
 };
 
+export const encodeTheme = <
+  TTheme extends string = LightOrDark,
+  TEnableSystem extends boolean = true,
+>(
+  themeState?: ThemeState<TTheme, TEnableSystem>,
+) => {
+  const selectedTheme = themeState?.selectedTheme;
+  const colorScheme = themeState?.colorScheme;
+
+  if (!selectedTheme) {
+    return undefined;
+  }
+
+  if (selectedTheme === 'system') {
+    const resolvedTheme =
+      colorScheme ??
+      (themeState?.appliedTheme === 'dark' ||
+      themeState?.appliedTheme === 'light'
+        ? themeState.appliedTheme
+        : undefined);
+
+    if (!resolvedTheme) {
+      return undefined;
+    }
+
+    return systemCookieValueMap[
+      resolvedTheme as LightOrDark
+    ];
+  }
+
+  if (colorScheme) {
+    return `${selectedTheme}${systemCookieValueMap[colorScheme]}`;
+  }
+
+  return selectedTheme;
+};
+
+export const themeVariants = <
+  TTheme extends string = LightOrDark,
+  TEnableSystem extends boolean = true,
+>(
+  options: ThemeCodecOptions<
+    TTheme,
+    TEnableSystem
+  > = {},
+): ReadonlyArray<
+  ThemeVariant<TTheme, TEnableSystem>
+> => {
+  const themes = (options.themes ??
+    defaultThemes) as readonly TTheme[];
+  const variants: ThemeVariant<
+    TTheme,
+    TEnableSystem
+  >[] = [];
+
+  if (options.enableSystem !== false) {
+    for (const theme of themes) {
+      variants.push({
+        value: `${theme}${systemCookieValueMap.light}`,
+        selectedTheme: theme as WithSystem<
+          TTheme,
+          TEnableSystem
+        >,
+        appliedTheme: theme,
+        colorScheme: 'light',
+      });
+      variants.push({
+        value: `${theme}${systemCookieValueMap.dark}`,
+        selectedTheme: theme as WithSystem<
+          TTheme,
+          TEnableSystem
+        >,
+        appliedTheme: theme,
+        colorScheme: 'dark',
+      });
+    }
+  } else {
+    for (const theme of themes) {
+      variants.push({
+        value: theme,
+        selectedTheme: theme as WithSystem<
+          TTheme,
+          TEnableSystem
+        >,
+        appliedTheme: theme,
+      });
+    }
+  }
+
+  if (options.enableSystem === false) {
+    return variants;
+  }
+
+  if (themes.includes('light' as TTheme)) {
+    variants.push({
+      value: systemCookieValueMap.light,
+      selectedTheme: 'system' as WithSystem<
+        TTheme,
+        TEnableSystem
+      >,
+      appliedTheme: 'light' as TTheme,
+      colorScheme: 'light',
+    });
+  }
+
+  if (themes.includes('dark' as TTheme)) {
+    variants.push({
+      value: systemCookieValueMap.dark,
+      selectedTheme: 'system' as WithSystem<
+        TTheme,
+        TEnableSystem
+      >,
+      appliedTheme: 'dark' as TTheme,
+      colorScheme: 'dark',
+    });
+  }
+
+  return variants;
+};
+
+export const decodeThemeCookieValue = decodeTheme;
 export const encodeThemeCookieValue = <
   TTheme extends string,
   TEnableSystem extends boolean = true,
@@ -111,19 +293,17 @@ export const encodeThemeCookieValue = <
   selectedTheme:
     | WithSystem<TTheme, TEnableSystem>
     | undefined,
-  resolvedTheme?: LightOrDark,
-) => {
-  if (!selectedTheme) {
-    return undefined;
-  }
-
-  if (selectedTheme === 'system') {
-    if (!resolvedTheme) {
-      return undefined;
-    }
-
-    return systemCookieValueMap[resolvedTheme];
-  }
-
-  return selectedTheme;
-};
+  colorScheme?: LightOrDark,
+) =>
+  encodeTheme<TTheme, TEnableSystem>(
+    selectedTheme
+      ? {
+          selectedTheme,
+          appliedTheme:
+            selectedTheme === 'system'
+              ? (colorScheme as TTheme | undefined)
+              : (selectedTheme as TTheme),
+          colorScheme,
+        }
+      : undefined,
+  );

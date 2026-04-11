@@ -42,51 +42,17 @@ import {
   registerTheme,
   themeFromCookieHeader,
   themeScript,
-  type ThemeHtmlProps,
-} from 'ssr-themes';
+} from '../lib/theme';
 
 const themeState = themeFromCookieHeader(
   Astro.request.headers.get('cookie'),
 );
-
-const styleToString = (
-  style?: ThemeHtmlProps['style'],
-) => {
-  if (!style) return undefined;
-
-  const declarations = Object.entries(style)
-    .filter(([, value]) => value !== undefined)
-    .map(([key, value]) => {
-      const property = key.replace(
-        /[A-Z]/g,
-        match => \`-\${match.toLowerCase()}\`,
-      );
-
-      return \`\${property}: \${value}\`;
-    });
-
-  return declarations.length
-    ? declarations.join('; ')
-    : undefined;
-};
-
-const {
-  className,
-  style,
-  ...themeHtmlProps
-} = registerTheme(themeState);
-
-// registerTheme(themeState) can use appliedTheme
-// to pre-render <html>. Pass only selectedTheme
-// into the client provider.
+const htmlProps = registerTheme(themeState, {
+  renderMode: 'html-attrs',
+});
 ---
 
-<html
-  lang="en"
-  class={className}
-  style={styleToString(style)}
-  {...themeHtmlProps}
->
+<html lang="en" {...htmlProps}>
   <head>
     <script
       id="ssr-themes"
@@ -97,32 +63,50 @@ const {
   <body>
     <ThemeSwitcher
       client:load
-      selectedTheme={themeState?.selectedTheme}
+      themeState={themeState}
     />
   </body>
 </html>
 `,
     },
-    secondary: `// src/components/theme-switcher.tsx
-import type {LightOrDark, WithSystem} from 'ssr-themes';
+    secondary: `// src/lib/theme.ts
+import {initTheme} from 'ssr-themes';
+
+export const {
+  themeOptions,
+  registerTheme,
+  themeFromCookieHeader,
+  themeScript,
+} = initTheme();
+
+// src/lib/theme-react.tsx
+import {bindTheme} from 'ssr-themes/react';
+import {themeOptions} from './theme';
+
+export const {ThemeProvider, useTheme} =
+  bindTheme(themeOptions);
+
+// src/components/theme-switcher.tsx
+import type {
+  LightOrDark,
+  ThemeState,
+  WithSystem,
+} from 'ssr-themes';
 import {
   ThemeProvider,
   useTheme,
-} from 'ssr-themes/react';
+} from '../lib/theme-react';
 
 type ThemeName = WithSystem<LightOrDark>;
 
 function ThemeSelect() {
-  const {theme, setTheme} = useTheme<LightOrDark>();
-  const value = theme ?? 'system';
+  const {theme, setTheme} = useTheme();
 
   return (
     <select
-      value={value}
+      value={theme ?? 'system'}
       onChange={event =>
-        setTheme(
-          event.target.value as ThemeName,
-        )
+        setTheme(event.target.value as ThemeName)
       }
     >
       <option value="system">System</option>
@@ -133,12 +117,12 @@ function ThemeSelect() {
 }
 
 export default function ThemeSwitcher({
-  selectedTheme,
+  themeState,
 }: {
-  selectedTheme?: ThemeName;
+  themeState?: ThemeState<LightOrDark>;
 }) {
   return (
-    <ThemeProvider selectedTheme={selectedTheme}>
+    <ThemeProvider {...(themeState ?? {})}>
       <ThemeSelect />
     </ThemeProvider>
   );
@@ -147,40 +131,15 @@ export default function ThemeSwitcher({
   },
   next: {
     primary: `// app/layout.tsx
-import Script from 'next/script';
-import type {ReactNode} from 'react';
-import {themeScript} from 'ssr-themes';
-import {ThemeProvider} from 'ssr-themes/react';
-
-export default function RootLayout({
-  children,
-}: {
-  children: ReactNode;
-}) {
-  return (
-    <html suppressHydrationWarning>
-      <head>
-        <Script id="ssr-themes" strategy="beforeInteractive">
-          {themeScript()}
-        </Script>
-      </head>
-      <body>
-        <ThemeProvider>{children}</ThemeProvider>
-      </body>
-    </html>
-  );
-}
-`,
-    secondary: `// app/layout.tsx (SSR: pre-set the <html> theme)
 import {headers} from 'next/headers';
 import Script from 'next/script';
 import type {ReactNode} from 'react';
+import {ThemeProvider} from './theme-react';
 import {
   registerTheme,
   themeFromCookieHeader,
   themeScript,
-} from 'ssr-themes';
-import {ThemeProvider} from 'ssr-themes/react';
+} from './theme';
 
 export default async function RootLayout({
   children,
@@ -191,27 +150,71 @@ export default async function RootLayout({
     (await headers()).get('cookie'),
   );
 
-  // Use the full themeState for <html>, and keep the
-  // logical selection for hydrated UI state.
-
   return (
     <html
       suppressHydrationWarning
       {...registerTheme(themeState)}
     >
       <head>
-        <Script id="ssr-themes" strategy="beforeInteractive">
+        <Script
+          id="ssr-themes"
+          strategy="beforeInteractive"
+        >
           {themeScript()}
         </Script>
       </head>
       <body>
-        <ThemeProvider
-          selectedTheme={themeState?.selectedTheme}
-        >
+        <ThemeProvider {...themeState}>
           {children}
         </ThemeProvider>
       </body>
     </html>
+  );
+}
+`,
+    secondary: `// app/theme.ts
+import {initTheme} from 'ssr-themes';
+
+export const {
+  themeOptions,
+  registerTheme,
+  themeFromCookieHeader,
+  themeScript,
+} = initTheme();
+
+// app/theme-react.tsx
+'use client';
+
+import {bindTheme} from 'ssr-themes/react';
+import {themeOptions} from './theme';
+
+export const {ThemeProvider, useTheme} =
+  bindTheme(themeOptions);
+
+// app/theme-switcher.tsx
+'use client';
+
+import {useTheme} from './theme-react';
+
+type ThemeName =
+  | 'system'
+  | 'dark'
+  | 'light';
+
+export function ThemeSwitcher() {
+  const {theme, setTheme} = useTheme();
+
+  return (
+    <select
+      value={theme ?? 'system'}
+      onChange={event =>
+        setTheme(event.target.value as ThemeName)
+      }
+    >
+      <option value="system">System</option>
+      <option value="dark">Dark</option>
+      <option value="light">Light</option>
+    </select>
   );
 }
 `,
@@ -225,63 +228,30 @@ import {computed} from 'vue';
 import type {
   LightOrDark,
   ThemeCookieState,
-  ThemeHtmlProps,
 } from 'ssr-themes';
 import {
   registerTheme,
   themeFromCookieHeader,
+  ThemeProvider,
   themeScript,
-} from 'ssr-themes';
-import {ThemeProvider} from 'ssr-themes/vue';
+} from './lib/theme';
 
 const themeState = useState<
   ThemeCookieState<LightOrDark> | undefined
->('theme', () => {
-  if (import.meta.client) return undefined;
-
-  return themeFromCookieHeader(
-    useRequestHeaders(['cookie']).cookie,
-  );
-});
-
-// Use the full themeState for SSR htmlAttrs, and pass
-// only selectedTheme into the provider.
-
-const styleToString = (
-  style?: ThemeHtmlProps['style'],
-) => {
-  if (!style) {
-    return undefined;
-  }
-
-  const declarations = Object.entries(style)
-    .filter(([, value]) => value !== undefined)
-    .map(([key, value]) => {
-      const property = key.startsWith('--')
-        ? key
-        : key.replace(
-            /[A-Z]/g,
-            match => \`-\${match.toLowerCase()}\`,
-          );
-
-      return \`\${property}: \${value}\`;
-    });
-
-  return declarations.length
-    ? declarations.join('; ')
-    : undefined;
-};
+>('theme', () =>
+  import.meta.client
+    ? undefined
+    : themeFromCookieHeader(
+        useRequestHeaders(['cookie']).cookie,
+      ),
+);
 
 const htmlAttrs = computed(() => {
-  const {className, style, ...dataAttrs} =
-    registerTheme(themeState.value);
-  const styleText = styleToString(style);
-
   return {
     lang: 'en' as const,
-    ...(className ? {class: className} : {}),
-    ...(styleText ? {style: styleText} : {}),
-    ...dataAttrs,
+    ...registerTheme(themeState.value, {
+      renderMode: 'html-attrs',
+    }),
   };
 });
 
@@ -299,9 +269,7 @@ if (import.meta.server) {
 </script>
 
 <template>
-  <ThemeProvider
-    :selected-theme="themeState?.selectedTheme"
-  >
+  <ThemeProvider v-bind="themeState ?? {}">
     <NuxtPage />
   </ThemeProvider>
 </template>
@@ -309,30 +277,44 @@ if (import.meta.server) {
     },
     secondary: {
       lang: 'vue',
-      code: `<!-- app/components/theme-switcher.vue -->
+      code: `<!-- app/lib/theme.ts -->
+import {initTheme} from 'ssr-themes';
+import {bindTheme} from 'ssr-themes/vue';
+
+export const {
+  themeOptions,
+  registerTheme,
+  themeFromCookieHeader,
+  themeScript,
+} = initTheme();
+
+export const {ThemeProvider, useTheme} =
+  bindTheme(themeOptions);
+
+<!-- app/components/theme-switcher.vue -->
 <script setup lang="ts">
 import {computed} from 'vue';
-import type {LightOrDark, WithSystem} from 'ssr-themes';
-import {useTheme} from 'ssr-themes/vue';
+import {useTheme} from '../lib/theme';
 
-type ThemeName = WithSystem<LightOrDark>;
+type ThemeName =
+  | 'system'
+  | 'dark'
+  | 'light';
 
 const {setTheme, theme} = useTheme();
-
 const selectedTheme = computed(
   () => theme.value ?? 'system',
 );
 
 const handleChange = (event: Event) => {
-  const select = event.currentTarget as HTMLSelectElement;
+  const select =
+    event.currentTarget as HTMLSelectElement;
   setTheme(select.value as ThemeName);
 };
 </script>
 
 <template>
-  <select
-    @change="handleChange"
-  >
+  <select @change="handleChange">
     <option
       value="system"
       :selected="selectedTheme === 'system'"
@@ -357,35 +339,25 @@ const handleChange = (event: Event) => {
     },
   },
   solid: {
-    primary: `// src/lib/theme.ts
-import {themeFromCookieHeader} from 'ssr-themes';
-import {getRequestEvent, isServer} from 'solid-js/web';
-
-export const getThemeState = () =>
-  themeFromCookieHeader(
-    isServer
-      ? getRequestEvent()?.request.headers.get('cookie')
-      : document.cookie,
-  );
-
-// src/app.tsx
+    primary: `// src/app.tsx
 import {Router} from '@solidjs/router';
 import {FileRoutes} from '@solidjs/start/router';
 import {Suspense} from 'solid-js';
-import {ThemeProvider} from 'ssr-themes/solid';
-import {getThemeState} from '~/lib/theme';
+import {
+  getThemeState,
+  ThemeProvider,
+} from '~/lib/theme';
 
 export default function App() {
   const themeState = getThemeState();
 
-  // registerTheme(themeState) handles SSR html state.
-  // selectedTheme keeps the logical client choice.
-
   return (
-    <ThemeProvider
-      selectedTheme={themeState?.selectedTheme}
-    >
-      <Router root={props => <Suspense>{props.children}</Suspense>}>
+    <ThemeProvider {...(themeState ?? {})}>
+      <Router
+        root={props => (
+          <Suspense>{props.children}</Suspense>
+        )}
+      >
         <FileRoutes />
       </Router>
     </ThemeProvider>
@@ -393,19 +365,33 @@ export default function App() {
 }
 
 // src/entry-server.tsx
-import {createHandler, StartServer} from '@solidjs/start/server';
-import {registerTheme, themeScript} from 'ssr-themes';
+import {
+  createHandler,
+  StartServer,
+} from '@solidjs/start/server';
+import {
+  getThemeState,
+  registerTheme,
+  themeScript,
+} from '~/lib/theme';
 
 export default createHandler(() => (
   <StartServer
     document={({assets, children, scripts}) => {
-      const themeState = getThemeState();
-      const htmlProps = registerTheme(themeState);
+      const htmlProps = registerTheme(
+        getThemeState(),
+      );
 
       return (
-        <html class={htmlProps.className} style={htmlProps.style}>
+        <html
+          class={htmlProps.className}
+          style={htmlProps.style}
+        >
           <head>
-            <script innerHTML={themeScript()} />
+            <script
+              id="ssr-themes"
+              innerHTML={themeScript()}
+            />
             {assets}
           </head>
           <body>
@@ -418,22 +404,45 @@ export default createHandler(() => (
   />
 ));
 `,
-    secondary: `// src/routes/index.tsx
-import {useTheme} from 'ssr-themes/solid';
+    secondary: `// src/lib/theme.ts
+import {initTheme} from 'ssr-themes';
+import {bindTheme} from 'ssr-themes/solid';
+import {getRequestEvent, isServer} from 'solid-js/web';
 
-export default function Home() {
+export const {
+  themeOptions,
+  registerTheme,
+  themeFromCookieHeader,
+  themeScript,
+} = initTheme();
+
+export const {ThemeProvider, useTheme} =
+  bindTheme(themeOptions);
+
+export const getThemeState = () =>
+  themeFromCookieHeader(
+    isServer
+      ? getRequestEvent()?.request.headers.get('cookie')
+      : document.cookie,
+  );
+
+// src/components/theme-switcher.tsx
+import {useTheme} from '~/lib/theme';
+
+type ThemeName =
+  | 'system'
+  | 'dark'
+  | 'light';
+
+export function ThemeSwitcher() {
   const theme = useTheme();
-  const value = () => theme.theme() ?? 'system';
 
   return (
     <select
-      value={value()}
+      value={theme.theme() ?? 'system'}
       onChange={event =>
         theme.setTheme(
-          event.currentTarget.value as
-            | 'system'
-            | 'dark'
-            | 'light',
+          event.currentTarget.value as ThemeName,
         )
       }
     >
@@ -443,29 +452,36 @@ export default function Home() {
     </select>
   );
 }
-    `,
+`,
   },
   svelte: {
     primary: {
       lang: 'svelte',
       code: `<!-- src/app.html -->
-<html lang="en" %ssr-themes.html-attrs%>
+<!doctype html>
+<html %ssr-themes.html-attrs%>
   <head>
     <script id="ssr-themes">
       %ssr-themes.script%
     </script>
+    %sveltekit.head%
   </head>
+  <body>
+    %sveltekit.body%
+  </body>
+</html>
 
 // src/hooks.server.ts
-import type {Handle} from '@sveltejs/kit';
 import {
-  registerTheme,
-  themeFromCookieHeader,
-  themeScript,
-} from 'ssr-themes';
+  getThemeState,
+  htmlAttributesPlaceholder,
+  renderThemeHtmlAttributes,
+  renderThemeScript,
+  themeScriptPlaceholder,
+} from '$lib/theme';
 
-export const handle: Handle = async ({event, resolve}) => {
-  const themeState = themeFromCookieHeader(
+export const handle = async ({event, resolve}) => {
+  const themeState = getThemeState(
     event.request.headers.get('cookie'),
   );
   event.locals.themeState = themeState;
@@ -474,31 +490,29 @@ export const handle: Handle = async ({event, resolve}) => {
     transformPageChunk: ({html}) =>
       html
         .replace(
-          '%ssr-themes.html-attrs%',
-          registerTheme({
-            attribute: 'class',
-            ...themeState,
-            renderMode: 'html-string',
-          }),
+          htmlAttributesPlaceholder,
+          renderThemeHtmlAttributes(themeState),
         )
         .replace(
-          '%ssr-themes.script%',
-          themeScript(),
+          themeScriptPlaceholder,
+          renderThemeScript(),
         ),
   });
 };
 
+// src/routes/+layout.server.ts
+export const load = ({locals}) => ({
+  themeState: locals.themeState,
+});
+
 <!-- src/routes/+layout.svelte -->
 <script lang="ts">
-  import {ThemeProvider} from 'ssr-themes/svelte';
-
-  // registerTheme() uses the full themeState during SSR.
-  // Pass only selectedTheme to hydrated UI state.
+  import {ThemeProvider} from '$lib/theme';
   let {data, children} = $props();
 </script>
 
 <ThemeProvider
-  selectedTheme={data.themeState?.selectedTheme}
+  {...(data.themeState ?? {})}
 >
   {@render children()}
 </ThemeProvider>
@@ -506,24 +520,58 @@ export const handle: Handle = async ({event, resolve}) => {
     },
     secondary: {
       lang: 'svelte',
-      code: `<!-- src/lib/theme-switcher.svelte -->
-<script lang="ts">
-  import type {
-    LightOrDark,
-    WithSystem,
-  } from 'ssr-themes';
-  import {getTheme} from 'ssr-themes/svelte';
+      code: `<!-- src/lib/theme.ts -->
+import {initTheme} from 'ssr-themes';
+import {bindTheme} from 'ssr-themes/svelte';
 
-  const {setTheme, theme} = getTheme<
-    LightOrDark,
-    true
-  >();
+export const htmlAttributesPlaceholder =
+  '%ssr-themes.html-attrs%';
+
+export const themeScriptPlaceholder =
+  '%ssr-themes.script%';
+
+export const {
+  themeOptions,
+  registerTheme,
+  themeFromCookieHeader,
+  themeScript,
+} = initTheme({
+  attribute: 'class',
+  themes: ['dark', 'light'],
+});
+
+export const {ThemeProvider, useTheme} =
+  bindTheme(themeOptions);
+
+export const getThemeState = (
+  cookieHeader: string | null | undefined,
+) => themeFromCookieHeader(cookieHeader);
+
+export const renderThemeHtmlAttributes = (
+  themeState?: ReturnType<typeof getThemeState>,
+) =>
+  registerTheme(themeState, {
+    renderMode: 'html-string',
+  });
+
+export const renderThemeScript = () =>
+  themeScript();
+
+<!-- src/lib/theme-switcher.svelte -->
+<script lang="ts">
+  import {useTheme} from '$lib/theme';
+
+  const {setTheme, theme} = useTheme();
+
+  type ThemeName =
+    | 'system'
+    | 'dark'
+    | 'light';
 
   const handleChange = (event: Event) => {
-    const select = event.currentTarget as HTMLSelectElement;
-    setTheme(
-      select.value as WithSystem<LightOrDark>,
-    );
+    const select =
+      event.currentTarget as HTMLSelectElement;
+    setTheme(select.value as ThemeName);
   };
 </script>
 
@@ -540,8 +588,6 @@ export const handle: Handle = async ({event, resolve}) => {
   },
   tanstack: {
     primary: `// src/routes/__root.tsx
-import {createServerFn} from '@tanstack/react-start';
-import {getRequestHeader} from '@tanstack/react-start/server';
 import {
   HeadContent,
   Outlet,
@@ -549,12 +595,14 @@ import {
   Scripts,
   createRootRoute,
 } from '@tanstack/react-router';
+import {createServerFn} from '@tanstack/react-start';
+import {getRequestHeader} from '@tanstack/react-start/server';
 import {
   registerTheme,
+  ThemeProvider,
   themeFromCookieHeader,
   themeScript,
-} from 'ssr-themes';
-import {ThemeProvider} from 'ssr-themes/react';
+} from '../lib/theme';
 
 const getThemeState = createServerFn({
   method: 'GET',
@@ -562,20 +610,8 @@ const getThemeState = createServerFn({
   themeFromCookieHeader(getRequestHeader('cookie')),
 );
 
-export const Route = createRootRoute({
-  loader: async () => ({
-    themeState: await getThemeState(),
-  }),
-  staleTime: Infinity,
-  shouldReload: false,
-  component: RootComponent,
-});
-
 function RootComponent() {
   const {themeState} = Route.useLoaderData();
-
-  // Use the full themeState for SSR html props, and keep
-  // selectedTheme for hydrated UI state.
 
   return (
     <html
@@ -586,9 +622,7 @@ function RootComponent() {
         <HeadContent />
       </head>
       <body>
-        <ThemeProvider
-          selectedTheme={themeState?.selectedTheme}
-        >
+        <ThemeProvider {...(themeState ?? {})}>
           <ScriptOnce children={themeScript()} />
           <Outlet />
         </ThemeProvider>
@@ -597,87 +631,141 @@ function RootComponent() {
     </html>
   );
 }
-`,
-    secondary: `// src/routes/dark.tsx
-import {createFileRoute} from '@tanstack/react-router';
 
-export const Route = createFileRoute('/dark')({
-  staticData: {theme: 'dark'},
-  component: () => <div>Always dark</div>,
+export const Route = createRootRoute({
+  loader: async () => ({
+    themeState: await getThemeState(),
+  }),
+  component: RootComponent,
 });
+`,
+    secondary: `// src/lib/theme.ts
+import {initTheme} from 'ssr-themes';
+import {bindTheme} from 'ssr-themes/react';
 
-// src/routes/__root.tsx
-import {useMatches} from '@tanstack/react-router';
-import type {LightOrDark} from 'ssr-themes';
-import {registerTheme} from 'ssr-themes';
-import {ThemeProvider} from 'ssr-themes/react';
+export const {
+  themeOptions,
+  registerTheme,
+  themeFromCookieHeader,
+  themeScript,
+} = initTheme();
 
-const {themeState} = Route.useLoaderData();
-const matches = useMatches();
-const forcedTheme = matches.reduce<LightOrDark | undefined>(
-  (theme, match) => {
-    const staticData = match.staticData as
-      | {theme?: LightOrDark}
-      | undefined;
-    return staticData?.theme ?? theme;
-  },
-  undefined,
-);
+export const {ThemeProvider, useTheme} =
+  bindTheme(themeOptions);
 
-const htmlTheme = forcedTheme
-  ? {
-      ...(themeState ?? {}),
-      appliedTheme: forcedTheme,
-    }
-  : themeState;
+// src/routes/index.tsx
+import {createFileRoute} from '@tanstack/react-router';
+import {useTheme} from '../lib/theme';
 
-// htmlTheme can override the applied SSR theme, while
-// the provider still keeps the logical selectedTheme.
-<html suppressHydrationWarning {...registerTheme(htmlTheme)}>
-  <body>
-    <ThemeProvider
-      forcedTheme={forcedTheme}
-      selectedTheme={themeState?.selectedTheme}
+type ThemeName =
+  | 'system'
+  | 'dark'
+  | 'light';
+
+function Home() {
+  const {theme, setTheme} = useTheme();
+
+  return (
+    <select
+      value={theme ?? 'system'}
+      onChange={event =>
+        setTheme(event.target.value as ThemeName)
+      }
     >
-      {children}
-    </ThemeProvider>
-  </body>
-</html>;
+      <option value="system">System</option>
+      <option value="dark">Dark</option>
+      <option value="light">Light</option>
+    </select>
+  );
+}
+
+export const Route = createFileRoute('/')({
+  component: Home,
+});
 `,
   },
   other: {
-    primary: `// root.tsx
-import {themeScript} from 'ssr-themes';
+    primary: `// app/root.tsx
+import type {ReactNode} from 'react';
+import {ThemeProvider} from './theme-react';
+import {
+  registerTheme,
+  themeFromCookieHeader,
+  themeScript,
+} from './theme';
 
-const html = \`<html>
-  <head>
-    <script id="ssr-themes">\${themeScript()}</script>
-  </head>
-  <body><!-- ... --></body>
-</html>\`;
+export function Root({
+  cookieHeader,
+  children,
+}: {
+  cookieHeader: string | null | undefined;
+  children: ReactNode;
+}) {
+  const themeState = themeFromCookieHeader(
+    cookieHeader,
+  );
 
-// app.tsx
-import {ThemeProvider} from 'ssr-themes/react';
-
-export function App() {
   return (
-    <ThemeProvider>
-      {/* ... */}
-    </ThemeProvider>
+    <html
+      suppressHydrationWarning
+      {...registerTheme(themeState)}
+    >
+      <head>
+        <script id="ssr-themes">{themeScript()}</script>
+      </head>
+      <body>
+        <ThemeProvider {...(themeState ?? {})}>
+          {children}
+        </ThemeProvider>
+      </body>
+    </html>
   );
 }
 `,
-    secondary: `// Parse cookies + pre-set <html>
-import {registerTheme, themeFromCookieHeader} from 'ssr-themes';
+    secondary: `// app/theme.ts
+import {initTheme} from 'ssr-themes';
 
-export function handleRequest(request: Request) {
-  const themeState = themeFromCookieHeader(
-    request.headers.get('cookie'),
+export const {
+  themeOptions,
+  registerTheme,
+  themeFromCookieHeader,
+  themeScript,
+} = initTheme();
+
+// app/theme-react.tsx
+'use client';
+
+import {bindTheme} from 'ssr-themes/react';
+import {themeOptions} from './theme';
+
+export const {ThemeProvider, useTheme} =
+  bindTheme(themeOptions);
+
+// app/theme-switcher.tsx
+'use client';
+
+import {useTheme} from './theme-react';
+
+type ThemeName =
+  | 'system'
+  | 'dark'
+  | 'light';
+
+export function ThemeSwitcher() {
+  const {theme, setTheme} = useTheme();
+
+  return (
+    <select
+      value={theme ?? 'system'}
+      onChange={event =>
+        setTheme(event.target.value as ThemeName)
+      }
+    >
+      <option value="system">System</option>
+      <option value="dark">Dark</option>
+      <option value="light">Light</option>
+    </select>
   );
-  const htmlProps = registerTheme(themeState);
-
-  // Spread htmlProps on <html> when rendering
-  return <html suppressHydrationWarning {...htmlProps} />;
 }
 `,
   },

@@ -1,10 +1,5 @@
-import {
-  registerTheme,
-  themeFromCookieHeader,
-  themeScript,
-  type LightOrDark,
-  type ThemeCookieState,
-} from 'ssr-themes';
+import {initTheme} from 'ssr-themes';
+import {bindTheme} from 'ssr-themes/svelte';
 
 export const htmlAttributesPlaceholder =
   '%ssr-themes.html-attrs%';
@@ -14,26 +9,30 @@ export const themeScriptPlaceholder =
 
 export const themes = ['dark', 'light'] as const;
 
-export const themeConfig = {
+const theme = initTheme({
   attribute: 'class' as const,
   themes,
-};
+});
+
+export const {
+  themeOptions,
+  registerTheme,
+  themeFromCookieHeader,
+  themeScript,
+} = theme;
+
+export const {ThemeProvider, useTheme} =
+  bindTheme(themeOptions);
 
 export const getThemeState = (
   cookieHeader: string | null | undefined,
-): ThemeCookieState<LightOrDark> | undefined =>
-  themeFromCookieHeader(cookieHeader, {
-    themes,
-  });
+) => themeFromCookieHeader(cookieHeader);
 
 export const renderThemeHtmlAttributes = (
-  themeState?: ThemeCookieState<LightOrDark>,
+  themeState?: ReturnType<typeof getThemeState>,
 ) =>
-  registerTheme({
-    ...themeConfig,
-    ...themeState,
+  registerTheme(themeState, {
     renderMode: 'html-string',
   });
 
-export const renderThemeScript = () =>
-  themeScript(themeConfig);
+export const renderThemeScript = () => themeScript();

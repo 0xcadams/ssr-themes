@@ -1,6 +1,6 @@
 import {createFileRoute} from '@tanstack/react-router';
 import {useEffect, useState} from 'react';
-import {useTheme} from 'ssr-themes/react';
+import {useTheme} from '@/lib/theme';
 
 import {CodeSnippetCard} from '@/components/home/code-snippet-card';
 import {
@@ -11,7 +11,6 @@ import {
   packageManagers,
   type Framework,
   type PackageManager,
-  type ThemeValue,
 } from '@/components/home/home-config';
 import {InstallCommandBar} from '@/components/home/install-command-bar';
 import {SegmentedToggle} from '@/components/home/segmented-toggle';
@@ -22,8 +21,7 @@ import {getHighlightedFrameworkSnippets} from '@/lib/shiki';
 import {ArrowUpRight} from 'lucide-react';
 
 function IndexPage() {
-  const {theme, setTheme, colorScheme} =
-    useTheme<ThemeValue>();
+  const {theme, setTheme, colorScheme} = useTheme();
   const [mounted, setMounted] = useState(false);
   const [framework, setFramework] =
     useState<Framework>('tanstack');
@@ -210,18 +208,23 @@ function IndexPage() {
               />
             </div>
             <CodeSnippetCard
-              title="Usage"
+              title="SSR setup"
               description={
                 <>
-                  Drop in{' '}
+                  Read the cookie on the server,
+                  pre-render{' '}
                   <InlineCode>
-                    themeScript()
+                    registerTheme()
                   </InlineCode>{' '}
                   +{' '}
                   <InlineCode>
+                    themeScript()
+                  </InlineCode>
+                  , then hydrate{' '}
+                  <InlineCode>
                     ThemeProvider
-                  </InlineCode>{' '}
-                  to get no-flash theming.
+                  </InlineCode>
+                  .
                 </>
               }
               html={activeSnippet.primaryHtml}

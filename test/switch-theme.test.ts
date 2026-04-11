@@ -3,9 +3,12 @@ import {
   checkAppliedTheme,
   checkSelectedTheme,
   checkStoredTheme,
+  checkStoredThemeMissing,
   gotoHome,
   makeBrowserContext,
   selectTheme,
+  storedThemeValue,
+  usesExplicitLightDefault,
 } from './util';
 
 test.describe('basic theming test-suite', () => {
@@ -16,11 +19,21 @@ test.describe('basic theming test-suite', () => {
       browser,
       baseURL,
     }) => {
+      const colorScheme = theme;
       const context = await makeBrowserContext(
         browser,
         {
           baseURL,
-          cookies: [{name: 'theme', value: theme}],
+          colorScheme,
+          cookies: [
+            {
+              name: 'theme',
+              value: storedThemeValue(
+                theme,
+                colorScheme,
+              ),
+            },
+          ],
         },
       );
       const page = await context.newPage();
@@ -28,7 +41,10 @@ test.describe('basic theming test-suite', () => {
       await gotoHome(page);
 
       await checkSelectedTheme(page, theme);
-      await checkStoredTheme(page, theme);
+      await checkStoredTheme(
+        page,
+        storedThemeValue(theme, colorScheme),
+      );
       await checkAppliedTheme(page, theme);
     });
   }
@@ -44,12 +60,20 @@ test.describe('basic theming test-suite', () => {
       browser,
       baseURL,
     }) => {
+      const colorScheme = 'light';
       const context = await makeBrowserContext(
         browser,
         {
           baseURL,
+          colorScheme,
           cookies: [
-            {name: 'theme', value: initialTheme},
+            {
+              name: 'theme',
+              value: storedThemeValue(
+                initialTheme,
+                colorScheme,
+              ),
+            },
           ],
         },
       );
@@ -58,19 +82,28 @@ test.describe('basic theming test-suite', () => {
       await gotoHome(page);
 
       await checkSelectedTheme(page, initialTheme);
-      await checkStoredTheme(page, initialTheme);
+      await checkStoredTheme(
+        page,
+        storedThemeValue(initialTheme, colorScheme),
+      );
       await checkAppliedTheme(page, initialTheme);
 
       await selectTheme(page, targetTheme);
 
       await checkSelectedTheme(page, targetTheme);
-      await checkStoredTheme(page, targetTheme);
+      await checkStoredTheme(
+        page,
+        storedThemeValue(targetTheme, colorScheme),
+      );
       await checkAppliedTheme(page, targetTheme);
 
       await page.reload();
 
       await checkSelectedTheme(page, targetTheme);
-      await checkStoredTheme(page, targetTheme);
+      await checkStoredTheme(
+        page,
+        storedThemeValue(targetTheme, colorScheme),
+      );
       await checkAppliedTheme(page, targetTheme);
     });
   }
@@ -78,18 +111,15 @@ test.describe('basic theming test-suite', () => {
   shouldUpdateTheme('light', 'dark');
   shouldUpdateTheme('dark', 'light');
 
-  function makeDefaultSystemThemeTest(
-    preferredColorScheme: 'light' | 'dark',
-    expectedTheme: 'light' | 'dark',
-  ) {
-    test(`should default to system and persist ${expectedTheme} theme when preferred-colorscheme is ${preferredColorScheme}`, async ({
+  if (usesExplicitLightDefault) {
+    test('should default to light without persisting a cookie', async ({
       browser,
       baseURL,
     }) => {
       const context = await makeBrowserContext(
         browser,
         {
-          colorScheme: preferredColorScheme,
+          colorScheme: 'dark',
           baseURL,
         },
       );
@@ -97,17 +127,42 @@ test.describe('basic theming test-suite', () => {
 
       await gotoHome(page);
 
-      await checkSelectedTheme(page, 'system');
-      await checkStoredTheme(
-        page,
-        expectedTheme === 'dark' ? '~d' : '~l',
-      );
-      await checkAppliedTheme(page, expectedTheme);
+      await checkSelectedTheme(page, 'light');
+      await checkStoredThemeMissing(page);
+      await checkAppliedTheme(page, 'light');
     });
-  }
+  } else {
+    function makeDefaultSystemThemeTest(
+      preferredColorScheme: 'light' | 'dark',
+      expectedTheme: 'light' | 'dark',
+    ) {
+      test(`should default to system and persist ${expectedTheme} theme when preferred-colorscheme is ${preferredColorScheme}`, async ({
+        browser,
+        baseURL,
+      }) => {
+        const context = await makeBrowserContext(
+          browser,
+          {
+            colorScheme: preferredColorScheme,
+            baseURL,
+          },
+        );
+        const page = await context.newPage();
 
-  makeDefaultSystemThemeTest('light', 'light');
-  makeDefaultSystemThemeTest('dark', 'dark');
+        await gotoHome(page);
+
+        await checkSelectedTheme(page, 'system');
+        await checkStoredTheme(
+          page,
+          expectedTheme === 'dark' ? '~d' : '~l',
+        );
+        await checkAppliedTheme(page, expectedTheme);
+      });
+    }
+
+    makeDefaultSystemThemeTest('light', 'light');
+    makeDefaultSystemThemeTest('dark', 'dark');
+  }
 
   test('should switch back to system and persist the resolved theme after reload', async ({
     browser,
@@ -116,14 +171,22 @@ test.describe('basic theming test-suite', () => {
     const context = await makeBrowserContext(browser, {
       colorScheme: 'light',
       baseURL,
-      cookies: [{name: 'theme', value: 'dark'}],
+      cookies: [
+        {
+          name: 'theme',
+          value: storedThemeValue('dark', 'light'),
+        },
+      ],
     });
     const page = await context.newPage();
 
     await gotoHome(page);
 
     await checkSelectedTheme(page, 'dark');
-    await checkStoredTheme(page, 'dark');
+    await checkStoredTheme(
+      page,
+      storedThemeValue('dark', 'light'),
+    );
     await checkAppliedTheme(page, 'dark');
 
     await selectTheme(page, 'system');

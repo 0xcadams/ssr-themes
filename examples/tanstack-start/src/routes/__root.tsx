@@ -9,14 +9,16 @@ import {
 import {createServerFn} from '@tanstack/react-start';
 import {getRequestHeader} from '@tanstack/react-start/server';
 import * as React from 'react';
+import type {
+  LightOrDark,
+  ThemeCookieState,
+} from 'ssr-themes';
 import {
+  ThemeProvider,
   registerTheme,
   themeFromCookieHeader,
   themeScript,
-  type LightOrDark,
-  type ThemeCookieState,
-} from 'ssr-themes';
-import {ThemeProvider} from 'ssr-themes/react';
+} from '../lib/theme';
 import appCss from '../styles.css?url';
 
 type ThemeStaticData = {
@@ -38,25 +40,18 @@ function RootDocument({
   forcedTheme?: LightOrDark;
   themeState?: ThemeCookieState<LightOrDark>;
 }) {
-  const registerThemeOptions = forcedTheme
-    ? {
-        ...(themeState ?? {}),
-        appliedTheme: forcedTheme,
-      }
-    : themeState;
-
   return (
     <html
       suppressHydrationWarning
-      {...registerTheme(registerThemeOptions)}
+      {...registerTheme(themeState, {forcedTheme})}
     >
       <head>
         <HeadContent />
       </head>
       <body className="min-h-screen bg-white text-black dark:bg-black dark:text-white antialiased font-mono">
         <ThemeProvider
+          {...(themeState ?? {})}
           forcedTheme={forcedTheme}
-          selectedTheme={themeState?.selectedTheme}
         >
           <ScriptOnce
             children={themeScript({forcedTheme})}
@@ -106,7 +101,7 @@ export const Route = createRootRoute({
         name: 'viewport',
         content: 'width=device-width, initial-scale=1',
       },
-      {title: 'ssr-themes example'},
+      {title: 'ssr-themes tanstack start example'},
     ],
     links: [
       {

@@ -8,28 +8,19 @@ import {
 } from '@tanstack/react-router';
 import {createServerFn} from '@tanstack/react-start';
 import {getRequestHeader} from '@tanstack/react-start/server';
-import {
-  registerTheme,
-  themeFromCookieHeader,
-  themeScript,
-} from 'ssr-themes';
-import {ThemeProvider} from 'ssr-themes/react';
 import faviconUrl from '../assets/favicon.svg?url';
 import appCss from '../styles.css?url';
-
-const themes = [
-  'light',
-  'dark',
-  'quartz',
-  'abyss',
-] as const;
+import {
+  registerTheme,
+  ThemeProvider,
+  themeFromCookieHeader,
+  themeScript,
+} from '../lib/theme';
 
 const getThemeState = createServerFn({
   method: 'GET',
 }).handler(() =>
-  themeFromCookieHeader(getRequestHeader('cookie'), {
-    themes,
-  }),
+  themeFromCookieHeader(getRequestHeader('cookie')),
 );
 
 function RootComponent() {
@@ -44,15 +35,8 @@ function RootComponent() {
         <HeadContent />
       </head>
       <body className="min-h-screen bg-background text-foreground antialiased">
-        <ThemeProvider
-          themes={themes}
-          selectedTheme={themeState?.selectedTheme}
-        >
-          <ScriptOnce
-            children={themeScript({
-              themes,
-            })}
-          />
+        <ThemeProvider {...(themeState ?? {})}>
+          <ScriptOnce children={themeScript()} />
           <Outlet />
 
           <Analytics />

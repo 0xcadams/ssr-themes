@@ -1,5 +1,5 @@
 import {For, JSX} from 'solid-js';
-import {useTheme} from 'ssr-themes/solid';
+import {useTheme} from '~/lib/theme';
 
 const options = [
   {

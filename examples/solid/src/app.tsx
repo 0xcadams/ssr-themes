@@ -1,15 +1,17 @@
 import {Router} from '@solidjs/router';
 import {FileRoutes} from '@solidjs/start/router';
 import {Suspense} from 'solid-js';
-import {ThemeProvider} from 'ssr-themes/solid';
-import {getThemeState} from '~/lib/theme';
+import {
+  getThemeState,
+  ThemeProvider,
+} from '~/lib/theme';
 import './styles.css';
 
 export default function App() {
-  const selectedTheme = getThemeState()?.selectedTheme;
+  const themeState = getThemeState();
 
   return (
-    <ThemeProvider selectedTheme={selectedTheme}>
+    <ThemeProvider {...(themeState ?? {})}>
       <Router
         root={props => (
           <Suspense>{props.children}</Suspense>

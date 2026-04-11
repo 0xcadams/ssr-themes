@@ -1,182 +1,95 @@
-import type {Accessor, JSX} from 'solid-js';
+import {createComponent, type JSX} from 'solid-js';
 import {
-  createComponent,
-  createContext,
-  createEffect,
-  createSignal,
-  onCleanup,
-  onMount,
-  useContext,
-} from 'solid-js';
-import {
-  createThemeController,
-  pickThemeControllerOptions,
-  type ThemeControllerSetValue,
-} from './theme-controller';
+  ThemeProvider as ThemeProviderInternal,
+  useTheme as useThemeInternal,
+  type ThemeResult,
+} from './solid-bindings';
 import type {
-  LightOrDark,
-  ThemeOptions,
-  WithSystem,
+  BindThemeInput,
+  EnableSystemFromOptions,
+  ThemeNameFromOptions,
+  ThemeOptionsFromBindInput,
+  ThemeProviderRuntimeProps,
 } from './types';
 
-export type ThemeSetter<
-  TTheme extends string = LightOrDark,
-  TEnableSystem extends boolean = true,
-> = (
-  value:
-    | WithSystem<TTheme, TEnableSystem>
-    | ((
-        prev:
-          | WithSystem<TTheme, TEnableSystem>
-          | undefined,
-      ) => WithSystem<TTheme, TEnableSystem>),
-) => WithSystem<TTheme, TEnableSystem>;
+type BoundThemeOptions<TInput extends BindThemeInput> =
+  ThemeOptionsFromBindInput<TInput>;
 
-export interface ThemeResult<
-  TTheme extends string = LightOrDark,
-  TEnableSystem extends boolean = true,
+export interface BoundThemeProviderProps<
+  TInput extends BindThemeInput,
+> extends ThemeProviderRuntimeProps<
+  ThemeNameFromOptions<BoundThemeOptions<TInput>>,
+  EnableSystemFromOptions<BoundThemeOptions<TInput>>
 > {
-  themes: Accessor<
-    ReadonlyArray<WithSystem<TTheme, TEnableSystem>>
-  >;
-  forcedTheme: Accessor<TTheme | undefined>;
-  setTheme: ThemeSetter<TTheme, TEnableSystem>;
-  theme: Accessor<
-    WithSystem<TTheme, TEnableSystem> | undefined
-  >;
-  resolvedTheme: Accessor<
-    Exclude<TTheme, 'system'> | undefined
-  >;
-  colorScheme: Accessor<
-    TEnableSystem extends true
-      ? LightOrDark
-      : undefined
-  >;
-}
-
-export interface ThemeProviderProps<
-  TTheme extends string = LightOrDark,
-  TEnableSystem extends boolean = true,
-> extends ThemeOptions<TTheme, TEnableSystem> {
   children?: JSX.Element;
-  disableTransitionOnChange?: boolean | undefined;
-  selectedTheme?:
-    | WithSystem<TTheme, TEnableSystem>
-    | undefined;
-  nonce?: string;
 }
 
-export type ThemeContextValue = ThemeResult<
-  string,
-  boolean
->;
-
-export const ThemeContext = createContext<
-  ThemeContextValue | undefined
->(undefined);
-
-export const useTheme = <
-  TTheme extends string = LightOrDark,
-  TEnableSystem extends boolean = true,
->() => {
-  const context = useContext(ThemeContext);
-  if (!context) {
-    throw new Error(
-      'useTheme must be used within a ThemeProvider.',
-    );
-  }
-
-  return context as unknown as ThemeResult<
-    TTheme,
-    TEnableSystem
+export interface ThemeBinding<
+  TInput extends BindThemeInput,
+> {
+  ThemeProvider: (
+    props: BoundThemeProviderProps<TInput>,
+  ) => JSX.Element;
+  useTheme: () => ThemeResult<
+    ThemeNameFromOptions<BoundThemeOptions<TInput>>,
+    EnableSystemFromOptions<BoundThemeOptions<TInput>>
   >;
-};
+}
 
-export const ThemeProvider = <
-  TTheme extends string = LightOrDark,
-  TEnableSystem extends boolean = true,
+const resolveThemeOptions = <
+  TInput extends BindThemeInput,
 >(
-  props: ThemeProviderProps<TTheme, TEnableSystem>,
-) => {
-  const context = useContext(ThemeContext);
+  input: TInput,
+): BoundThemeOptions<TInput> =>
+  ('themeOptions' in input
+    ? input.themeOptions
+    : input) as BoundThemeOptions<TInput>;
 
-  if (context) {
-    return props.children;
-  }
+export const bindTheme = <
+  TInput extends BindThemeInput,
+>(
+  input: TInput,
+): ThemeBinding<TInput> => {
+  const options = resolveThemeOptions(input);
 
-  const controller = createThemeController<
-    TTheme,
-    TEnableSystem
-  >(pickThemeControllerOptions(props));
-  const [snapshot, setSnapshot] = createSignal(
-    controller.getSnapshot(),
-  );
-  const syncSnapshot = () => {
-    setSnapshot(() => controller.getSnapshot());
-  };
-
-  const setTheme: ThemeSetter<
-    TTheme,
-    TEnableSystem
-  > = value =>
-    controller.setTheme(
-      value as ThemeControllerSetValue<
-        TTheme,
-        TEnableSystem
-      >,
-    );
-
-  createEffect(() => {
-    controller.update(
-      pickThemeControllerOptions(props),
-    );
-    syncSnapshot();
-  });
-
-  onMount(() => {
-    const unsubscribe =
-      controller.subscribe(syncSnapshot);
-
-    controller.start();
-    syncSnapshot();
-
-    onCleanup(() => {
-      unsubscribe();
-      controller.stop();
+  const ThemeProvider = (
+    props: BoundThemeProviderProps<TInput>,
+  ) =>
+    createComponent(ThemeProviderInternal, {
+      ...options,
+      get disableTransitionOnChange() {
+        return props.disableTransitionOnChange;
+      },
+      get forcedTheme() {
+        return props.forcedTheme;
+      },
+      get appliedTheme() {
+        return props.appliedTheme;
+      },
+      get colorScheme() {
+        return props.colorScheme;
+      },
+      get nonce() {
+        return props.nonce;
+      },
+      get selectedTheme() {
+        return props.selectedTheme;
+      },
+      get children() {
+        return props.children;
+      },
     });
-  });
 
-  const providerValue: ThemeResult<
-    TTheme,
-    TEnableSystem
-  > = {
-    theme: () => snapshot().theme,
-    setTheme,
-    forcedTheme: () => snapshot().forcedTheme,
-    resolvedTheme: () => snapshot().resolvedTheme,
-    themes: () => snapshot().themes,
-    colorScheme: () =>
-      snapshot()
-        .colorScheme as TEnableSystem extends true
-        ? LightOrDark
-        : undefined,
+  const useTheme = () =>
+    useThemeInternal<
+      ThemeNameFromOptions<BoundThemeOptions<TInput>>,
+      EnableSystemFromOptions<
+        BoundThemeOptions<TInput>
+      >
+    >();
+
+  return {
+    ThemeProvider,
+    useTheme,
   };
-
-  return createComponent(ThemeContext.Provider, {
-    value:
-      providerValue as unknown as ThemeContextValue,
-    get children() {
-      return props.children;
-    },
-  });
 };
-
-export type {
-  Attribute,
-  CookieOptions,
-  LightOrDark,
-  RegisterThemeOptions,
-  ThemeHtmlProps,
-  ThemeOptions,
-  WithSystem,
-} from './types';

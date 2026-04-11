@@ -3,7 +3,17 @@ import {
   getCookieName,
   resolveDefaultTheme,
 } from './theme-runtime';
-import type {LightOrDark, ThemeOptions} from './types';
+import type {
+  LightOrDark,
+  ThemeOptions,
+  ThemeScriptRuntimeOptions,
+} from './types';
+
+type ThemeScriptOptions<
+  TTheme extends string = LightOrDark,
+  TEnableSystem extends boolean = true,
+> = ThemeOptions<TTheme, TEnableSystem> &
+  ThemeScriptRuntimeOptions<TTheme>;
 
 const inlineScriptSource = '__INLINE_THEME_SCRIPT__';
 
@@ -11,7 +21,10 @@ export const themeScript = <
   TTheme extends string = LightOrDark,
   TEnableSystem extends boolean = true,
 >(
-  options: ThemeOptions<TTheme, TEnableSystem> = {},
+  options: ThemeScriptOptions<
+    TTheme,
+    TEnableSystem
+  > = {},
 ) => {
   const {
     attribute = 'class',

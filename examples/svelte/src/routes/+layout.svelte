@@ -1,7 +1,5 @@
 <script lang="ts">
-  import {ThemeProvider} from 'ssr-themes/svelte';
-
-  import {themeConfig} from '$lib/theme';
+  import {ThemeProvider} from '$lib/theme';
   import '../app.css';
   import type {LayoutProps} from './$types';
 
@@ -16,10 +14,7 @@
   />
 </svelte:head>
 
-<ThemeProvider
-  {...themeConfig}
-  selectedTheme={data.themeState?.selectedTheme}
->
+<ThemeProvider {...data.themeState ?? {}}>
   <div
     class="min-h-screen bg-white font-mono text-black antialiased dark:bg-black dark:text-white"
   >

@@ -46,18 +46,42 @@ type ThemeValueMap<TTheme extends string> = Partial<
 export type WithSystem<
   TTheme extends string,
   TEnableSystem extends boolean = true,
-> = TEnableSystem extends true
-  ? TTheme | 'system'
-  : TTheme;
+> = TEnableSystem extends false
+  ? TTheme
+  : TTheme | 'system';
 
-export interface ThemeCookieState<
+export interface ThemeState<
   TTheme extends string = LightOrDark,
   TEnableSystem extends boolean = true,
 > {
   /** Selected theme name stored by the app */
+  selectedTheme?:
+    | WithSystem<TTheme, TEnableSystem>
+    | undefined;
+  /** Literal theme name that should be applied to html */
+  appliedTheme?: TTheme | undefined;
+  /** Last known browser color-scheme hint */
+  colorScheme?: LightOrDark | undefined;
+}
+
+export interface ThemeCookieState<
+  TTheme extends string = LightOrDark,
+  TEnableSystem extends boolean = true,
+> extends ThemeState<TTheme, TEnableSystem> {
+  /** Selected theme name stored by the app */
   selectedTheme: WithSystem<TTheme, TEnableSystem>;
   /** Literal theme name that should be applied to html */
   appliedTheme: TTheme;
+  /** Last known browser color-scheme hint */
+  colorScheme?: LightOrDark | undefined;
+}
+
+export interface ThemeVariant<
+  TTheme extends string = LightOrDark,
+  TEnableSystem extends boolean = true,
+> extends ThemeCookieState<TTheme, TEnableSystem> {
+  /** Stable serialized value for routing or caching */
+  value: string;
 }
 
 export interface ThemeOptions<
@@ -66,8 +90,6 @@ export interface ThemeOptions<
 > {
   /** List of all available theme names */
   themes?: readonly TTheme[] | undefined;
-  /** Forced theme name for the current page */
-  forcedTheme?: TTheme | undefined;
   /** Whether to switch between dark and light themes based on prefers-color-scheme */
   enableSystem?: TEnableSystem | undefined;
   /** Whether to indicate to browsers which color scheme is used */
@@ -84,10 +106,37 @@ export interface ThemeOptions<
   valueMap?: ThemeValueMap<TTheme> | undefined;
 }
 
+export interface ThemeScriptRuntimeOptions<
+  TTheme extends string = LightOrDark,
+> {
+  /** Forced theme name for the current page */
+  forcedTheme?: TTheme | undefined;
+}
+
+export interface ThemeProviderRuntimeProps<
+  TTheme extends string = LightOrDark,
+  TEnableSystem extends boolean = true,
+> extends ThemeScriptRuntimeOptions<TTheme> {
+  /** Selected theme name to use for server rendering */
+  selectedTheme?:
+    | WithSystem<TTheme, TEnableSystem>
+    | undefined;
+  /** Literal theme name from SSR state; accepted for ThemeState spreads */
+  appliedTheme?: TTheme | undefined;
+  /** Browser color-scheme hint to reuse during hydration */
+  colorScheme?: LightOrDark | undefined;
+  /** Disable all CSS transitions when switching themes */
+  disableTransitionOnChange?: boolean | undefined;
+  /** Nonce string to pass to the inline style elements for CSP headers */
+  nonce?: string | undefined;
+}
+
 type ThemeStyle = Record<
   string,
   string | number | undefined
 >;
+
+export type {ThemeStyle};
 
 export type ThemeHtmlProps<
   TAttribute extends
@@ -96,6 +145,23 @@ export type ThemeHtmlProps<
 > = {
   className?: string;
   style?: ThemeStyle;
+} & Partial<
+  Record<
+    Extract<
+      ThemeAttributeUnion<TAttribute>,
+      DataAttribute
+    >,
+    string
+  >
+>;
+
+export type ThemeHtmlAttributes<
+  TAttribute extends
+    | RegisterThemeAttribute
+    | undefined = 'class',
+> = {
+  class?: string;
+  style?: string;
 } & Partial<
   Record<
     Extract<
@@ -122,8 +188,12 @@ export interface RegisterThemeOptions<
     | undefined;
   /** Literal theme name to apply to the html element */
   appliedTheme?: TTheme | undefined;
-  /** Render output as JSX props or an HTML attribute string */
-  renderMode?: 'jsx' | 'html-string' | undefined;
+  /** Render output as JSX props, an HTML attrs object, or an HTML attribute string */
+  renderMode?:
+    | 'jsx'
+    | 'html-attrs'
+    | 'html-string'
+    | undefined;
   /** Same attribute config used by ThemeProvider and themeScript() */
   attribute?: TAttribute | undefined;
   /** Optional class name to merge with the theme class */
@@ -131,3 +201,132 @@ export interface RegisterThemeOptions<
   /** Optional style object to merge with color-scheme */
   style?: ThemeStyle | undefined;
 }
+
+export interface RegisterThemeRuntimeOptions<
+  TTheme extends string = LightOrDark,
+>
+  extends
+    Pick<
+      RegisterThemeOptions<TTheme>,
+      'className' | 'renderMode' | 'style'
+    >,
+    ThemeScriptRuntimeOptions<TTheme> {}
+
+export type AnyThemeOptions = ThemeOptions<
+  string,
+  boolean
+>;
+
+export type ThemeNameFromOptions<
+  TOptions extends AnyThemeOptions,
+> = TOptions extends {
+  themes: readonly (infer TTheme extends string)[];
+}
+  ? TTheme
+  : LightOrDark;
+
+export type EnableSystemFromOptions<
+  TOptions extends AnyThemeOptions,
+> = TOptions extends {
+  enableSystem: infer TEnableSystem extends boolean;
+}
+  ? TEnableSystem
+  : true;
+
+export type AttributeFromOptions<
+  TOptions extends AnyThemeOptions,
+> = TOptions extends {
+  attribute: infer TAttribute extends
+    RegisterThemeAttribute;
+}
+  ? TAttribute
+  : 'class';
+
+export interface InitializedTheme<
+  TOptions extends AnyThemeOptions = AnyThemeOptions,
+> {
+  themeOptions: TOptions;
+  encodeTheme: (
+    themeState?: ThemeState<
+      ThemeNameFromOptions<TOptions>,
+      EnableSystemFromOptions<TOptions>
+    >,
+  ) => string | undefined;
+  decodeTheme: (
+    value: string | undefined,
+  ) =>
+    | ThemeCookieState<
+        ThemeNameFromOptions<TOptions>,
+        EnableSystemFromOptions<TOptions>
+      >
+    | undefined;
+  themeVariants: () => ReadonlyArray<
+    ThemeVariant<
+      ThemeNameFromOptions<TOptions>,
+      EnableSystemFromOptions<TOptions>
+    >
+  >;
+  themeFromCookieHeader: (
+    cookieHeader: string | null | undefined,
+  ) =>
+    | ThemeCookieState<
+        ThemeNameFromOptions<TOptions>,
+        EnableSystemFromOptions<TOptions>
+      >
+    | undefined;
+  registerTheme(
+    themeState?: ThemeState<
+      ThemeNameFromOptions<TOptions>,
+      EnableSystemFromOptions<TOptions>
+    >,
+    runtime?: RegisterThemeRuntimeOptions<
+      ThemeNameFromOptions<TOptions>
+    > & {
+      renderMode?: 'jsx' | undefined;
+    },
+  ): ThemeHtmlProps<AttributeFromOptions<TOptions>>;
+  registerTheme(
+    themeState:
+      | ThemeState<
+          ThemeNameFromOptions<TOptions>,
+          EnableSystemFromOptions<TOptions>
+        >
+      | undefined,
+    runtime: RegisterThemeRuntimeOptions<
+      ThemeNameFromOptions<TOptions>
+    > & {
+      renderMode: 'html-attrs';
+    },
+  ): ThemeHtmlAttributes<
+    AttributeFromOptions<TOptions>
+  >;
+  registerTheme(
+    themeState:
+      | ThemeState<
+          ThemeNameFromOptions<TOptions>,
+          EnableSystemFromOptions<TOptions>
+        >
+      | undefined,
+    runtime: RegisterThemeRuntimeOptions<
+      ThemeNameFromOptions<TOptions>
+    > & {
+      renderMode: 'html-string';
+    },
+  ): string;
+  themeScript: (
+    runtime?: ThemeScriptRuntimeOptions<
+      ThemeNameFromOptions<TOptions>
+    >,
+  ) => string;
+}
+
+export type BindThemeInput<
+  TOptions extends AnyThemeOptions = AnyThemeOptions,
+> = TOptions | InitializedTheme<TOptions>;
+
+export type ThemeOptionsFromBindInput<
+  TInput extends BindThemeInput,
+> =
+  TInput extends InitializedTheme<infer TOptions>
+    ? TOptions
+    : TInput;

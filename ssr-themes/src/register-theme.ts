@@ -2,7 +2,9 @@ import type {
   Attribute,
   RegisterThemeOptions,
   LightOrDark,
+  ThemeHtmlAttributes,
   ThemeHtmlProps,
+  ThemeStyle,
 } from './types';
 
 type RegisterThemeAttribute =
@@ -10,7 +12,10 @@ type RegisterThemeAttribute =
   | readonly Attribute[]
   | undefined;
 
-type RegisterThemeRenderMode = 'jsx' | 'html-string';
+type RegisterThemeRenderMode =
+  | 'jsx'
+  | 'html-attrs'
+  | 'html-string';
 
 const escapeHtmlAttribute = (value: string) =>
   value
@@ -18,6 +23,62 @@ const escapeHtmlAttribute = (value: string) =>
     .replace(/"/g, '&quot;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;');
+
+const renderThemeStyle = (style?: ThemeStyle) => {
+  if (!style) {
+    return undefined;
+  }
+
+  const declarations = Object.entries(style)
+    .filter(([, value]) => value !== undefined)
+    .map(([name, value]) => {
+      const property = name.startsWith('--')
+        ? name
+        : name.replace(
+            /[A-Z]/g,
+            match => `-${match.toLowerCase()}`,
+          );
+
+      return `${property}:${String(value)}`;
+    })
+    .join(';');
+
+  return declarations || undefined;
+};
+
+const toThemeHtmlAttributes = <
+  TAttribute extends RegisterThemeAttribute,
+>(
+  props: ThemeHtmlProps<TAttribute>,
+) => {
+  const attributes =
+    {} as ThemeHtmlAttributes<TAttribute>;
+
+  if (props.className) {
+    attributes.class = props.className;
+  }
+
+  const style = renderThemeStyle(props.style);
+
+  if (style) {
+    attributes.style = style;
+  }
+
+  for (const [name, value] of Object.entries(props)) {
+    if (
+      !name.startsWith('data-') ||
+      typeof value !== 'string'
+    ) {
+      continue;
+    }
+
+    (attributes as Record<string, string | undefined>)[
+      name
+    ] = value;
+  }
+
+  return attributes;
+};
 
 const renderThemeAttributes = <
   TAttribute extends
@@ -27,39 +88,28 @@ const renderThemeAttributes = <
 >(
   props: ThemeHtmlProps<TAttribute>,
 ) => {
+  const htmlAttributes = toThemeHtmlAttributes(props);
   const attributes: string[] = [];
 
-  if (props.className) {
+  if (htmlAttributes.class) {
     attributes.push(
       `class="${escapeHtmlAttribute(
-        props.className,
+        htmlAttributes.class,
       )}"`,
     );
   }
 
-  if (props.style) {
-    const declarations = Object.entries(props.style)
-      .filter(([, value]) => value !== undefined)
-      .map(([name, value]) => {
-        const property = name.startsWith('--')
-          ? name
-          : name.replace(
-              /[A-Z]/g,
-              match => `-${match.toLowerCase()}`,
-            );
-
-        return `${property}:${String(value)}`;
-      })
-      .join(';');
-
-    if (declarations) {
-      attributes.push(
-        `style="${escapeHtmlAttribute(declarations)}"`,
-      );
-    }
+  if (htmlAttributes.style) {
+    attributes.push(
+      `style="${escapeHtmlAttribute(
+        htmlAttributes.style,
+      )}"`,
+    );
   }
 
-  for (const [name, value] of Object.entries(props)) {
+  for (const [name, value] of Object.entries(
+    htmlAttributes,
+  )) {
     if (
       !name.startsWith('data-') ||
       typeof value !== 'string'
@@ -80,10 +130,20 @@ const toRegisterThemeOutput = <
 >(
   props: ThemeHtmlProps<TAttribute>,
   renderMode?: RegisterThemeRenderMode,
-): string | ThemeHtmlProps<TAttribute> =>
-  renderMode === 'html-string'
-    ? renderThemeAttributes(props)
-    : props;
+):
+  | string
+  | ThemeHtmlAttributes<TAttribute>
+  | ThemeHtmlProps<TAttribute> => {
+  if (renderMode === 'html-string') {
+    return renderThemeAttributes(props);
+  }
+
+  if (renderMode === 'html-attrs') {
+    return toThemeHtmlAttributes(props);
+  }
+
+  return props;
+};
 
 export function registerTheme<
   TTheme extends string = LightOrDark,
@@ -109,6 +169,20 @@ export function registerTheme<
     TEnableSystem,
     TAttribute
   > & {
+    renderMode: 'html-attrs';
+  },
+): ThemeHtmlAttributes<TAttribute>;
+
+export function registerTheme<
+  TTheme extends string = LightOrDark,
+  TEnableSystem extends boolean = true,
+  TAttribute extends RegisterThemeAttribute = 'class',
+>(
+  options: RegisterThemeOptions<
+    TTheme,
+    TEnableSystem,
+    TAttribute
+  > & {
     renderMode: 'html-string';
   },
 ): string;
@@ -123,7 +197,10 @@ export function registerTheme<
     TEnableSystem,
     TAttribute
   > = {},
-): string | ThemeHtmlProps<TAttribute> {
+):
+  | string
+  | ThemeHtmlAttributes<TAttribute>
+  | ThemeHtmlProps<TAttribute> {
   const {
     selectedTheme,
     appliedTheme,
