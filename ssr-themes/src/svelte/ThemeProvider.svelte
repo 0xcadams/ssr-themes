@@ -21,7 +21,8 @@
     enableColorScheme = true,
     enableSystem,
     forcedTheme,
-    initialColorScheme,
+    appliedTheme,
+    colorScheme,
     selectedTheme,
     nonce,
     themes,
@@ -44,13 +45,14 @@
       enableColorScheme,
       enableSystem,
       forcedTheme,
-      initialColorScheme,
+      colorScheme,
       nonce,
       selectedTheme,
       themes,
       valueMap,
     }),
   });
+  void appliedTheme;
   const controller = parentTheme
     ? null
     : createThemeController<TTheme, TEnableSystem>(

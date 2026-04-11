@@ -57,11 +57,11 @@ describe('theme controller', () => {
     expect(listener).toHaveBeenCalledTimes(1);
   });
 
-  test('uses the provided initial color scheme before start', () => {
+  test('uses the provided color scheme before start', () => {
     setDeviceTheme('light');
 
     const controller = createThemeController({
-      initialColorScheme: 'dark',
+      colorScheme: 'dark',
       selectedTheme: 'system',
     });
 

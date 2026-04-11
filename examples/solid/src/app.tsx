@@ -8,10 +8,10 @@ import {
 import './styles.css';
 
 export default function App() {
-  const selectedTheme = getThemeState()?.selectedTheme;
+  const themeState = getThemeState();
 
   return (
-    <ThemeProvider selectedTheme={selectedTheme}>
+    <ThemeProvider {...(themeState ?? {})}>
       <Router
         root={props => (
           <Suspense>{props.children}</Suspense>

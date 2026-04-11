@@ -102,10 +102,11 @@ const themeProviderProps = {
     type: Boolean as PropType<boolean | undefined>,
     default: undefined,
   },
+  appliedTheme: String as PropType<string | undefined>,
   selectedTheme: String as PropType<
     string | undefined
   >,
-  initialColorScheme: String as PropType<
+  colorScheme: String as PropType<
     LightOrDark | undefined
   >,
   nonce: String as PropType<string | undefined>,

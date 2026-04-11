@@ -1,5 +1,6 @@
 import type {
   LightOrDark,
+  ThemeState,
   WithSystem,
 } from 'ssr-themes';
 import {
@@ -10,7 +11,7 @@ import {
 type ThemeName = WithSystem<LightOrDark>;
 
 type ThemeSwitcherProps = {
-  selectedTheme?: ThemeName;
+  themeState?: ThemeState<LightOrDark>;
 };
 
 function ThemeSelect() {
@@ -60,10 +61,10 @@ function ThemeSelect() {
 }
 
 export default function ThemeSwitcher({
-  selectedTheme,
+  themeState,
 }: ThemeSwitcherProps) {
   return (
-    <ThemeProvider selectedTheme={selectedTheme}>
+    <ThemeProvider {...(themeState ?? {})}>
       <ThemeSelect />
     </ThemeProvider>
   );

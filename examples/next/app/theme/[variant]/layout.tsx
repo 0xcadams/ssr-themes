@@ -17,7 +17,7 @@ import '../../globals.css';
 const {ThemeProvider} = bindTheme(theme);
 
 export const metadata: Metadata = {
-  title: 'ssr-themes example',
+  title: 'ssr-themes next.js example',
   description:
     'Cache-friendly App Router theme switching with proxy rewrites.',
 };
@@ -75,10 +75,7 @@ export default async function ThemedLayout({
         >
           {themeScript()}
         </Script>
-        <ThemeProvider
-          initialColorScheme={themeState.colorScheme}
-          selectedTheme={themeState.selectedTheme}
-        >
+        <ThemeProvider {...themeState}>
           {children}
         </ThemeProvider>
       </body>

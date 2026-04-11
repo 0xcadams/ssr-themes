@@ -1,5 +1,5 @@
-/** @jsxImportSource solid-js */
 // @vitest-environment jsdom
+/** @jsxImportSource solid-js */
 
 import {
   cleanup,
@@ -112,6 +112,30 @@ describe('solid bindings', () => {
 
     await waitFor(() => {
       expect(getCookieValue('theme')).toBe('~d');
+    });
+  });
+
+  test('accepts spread theme state props', async () => {
+    setDeviceTheme('dark');
+    const {renderTheme} = createSolidHarness();
+
+    renderTheme({
+      appliedTheme: 'light',
+      colorScheme: 'dark',
+      selectedTheme: 'light',
+    });
+
+    await waitFor(() => {
+      expect(
+        screen.getByTestId('theme').textContent,
+      ).toBe('light');
+      expect(
+        screen.getByTestId('resolvedTheme')
+          .textContent,
+      ).toBe('light');
+      expect(
+        screen.getByTestId('colorScheme').textContent,
+      ).toBe('dark');
     });
   });
 

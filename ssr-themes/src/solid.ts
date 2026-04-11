@@ -63,8 +63,11 @@ export const bindTheme = <
       get forcedTheme() {
         return props.forcedTheme;
       },
-      get initialColorScheme() {
-        return props.initialColorScheme;
+      get appliedTheme() {
+        return props.appliedTheme;
+      },
+      get colorScheme() {
+        return props.colorScheme;
       },
       get nonce() {
         return props.nonce;

@@ -9,17 +9,17 @@ import {
 import {createServerFn} from '@tanstack/react-start';
 import {getRequestHeader} from '@tanstack/react-start/server';
 import * as React from 'react';
-import appCss from '../styles.css?url';
-import {
-  registerTheme,
-  ThemeProvider,
-  themeFromCookieHeader,
-  themeScript,
-} from '../lib/theme';
 import type {
   LightOrDark,
   ThemeCookieState,
 } from 'ssr-themes';
+import {
+  ThemeProvider,
+  registerTheme,
+  themeFromCookieHeader,
+  themeScript,
+} from '../lib/theme';
+import appCss from '../styles.css?url';
 
 type ThemeStaticData = {
   theme?: LightOrDark;
@@ -50,8 +50,8 @@ function RootDocument({
       </head>
       <body className="min-h-screen bg-white text-black dark:bg-black dark:text-white antialiased font-mono">
         <ThemeProvider
+          {...(themeState ?? {})}
           forcedTheme={forcedTheme}
-          selectedTheme={themeState?.selectedTheme}
         >
           <ScriptOnce
             children={themeScript({forcedTheme})}
@@ -101,7 +101,7 @@ export const Route = createRootRoute({
         name: 'viewport',
         content: 'width=device-width, initial-scale=1',
       },
-      {title: 'ssr-themes example'},
+      {title: 'ssr-themes tanstack start example'},
     ],
     links: [
       {

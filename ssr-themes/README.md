@@ -66,12 +66,7 @@ const themeState = themeFromCookieHeader(cookieHeader);
     <script id="ssr-themes">{themeScript()}</script>
   </head>
   <body>
-    <ThemeProvider
-      // Keep the logical theme choice for hydration and UI.
-      // `registerTheme(themeState)` already uses `appliedTheme`
-      // when it can pre-render <html>.
-      selectedTheme={themeState?.selectedTheme}
-    >
+    <ThemeProvider {...(themeState ?? {})}>
       {children}
     </ThemeProvider>
   </body>
@@ -198,7 +193,8 @@ All bindings expose the same core theme state:
 `ThemeProvider` only takes runtime props:
 
 - `selectedTheme`
-- `initialColorScheme`
+- `appliedTheme`
+- `colorScheme`
 - `forcedTheme`
 - `disableTransitionOnChange`
 - `nonce`

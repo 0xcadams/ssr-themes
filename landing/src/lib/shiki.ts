@@ -63,7 +63,7 @@ const htmlProps = registerTheme(themeState, {
   <body>
     <ThemeSwitcher
       client:load
-      selectedTheme={themeState?.selectedTheme}
+      themeState={themeState}
     />
   </body>
 </html>
@@ -87,15 +87,17 @@ export const {ThemeProvider, useTheme} =
   bindTheme(themeOptions);
 
 // src/components/theme-switcher.tsx
+import type {
+  LightOrDark,
+  ThemeState,
+  WithSystem,
+} from 'ssr-themes';
 import {
   ThemeProvider,
   useTheme,
 } from '../lib/theme-react';
 
-type ThemeName =
-  | 'system'
-  | 'dark'
-  | 'light';
+type ThemeName = WithSystem<LightOrDark>;
 
 function ThemeSelect() {
   const {theme, setTheme} = useTheme();
@@ -115,12 +117,12 @@ function ThemeSelect() {
 }
 
 export default function ThemeSwitcher({
-  selectedTheme,
+  themeState,
 }: {
-  selectedTheme?: ThemeName;
+  themeState?: ThemeState<LightOrDark>;
 }) {
   return (
-    <ThemeProvider selectedTheme={selectedTheme}>
+    <ThemeProvider {...(themeState ?? {})}>
       <ThemeSelect />
     </ThemeProvider>
   );
@@ -162,10 +164,7 @@ export default async function RootLayout({
         </Script>
       </head>
       <body>
-        <ThemeProvider
-          selectedTheme={themeState?.selectedTheme}
-          initialColorScheme={themeState?.colorScheme}
-        >
+        <ThemeProvider {...themeState}>
           {children}
         </ThemeProvider>
       </body>
@@ -247,10 +246,6 @@ const themeState = useState<
       ),
 );
 
-const selectedTheme = computed(
-  () => themeState.value?.selectedTheme,
-);
-
 const htmlAttrs = computed(() => {
   return {
     lang: 'en' as const,
@@ -274,7 +269,7 @@ if (import.meta.server) {
 </script>
 
 <template>
-  <ThemeProvider :selected-theme="selectedTheme">
+  <ThemeProvider v-bind="themeState ?? {}">
     <NuxtPage />
   </ThemeProvider>
 </template>
@@ -354,11 +349,10 @@ import {
 } from '~/lib/theme';
 
 export default function App() {
-  const selectedTheme =
-    getThemeState()?.selectedTheme;
+  const themeState = getThemeState();
 
   return (
-    <ThemeProvider selectedTheme={selectedTheme}>
+    <ThemeProvider {...(themeState ?? {})}>
       <Router
         root={props => (
           <Suspense>{props.children}</Suspense>
@@ -518,7 +512,7 @@ export const load = ({locals}) => ({
 </script>
 
 <ThemeProvider
-  selectedTheme={data.themeState?.selectedTheme}
+  {...(data.themeState ?? {})}
 >
   {@render children()}
 </ThemeProvider>
@@ -628,9 +622,7 @@ function RootComponent() {
         <HeadContent />
       </head>
       <body>
-        <ThemeProvider
-          selectedTheme={themeState?.selectedTheme}
-        >
+        <ThemeProvider {...(themeState ?? {})}>
           <ScriptOnce children={themeScript()} />
           <Outlet />
         </ThemeProvider>
@@ -722,9 +714,7 @@ export function Root({
         <script id="ssr-themes">{themeScript()}</script>
       </head>
       <body>
-        <ThemeProvider
-          selectedTheme={themeState?.selectedTheme}
-        >
+        <ThemeProvider {...(themeState ?? {})}>
           {children}
         </ThemeProvider>
       </body>

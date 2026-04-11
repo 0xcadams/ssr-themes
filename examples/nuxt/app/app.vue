@@ -23,10 +23,6 @@ const themeState = useState<
   );
 });
 
-const selectedTheme = computed(
-  () => themeState.value?.selectedTheme,
-);
-
 const htmlAttrs = computed(() => {
   return {
     lang: 'en' as const,
@@ -80,7 +76,7 @@ if (import.meta.server) {
 </script>
 
 <template>
-  <ThemeProvider :selected-theme="selectedTheme">
+  <ThemeProvider v-bind="themeState ?? {}">
     <NuxtPage />
   </ThemeProvider>
 </template>

@@ -35,9 +35,7 @@ function RootComponent() {
         <HeadContent />
       </head>
       <body className="min-h-screen bg-background text-foreground antialiased">
-        <ThemeProvider
-          selectedTheme={themeState?.selectedTheme}
-        >
+        <ThemeProvider {...(themeState ?? {})}>
           <ScriptOnce children={themeScript()} />
           <Outlet />
 

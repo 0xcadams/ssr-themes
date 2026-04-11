@@ -32,7 +32,7 @@ export interface ThemeControllerOptions<
   extends
     ThemeOptions<TTheme, TEnableSystem>,
     ThemeScriptRuntimeOptions<TTheme> {
-  initialColorScheme?: LightOrDark | undefined;
+  colorScheme?: LightOrDark | undefined;
   disableTransitionOnChange?: boolean | undefined;
   selectedTheme?:
     | WithSystem<TTheme, TEnableSystem>
@@ -120,7 +120,7 @@ type ThemeControllerOptionSource<
       >['enableSystem']
     | undefined;
   forcedTheme?: TTheme | undefined;
-  initialColorScheme?: LightOrDark | undefined;
+  colorScheme?: LightOrDark | undefined;
   nonce?: string | undefined;
   selectedTheme?:
     | WithSystem<TTheme, TEnableSystem>
@@ -188,7 +188,7 @@ export const pickThemeControllerOptions = <
   enableColorScheme: options.enableColorScheme,
   enableSystem: options.enableSystem,
   forcedTheme: options.forcedTheme,
-  initialColorScheme: options.initialColorScheme,
+  colorScheme: options.colorScheme,
   nonce: options.nonce,
   selectedTheme: options.selectedTheme,
   themes: options.themes,
@@ -244,10 +244,10 @@ const normalizeOptions = <
 
 const getInitialSystemTheme = <TTheme extends string>(
   theme: TTheme | 'system' | undefined,
-  initialColorScheme?: LightOrDark,
+  colorScheme?: LightOrDark,
 ) => {
-  if (initialColorScheme) {
-    return initialColorScheme;
+  if (colorScheme) {
+    return colorScheme;
   }
 
   if (!isServer) {
@@ -284,7 +284,7 @@ export const createThemeController = <
   );
   let systemTheme = getInitialSystemTheme<TTheme>(
     theme,
-    options.initialColorScheme,
+    options.colorScheme,
   );
   let snapshot: ThemeControllerSnapshot<
     TTheme,
@@ -634,7 +634,7 @@ export const createThemeController = <
     if (!started) {
       systemTheme = getInitialSystemTheme<TTheme>(
         theme,
-        options.initialColorScheme,
+        options.colorScheme,
       );
     }
 
@@ -649,7 +649,7 @@ export const createThemeController = <
       if (!started) {
         systemTheme = getInitialSystemTheme<TTheme>(
           theme,
-          options.initialColorScheme,
+          options.colorScheme,
         );
       }
     }

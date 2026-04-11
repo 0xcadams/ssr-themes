@@ -105,7 +105,7 @@ const Theme = <
           props.enableColorScheme ?? true,
         enableSystem: props.enableSystem,
         forcedTheme: props.forcedTheme,
-        initialColorScheme: props.initialColorScheme,
+        colorScheme: props.colorScheme,
         nonce: props.nonce,
         selectedTheme: props.selectedTheme,
         themes:
@@ -121,7 +121,7 @@ const Theme = <
       props.enableColorScheme,
       props.enableSystem,
       props.forcedTheme,
-      props.initialColorScheme,
+      props.colorScheme,
       props.nonce,
       props.selectedTheme,
       props.themes,

@@ -147,6 +147,24 @@ describe('react bindings', () => {
     });
   });
 
+  test('accepts spread theme state props', () => {
+    setDeviceTheme('dark');
+    const {makeWrapper, useTheme} =
+      createReactHarness();
+
+    const {result} = renderHook(() => useTheme(), {
+      wrapper: makeWrapper({
+        appliedTheme: 'light',
+        colorScheme: 'dark',
+        selectedTheme: 'light',
+      }),
+    });
+
+    expect(result.current.theme).toBe('light');
+    expect(result.current.colorScheme).toBe('dark');
+    expect(result.current.resolvedTheme).toBe('light');
+  });
+
   test('supports custom cookie names from initTheme', async () => {
     const {ThemeProvider, ThemeReporter} =
       createReactHarness({

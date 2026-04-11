@@ -121,8 +121,10 @@ export interface ThemeProviderRuntimeProps<
   selectedTheme?:
     | WithSystem<TTheme, TEnableSystem>
     | undefined;
-  /** Initial browser color-scheme hint to reuse during hydration */
-  initialColorScheme?: LightOrDark | undefined;
+  /** Literal theme name from SSR state; accepted for ThemeState spreads */
+  appliedTheme?: TTheme | undefined;
+  /** Browser color-scheme hint to reuse during hydration */
+  colorScheme?: LightOrDark | undefined;
   /** Disable all CSS transitions when switching themes */
   disableTransitionOnChange?: boolean | undefined;
   /** Nonce string to pass to the inline style elements for CSP headers */
