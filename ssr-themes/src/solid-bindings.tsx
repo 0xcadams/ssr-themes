@@ -27,11 +27,9 @@ export type ThemeSetter<
   value:
     | WithSystem<TTheme, TEnableSystem>
     | ((
-        prev:
-          | WithSystem<TTheme, TEnableSystem>
-          | undefined,
+        prev: WithSystem<TTheme, TEnableSystem>,
       ) => WithSystem<TTheme, TEnableSystem>),
-) => WithSystem<TTheme, TEnableSystem>;
+) => void;
 
 export interface ThemeResult<
   TTheme extends string = LightOrDark,
@@ -40,19 +38,15 @@ export interface ThemeResult<
   themes: Accessor<
     ReadonlyArray<WithSystem<TTheme, TEnableSystem>>
   >;
-  forcedTheme: Accessor<TTheme | undefined>;
-  setTheme: ThemeSetter<TTheme, TEnableSystem>;
-  theme: Accessor<
+  forced: Accessor<TTheme | undefined>;
+  setSelected: ThemeSetter<TTheme, TEnableSystem>;
+  selected: Accessor<
     WithSystem<TTheme, TEnableSystem> | undefined
   >;
-  resolvedTheme: Accessor<
+  resolved: Accessor<
     Exclude<TTheme, 'system'> | undefined
   >;
-  colorScheme: Accessor<
-    TEnableSystem extends false
-      ? undefined
-      : LightOrDark | undefined
-  >;
+  system: Accessor<LightOrDark | undefined>;
 }
 
 export interface ThemeProviderProps<
@@ -114,11 +108,11 @@ export const ThemeProvider = <
     setSnapshot(() => controller.getSnapshot());
   };
 
-  const setTheme: ThemeSetter<
+  const setSelected: ThemeSetter<
     TTheme,
     TEnableSystem
   > = value =>
-    controller.setTheme(
+    controller.setSelected(
       value as ThemeControllerSetValue<
         TTheme,
         TEnableSystem
@@ -149,16 +143,12 @@ export const ThemeProvider = <
     TTheme,
     TEnableSystem
   > = {
-    theme: () => snapshot().theme,
-    setTheme,
-    forcedTheme: () => snapshot().forcedTheme,
-    resolvedTheme: () => snapshot().resolvedTheme,
+    selected: () => snapshot().selected,
+    setSelected,
+    forced: () => snapshot().forced,
+    resolved: () => snapshot().resolved,
     themes: () => snapshot().themes,
-    colorScheme: () =>
-      snapshot()
-        .colorScheme as TEnableSystem extends false
-        ? undefined
-        : LightOrDark | undefined,
+    system: () => snapshot().system,
   };
 
   return createComponent(ThemeContext.Provider, {

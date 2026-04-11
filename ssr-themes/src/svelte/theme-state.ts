@@ -46,38 +46,38 @@ export const createThemeController = <
 
   const unsubscribe =
     controller.subscribe(syncSnapshot);
-  const setTheme = (
+  const setSelected = (
     value: ThemeControllerSetValue<
       TTheme,
       TEnableSystem
     >,
   ) => {
-    controller.setTheme(value);
+    controller.setSelected(value);
   };
 
   return {
     context: {
-      theme: derived(
+      selected: derived(
         snapshotStore,
-        snapshot => snapshot.theme,
+        snapshot => snapshot.selected,
       ),
-      forcedTheme: derived(
+      forced: derived(
         snapshotStore,
-        snapshot => snapshot.forcedTheme,
+        snapshot => snapshot.forced,
       ),
-      resolvedTheme: derived(
+      resolved: derived(
         snapshotStore,
-        snapshot => snapshot.resolvedTheme,
+        snapshot => snapshot.resolved,
       ),
-      colorScheme: derived(
+      system: derived(
         snapshotStore,
-        snapshot => snapshot.colorScheme,
+        snapshot => snapshot.system,
       ),
       themes: derived(
         snapshotStore,
         snapshot => snapshot.themes,
       ),
-      setTheme,
+      setSelected,
     },
     destroy: () => {
       unsubscribe();

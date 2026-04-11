@@ -1,118 +1,118 @@
 import {describe, expect, it} from 'vitest';
 
-import {initTheme} from '../src';
+import {createTheme} from '../src';
 
-describe('initTheme helpers', () => {
-  it('returns the exact themeOptions object', () => {
-    const themeOptions = {
+describe('createTheme helpers', () => {
+  it('returns the exact options object', () => {
+    const options = {
       themes: ['light', 'dark'] as const,
     };
-    const theme = initTheme(themeOptions);
+    const theme = createTheme(options);
 
-    expect(theme.themeOptions).toBe(themeOptions);
+    expect(theme.options).toBe(options);
   });
 
   it('encodes explicit themes and compact system themes', () => {
-    const theme = initTheme();
+    const theme = createTheme();
 
     expect(
-      theme.encodeTheme({
-        selectedTheme: 'dark',
-        appliedTheme: 'dark',
-        colorScheme: 'light',
+      theme.encodeVariant({
+        selected: 'dark',
+        resolved: 'dark',
+        system: 'light',
       }),
     ).toBe('dark~l');
     expect(
-      theme.encodeTheme({
-        selectedTheme: 'system',
-        appliedTheme: 'light',
+      theme.encodeVariant({
+        selected: 'system',
+        resolved: 'light',
       }),
     ).toBe('~l');
     expect(
-      theme.encodeTheme({
-        selectedTheme: 'system',
+      theme.encodeVariant({
+        selected: 'system',
       }),
     ).toBeUndefined();
   });
 
   it('decodes compact system themes with bound theme options', () => {
-    const theme = initTheme({
+    const theme = createTheme({
       themes: ['light', 'dark'],
     });
 
-    expect(theme.decodeTheme('~d')).toEqual({
-      selectedTheme: 'system',
-      appliedTheme: 'dark',
-      colorScheme: 'dark',
+    expect(theme.decodeVariant('~d')).toEqual({
+      selected: 'system',
+      resolved: 'dark',
+      system: 'dark',
     });
   });
 
   it('collapses compact system themes when system support is disabled', () => {
-    const theme = initTheme({
+    const theme = createTheme({
       enableSystem: false,
       themes: ['light', 'dark'],
     });
 
-    expect(theme.decodeTheme('~d')).toEqual({
-      selectedTheme: 'dark',
-      appliedTheme: 'dark',
-      colorScheme: 'dark',
+    expect(theme.decodeVariant('~d')).toEqual({
+      selected: 'dark',
+      resolved: 'dark',
+      system: 'dark',
     });
   });
 
   it('lists stable variants for prerendering', () => {
-    const theme = initTheme({
+    const theme = createTheme({
       themes: ['light', 'dark', 'quartz'],
     });
 
-    expect(theme.themeVariants()).toEqual([
+    expect(theme.listVariants()).toEqual([
       {
         value: 'light~l',
-        selectedTheme: 'light',
-        appliedTheme: 'light',
-        colorScheme: 'light',
+        selected: 'light',
+        resolved: 'light',
+        system: 'light',
       },
       {
         value: 'light~d',
-        selectedTheme: 'light',
-        appliedTheme: 'light',
-        colorScheme: 'dark',
+        selected: 'light',
+        resolved: 'light',
+        system: 'dark',
       },
       {
         value: 'dark~l',
-        selectedTheme: 'dark',
-        appliedTheme: 'dark',
-        colorScheme: 'light',
+        selected: 'dark',
+        resolved: 'dark',
+        system: 'light',
       },
       {
         value: 'dark~d',
-        selectedTheme: 'dark',
-        appliedTheme: 'dark',
-        colorScheme: 'dark',
+        selected: 'dark',
+        resolved: 'dark',
+        system: 'dark',
       },
       {
         value: 'quartz~l',
-        selectedTheme: 'quartz',
-        appliedTheme: 'quartz',
-        colorScheme: 'light',
+        selected: 'quartz',
+        resolved: 'quartz',
+        system: 'light',
       },
       {
         value: 'quartz~d',
-        selectedTheme: 'quartz',
-        appliedTheme: 'quartz',
-        colorScheme: 'dark',
+        selected: 'quartz',
+        resolved: 'quartz',
+        system: 'dark',
       },
       {
         value: '~l',
-        selectedTheme: 'system',
-        appliedTheme: 'light',
-        colorScheme: 'light',
+        selected: 'system',
+        resolved: 'light',
+        system: 'light',
       },
       {
         value: '~d',
-        selectedTheme: 'system',
-        appliedTheme: 'dark',
-        colorScheme: 'dark',
+        selected: 'system',
+        resolved: 'dark',
+        system: 'dark',
       },
     ]);
   });

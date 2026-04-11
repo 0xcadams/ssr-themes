@@ -6,14 +6,14 @@ import {
 } from 'vitest';
 
 import {
-  initTheme,
+  createTheme,
   type ThemeHtmlAttributes,
   type ThemeHtmlProps,
 } from '../src';
 
 describe('registerTheme', () => {
   it('returns JSX props by default', () => {
-    const {registerTheme} = initTheme({
+    const {registerTheme} = createTheme({
       attribute: ['class', 'data-theme'],
       valueMap: {
         dark: 'night',
@@ -23,8 +23,8 @@ describe('registerTheme', () => {
     expect(
       registerTheme(
         {
-          selectedTheme: 'dark',
-          appliedTheme: 'dark',
+          selected: 'dark',
+          resolved: 'dark',
         },
         {
           className: 'app-shell',
@@ -44,12 +44,12 @@ describe('registerTheme', () => {
   });
 
   it('returns an empty theme registration for system mode', () => {
-    const {registerTheme} = initTheme();
+    const {registerTheme} = createTheme();
 
     expect(
       registerTheme(
         {
-          selectedTheme: 'system',
+          selected: 'system',
         },
         {
           className: 'app-shell',
@@ -67,15 +67,15 @@ describe('registerTheme', () => {
   });
 
   it('returns serialized HTML in html-string mode', () => {
-    const {registerTheme} = initTheme({
+    const {registerTheme} = createTheme({
       attribute: ['class', 'data-theme'],
     });
 
     expect(
       registerTheme(
         {
-          selectedTheme: 'dark',
-          appliedTheme: 'dark',
+          selected: 'dark',
+          resolved: 'dark',
         },
         {
           className: 'app-shell',
@@ -91,15 +91,15 @@ describe('registerTheme', () => {
   });
 
   it('returns HTML attrs in html-attrs mode', () => {
-    const {registerTheme} = initTheme({
+    const {registerTheme} = createTheme({
       attribute: ['class', 'data-theme'],
     });
 
     expect(
       registerTheme(
         {
-          selectedTheme: 'dark',
-          appliedTheme: 'dark',
+          selected: 'dark',
+          resolved: 'dark',
         },
         {
           className: 'app-shell',
@@ -117,13 +117,13 @@ describe('registerTheme', () => {
   });
 
   it('escapes serialized attribute values', () => {
-    const {registerTheme} = initTheme();
+    const {registerTheme} = createTheme();
 
     expect(
       registerTheme(
         {
-          selectedTheme: 'light',
-          appliedTheme: 'light',
+          selected: 'light',
+          resolved: 'light',
         },
         {
           className: 'quote"test',
@@ -139,17 +139,17 @@ describe('registerTheme', () => {
   });
 
   it('infers return types from the render mode', () => {
-    const {registerTheme} = initTheme({
+    const {registerTheme} = createTheme({
       attribute: ['class', 'data-theme'] as const,
     });
     const jsxProps = registerTheme({
-      selectedTheme: 'dark',
-      appliedTheme: 'dark',
+      selected: 'dark',
+      resolved: 'dark',
     });
     const htmlAttributes = registerTheme(
       {
-        selectedTheme: 'dark',
-        appliedTheme: 'dark',
+        selected: 'dark',
+        resolved: 'dark',
       },
       {
         renderMode: 'html-attrs',
@@ -157,21 +157,21 @@ describe('registerTheme', () => {
     );
     const htmlString = registerTheme(
       {
-        selectedTheme: 'dark',
-        appliedTheme: 'dark',
+        selected: 'dark',
+        resolved: 'dark',
       },
       {
         renderMode: 'html-string',
       },
     );
-    const explicitHtmlString = initTheme<{
+    const explicitHtmlString = createTheme<{
       themes: ['light', 'dark'];
     }>({
       themes: ['light', 'dark'],
     }).registerTheme(
       {
-        selectedTheme: 'system',
-        appliedTheme: 'dark',
+        selected: 'system',
+        resolved: 'dark',
       },
       {
         renderMode: 'html-string',
@@ -192,15 +192,15 @@ describe('registerTheme', () => {
     ).toEqualTypeOf<string>();
   });
 
-  it('uses appliedTheme when selectedTheme is system', () => {
-    const {registerTheme} = initTheme({
+  it('uses resolved when selected is system', () => {
+    const {registerTheme} = createTheme({
       attribute: ['class', 'data-theme'],
     });
 
     expect(
       registerTheme({
-        selectedTheme: 'system',
-        appliedTheme: 'dark',
+        selected: 'system',
+        resolved: 'dark',
       }),
     ).toEqual({
       'data-theme': 'dark',
@@ -211,19 +211,19 @@ describe('registerTheme', () => {
     });
   });
 
-  it('supports forcedTheme runtime overrides', () => {
-    const {registerTheme} = initTheme({
+  it('supports forced runtime overrides', () => {
+    const {registerTheme} = createTheme({
       attribute: ['class', 'data-theme'],
     });
 
     expect(
       registerTheme(
         {
-          selectedTheme: 'light',
-          appliedTheme: 'light',
+          selected: 'light',
+          resolved: 'light',
         },
         {
-          forcedTheme: 'dark',
+          forced: 'dark',
         },
       ),
     ).toEqual({

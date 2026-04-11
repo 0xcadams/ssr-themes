@@ -32,27 +32,27 @@ yarn add ssr-themes
 
 `ssr-themes` has three parts:
 
-1. `initTheme(...)` captures the shared theme config once.
-2. The returned SSR helpers (`themeFromCookieHeader()`, `registerTheme()`, and `themeScript()`) keep the server HTML and bootstrap script aligned.
+1. `createTheme(...)` captures the shared theme config once.
+2. The returned SSR helpers (`parseThemeCookie()`, `registerTheme()`, and `themeScript()`) keep the server HTML and bootstrap script aligned.
 3. `bindTheme(...)` returns a framework-specific `ThemeProvider` and `useTheme()` that use that same config on the client.
 
 ```tsx
-import {initTheme} from 'ssr-themes';
+import {createTheme} from 'ssr-themes';
 import {bindTheme} from 'ssr-themes/react';
 
 const {
-  themeOptions,
+  options,
   registerTheme,
-  themeFromCookieHeader,
+  parseThemeCookie,
   themeScript,
-} = initTheme({
+} = createTheme({
   themes: ['light', 'dark'],
   attribute: 'class',
 });
 
-const {ThemeProvider} = bindTheme(themeOptions);
+const {ThemeProvider} = bindTheme(options);
 
-const themeState = themeFromCookieHeader(cookieHeader);
+const initial = parseThemeCookie(cookieHeader);
 
 // `suppressHydrationWarning` tells React to ignore differences
 // between client and server. This diff happens when the theme is
@@ -60,13 +60,13 @@ const themeState = themeFromCookieHeader(cookieHeader);
 // to on the client
 <html
   suppressHydrationWarning
-  {...registerTheme(themeState)}
+  {...registerTheme(initial)}
 >
   <head>
     <script id="ssr-themes">{themeScript()}</script>
   </head>
   <body>
-    <ThemeProvider {...(themeState ?? {})}>
+    <ThemeProvider initial={initial}>
       {children}
     </ThemeProvider>
   </body>
@@ -92,7 +92,7 @@ If you only need client-side theme state in a Next.js app, `next-themes` is a go
 
 If your SSR markup depends on the theme or you don't use Next.js, `ssr-themes` is a good fit.
 
-If you want a cache-friendly App Router setup, see the [Next.js example](https://github.com/0xcadams/ssr-themes/tree/main/examples/next). It uses `proxy.ts` plus `themeVariants()` so the public `/` route stays cacheable and layouts do not read cookies.
+If you want a cache-friendly App Router setup, see the [Next.js example](https://github.com/0xcadams/ssr-themes/tree/main/examples/next). It uses `proxy.ts` plus `listVariants()` so the public `/` route stays cacheable and layouts do not read cookies.
 
 ## Styling
 
@@ -127,32 +127,32 @@ All examples in this repo use Tailwind v4 with class-based dark mode - feel free
 
 The API has two entrypoints:
 
-- `initTheme()` from `ssr-themes`
+- `createTheme()` from `ssr-themes`
 - `bindTheme()` from `ssr-themes/react`, `ssr-themes/solid`, `ssr-themes/vue`, or `ssr-themes/svelte`
 
-### `initTheme()`
+### `createTheme()`
 
-Use `initTheme()` once to capture the shared theme config.
+Use `createTheme()` once to capture the shared theme config.
 
 ```ts
-import {initTheme} from 'ssr-themes';
+import {createTheme} from 'ssr-themes';
 
 const {
-  decodeTheme,
-  encodeTheme,
-  themeOptions,
+  decodeVariant,
+  encodeVariant,
+  options,
+  listVariants,
   registerTheme,
-  themeVariants,
-  themeFromCookieHeader,
+  parseThemeCookie,
   themeScript,
-} = initTheme({
+} = createTheme({
   themes: ['light', 'dark', 'quartz'],
   attribute: 'class',
   defaultTheme: 'system',
 });
 ```
 
-`themeOptions` is the exact typed config object passed into `initTheme()`. Inline theme arrays are inferred as tuples, so `themes: ['light', 'dark', 'quartz']` automatically becomes `'light' | 'dark' | 'quartz'` in the returned helpers and bound hooks.
+`options` is the exact typed config object passed into `createTheme()`. Inline theme arrays are inferred as tuples, so `themes: ['light', 'dark', 'quartz']` automatically becomes `'light' | 'dark' | 'quartz'` in the returned helpers and bound hooks.
 
 Stable config belongs here:
 
@@ -171,68 +171,65 @@ Use `bindTheme()` in the framework entrypoint for your app.
 ```ts
 import {bindTheme} from 'ssr-themes/react';
 
-const {ThemeProvider, useTheme} =
-  bindTheme(themeOptions);
-// or: bindTheme(theme)
+const {ThemeProvider, useTheme} = bindTheme(theme);
+// or: bindTheme(options)
 ```
 
-`bindTheme()` accepts either the full `initTheme()` return value or `theme.themeOptions`, and returns:
+`bindTheme()` accepts either the full `createTheme()` return value or `theme.options`, and returns:
 
 - `ThemeProvider`
 - `useTheme()`
 
 All bindings expose the same core theme state:
 
-- `theme`
-- `setTheme(next)`
-- `forcedTheme`
-- `resolvedTheme`
-- `colorScheme`
+- `selected`
+- `setSelected(next)`
+- `forced`
+- `resolved`
+- `system`
 - `themes`
 
 `ThemeProvider` only takes runtime props:
 
-- `selectedTheme`
-- `appliedTheme`
-- `colorScheme`
-- `forcedTheme`
-- `disableTransitionOnChange`
+- `initial`
+- `forced`
+- `disableTransition`
 - `nonce`
 
-### `themeFromCookieHeader()`
+### `parseThemeCookie()`
 
-Use `themeFromCookieHeader()` during SSR to read the saved theme from a raw `Cookie` header.
+Use `parseThemeCookie()` during SSR to read the saved theme from a raw `Cookie` header.
 
 ```ts
-const themeState = themeFromCookieHeader(cookieHeader);
+const initial = parseThemeCookie(cookieHeader);
 ```
 
 It returns `undefined` when the cookie is missing, empty, malformed, or not in the allowed theme list.
 
 When present, the return value has:
 
-- `selectedTheme`
-- `appliedTheme`
-- `colorScheme`
+- `selected`
+- `resolved`
+- `system`
 
-The cookie stores system mode in a compact form like `~d` or `~l`, and stores explicit themes with the same color-scheme hint suffix, such as `dark~l` or `quartz~d`.
+The cookie stores system mode in a compact form like `~d` or `~l`, and stores explicit themes with the same system hint suffix, such as `dark~l` or `quartz~d`.
 
-### `encodeTheme()`, `decodeTheme()`, and `themeVariants()`
+### `encodeVariant()`, `decodeVariant()`, and `listVariants()`
 
 Use these helpers when you want a stable theme key for routing or caching, such as a Next.js `proxy.ts` rewrite.
 
 ```ts
 const variant =
-  encodeTheme(themeFromCookieHeader(cookieHeader)) ??
-  'light~d';
+  encodeVariant(parseThemeCookie(cookieHeader)) ??
+  'light~l';
 
-const themeState = decodeTheme(variant);
-const variants = themeVariants();
+const initial = decodeVariant(variant);
+const variants = listVariants();
 ```
 
-- Explicit themes include the color-scheme hint, like `light~d` and `dark~l`
+- Explicit themes always include the system hint, like `light~d` and `dark~l`
 - System mode serializes to the compact values `~l` and `~d`
-- `themeVariants()` returns the finite set of pre-renderable theme variants for `generateStaticParams()`
+- `listVariants()` returns the finite set of pre-renderable theme variants for `generateStaticParams()`
 
 ### `registerTheme()`
 
@@ -240,14 +237,14 @@ Use `registerTheme()` to pre-render the current theme on `<html>` during SSR.
 
 ```tsx
 const htmlProps = registerTheme({
-  selectedTheme: 'dark',
-  appliedTheme: 'dark',
+  selected: 'dark',
+  resolved: 'dark',
 });
 
 const astroHtmlProps = registerTheme(
   {
-    selectedTheme: 'dark',
-    appliedTheme: 'dark',
+    selected: 'dark',
+    resolved: 'dark',
   },
   {
     renderMode: 'html-attrs',
@@ -256,8 +253,8 @@ const astroHtmlProps = registerTheme(
 
 const htmlAttributes = registerTheme(
   {
-    selectedTheme: 'dark',
-    appliedTheme: 'dark',
+    selected: 'dark',
+    resolved: 'dark',
   },
   {
     renderMode: 'html-string',
@@ -265,7 +262,7 @@ const htmlAttributes = registerTheme(
 );
 ```
 
-The first argument is theme state, usually the result of `themeFromCookieHeader()`.
+The first argument is theme state, usually the result of `parseThemeCookie()`.
 
 - Default `jsx` mode returns `{className, style, ...dataAttrs}` for JSX hosts like React.
 - `html-attrs` returns `{class, style, ...dataAttrs}` for hosts like Astro or `useHead()`.
@@ -273,7 +270,7 @@ The first argument is theme state, usually the result of `themeFromCookieHeader(
 
 The second argument is for runtime overrides only:
 
-- `forcedTheme`
+- `forced`
 - `renderMode`
 - `className`
 - `style`
@@ -284,11 +281,11 @@ Use `themeScript()` to generate the inline bootstrap script that runs on the cli
 
 ```tsx
 <script id="ssr-themes">{themeScript()}</script>
-<script id="ssr-themes">{themeScript({forcedTheme})}</script>
+<script id="ssr-themes">{themeScript({forced})}</script>
 ```
 
 It reads the saved theme from the cookie, resolves `'system'` when needed, updates the `<html>` attributes, and sets `color-scheme` when appropriate.
 
 `themeScript()` only supports one runtime override:
 
-- `forcedTheme`
+- `forced`

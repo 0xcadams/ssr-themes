@@ -41,8 +41,8 @@ const resolveThemeOptions = <
 >(
   input: TInput,
 ): BoundThemeOptions<TInput> =>
-  ('themeOptions' in input
-    ? input.themeOptions
+  ('options' in input
+    ? input.options
     : input) as BoundThemeOptions<TInput>;
 
 export const bindTheme = <

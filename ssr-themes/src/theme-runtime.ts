@@ -84,8 +84,8 @@ export const saveToCookie = (
 
   try {
     const cookieValue = encodeThemeCookieValue(
-      themeState.selectedTheme,
-      themeState.colorScheme,
+      themeState.selected,
+      themeState.system,
     );
     if (!cookieValue) {
       return;
@@ -166,7 +166,7 @@ export const getTheme = <
   fallback:
     | WithSystem<TTheme, TEnableSystem>
     | undefined,
-  selectedTheme:
+  selected:
     | WithSystem<TTheme, TEnableSystem>
     | undefined,
   themes?: ThemeOptions<
@@ -180,22 +180,22 @@ export const getTheme = <
 ) => {
   if (typeof window === 'undefined') {
     if (
-      selectedTheme === 'system' &&
+      selected === 'system' &&
       enableSystem === false
     ) {
       return fallback;
     }
-    return selectedTheme;
+    return selected;
   }
 
-  if (selectedTheme) {
+  if (selected) {
     if (
-      selectedTheme === 'system' &&
+      selected === 'system' &&
       enableSystem === false
     ) {
       return fallback;
     }
-    return selectedTheme;
+    return selected;
   }
 
   let theme:
@@ -209,7 +209,7 @@ export const getTheme = <
     >(getCookieValue(cookieName), {
       enableSystem,
       themes,
-    })?.selectedTheme;
+    })?.selected;
   } catch {}
 
   if (theme) {

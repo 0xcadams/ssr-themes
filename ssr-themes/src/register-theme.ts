@@ -202,8 +202,8 @@ export function registerTheme<
   | ThemeHtmlAttributes<TAttribute>
   | ThemeHtmlProps<TAttribute> {
   const {
-    selectedTheme,
-    appliedTheme,
+    selected,
+    resolved,
     valueMap,
     enableColorScheme = true,
     className,
@@ -224,10 +224,8 @@ export function registerTheme<
   }
 
   const resolvedTheme =
-    appliedTheme ??
-    (selectedTheme === 'system'
-      ? undefined
-      : selectedTheme);
+    resolved ??
+    (selected === 'system' ? undefined : selected);
 
   if (!resolvedTheme) {
     return toRegisterThemeOutput(props, renderMode);

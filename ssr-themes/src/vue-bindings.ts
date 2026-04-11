@@ -25,6 +25,7 @@ import type {
   LightOrDark,
   ThemeOptions,
   ThemeProviderRuntimeProps,
+  ThemeState,
   WithSystem,
 } from './types';
 
@@ -35,11 +36,9 @@ export type ThemeSetter<
   value:
     | WithSystem<TTheme, TEnableSystem>
     | ((
-        prev:
-          | WithSystem<TTheme, TEnableSystem>
-          | undefined,
+        prev: WithSystem<TTheme, TEnableSystem>,
       ) => WithSystem<TTheme, TEnableSystem>),
-) => WithSystem<TTheme, TEnableSystem>;
+) => void;
 
 export interface ThemeResult<
   TTheme extends string = LightOrDark,
@@ -48,19 +47,15 @@ export interface ThemeResult<
   themes: ComputedRef<
     ReadonlyArray<WithSystem<TTheme, TEnableSystem>>
   >;
-  forcedTheme: ComputedRef<TTheme | undefined>;
-  setTheme: ThemeSetter<TTheme, TEnableSystem>;
-  theme: Readonly<
+  forced: ComputedRef<TTheme | undefined>;
+  setSelected: ThemeSetter<TTheme, TEnableSystem>;
+  selected: Readonly<
     Ref<WithSystem<TTheme, TEnableSystem> | undefined>
   >;
-  resolvedTheme: ComputedRef<
+  resolved: ComputedRef<
     Exclude<TTheme, 'system'> | undefined
   >;
-  colorScheme: ComputedRef<
-    TEnableSystem extends false
-      ? undefined
-      : LightOrDark | undefined
-  >;
+  system: ComputedRef<LightOrDark | undefined>;
 }
 
 export interface ThemeProviderProps<
@@ -79,7 +74,7 @@ const ThemeContext = Symbol(
 
 const themeProviderProps = {
   themes: Array as PropType<readonly string[]>,
-  forcedTheme: String as PropType<string | undefined>,
+  forced: String as PropType<string | undefined>,
   enableSystem: {
     type: Boolean as PropType<boolean | undefined>,
     default: undefined,
@@ -98,16 +93,12 @@ const themeProviderProps = {
   valueMap: Object as PropType<
     Partial<Record<string, string>> | undefined
   >,
-  disableTransitionOnChange: {
+  disableTransition: {
     type: Boolean as PropType<boolean | undefined>,
     default: undefined,
   },
-  appliedTheme: String as PropType<string | undefined>,
-  selectedTheme: String as PropType<
-    string | undefined
-  >,
-  colorScheme: String as PropType<
-    LightOrDark | undefined
+  initial: Object as PropType<
+    ThemeState<string, boolean> | undefined
   >,
   nonce: String as PropType<string | undefined>,
 } as const;
@@ -146,27 +137,27 @@ export const ThemeProvider = defineComponent({
     const syncSnapshot = () => {
       snapshot.value = controller.getSnapshot();
     };
-    const theme = computed(
-      () => snapshot.value.theme,
+    const selected = computed(
+      () => snapshot.value.selected,
     ) as Readonly<Ref<string | undefined>>;
-    const forcedTheme = computed(
-      () => snapshot.value.forcedTheme,
+    const forced = computed(
+      () => snapshot.value.forced,
     );
-    const resolvedTheme = computed(
-      () => snapshot.value.resolvedTheme,
+    const resolved = computed(
+      () => snapshot.value.resolved,
     );
-    const colorScheme = computed(
-      () => snapshot.value.colorScheme,
+    const system = computed(
+      () => snapshot.value.system,
     ) as ComputedRef<LightOrDark | undefined>;
     const themes = computed(
       () => snapshot.value.themes,
     );
 
-    const setTheme: ThemeSetter<
+    const setSelected: ThemeSetter<
       string,
       boolean
     > = value =>
-      controller.setTheme(
+      controller.setSelected(
         value as ThemeControllerSetValue<
           string,
           boolean
@@ -194,12 +185,12 @@ export const ThemeProvider = defineComponent({
     });
 
     const providerValue: ThemeContextValue = {
-      theme,
-      setTheme,
-      forcedTheme,
-      resolvedTheme,
+      selected,
+      setSelected,
+      forced,
+      resolved,
       themes,
-      colorScheme,
+      system,
     };
 
     provide(ThemeContext, providerValue);

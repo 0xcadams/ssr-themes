@@ -22,10 +22,10 @@ export default <
   defaultTheme: NonNullable<
     ThemeOptions<TTheme, TEnableSystem>['defaultTheme']
   >,
-  forcedTheme: ThemeScriptOptions<
+  forced: ThemeScriptOptions<
     TTheme,
     TEnableSystem
-  >['forcedTheme'],
+  >['forced'],
   themes: NonNullable<
     ThemeOptions<TTheme, TEnableSystem>['themes']
   >,
@@ -85,20 +85,25 @@ export default <
       return undefined;
     }
 
-    const compactTheme =
-      value === '~d'
-        ? 'dark'
-        : value === '~l'
-          ? 'light'
-          : undefined;
+    const systemTheme = value.endsWith('~d')
+      ? 'dark'
+      : value.endsWith('~l')
+        ? 'light'
+        : undefined;
 
-    if (compactTheme) {
-      if (!themeNames.has(compactTheme as TTheme)) {
+    if (!systemTheme) {
+      return undefined;
+    }
+
+    const selected = value.slice(0, -2);
+
+    if (!selected) {
+      if (!themeNames.has(systemTheme as TTheme)) {
         return undefined;
       }
 
       if (!enableSystem) {
-        return compactTheme as WithSystem<
+        return systemTheme as WithSystem<
           TTheme,
           TEnableSystem
         >;
@@ -110,37 +115,15 @@ export default <
       >;
     }
 
-    if (value === 'system') {
-      if (!enableSystem) {
-        return undefined;
-      }
-
-      return 'system' as WithSystem<
-        TTheme,
-        TEnableSystem
-      >;
-    }
-
-    const explicitTheme =
-      value.endsWith('~d') || value.endsWith('~l')
-        ? value.slice(0, -2)
-        : undefined;
-
-    if (explicitTheme) {
-      return themeNames.has(explicitTheme as TTheme)
-        ? (explicitTheme as WithSystem<
-            TTheme,
-            TEnableSystem
-          >)
-        : undefined;
-    }
-
-    if (value.startsWith('~')) {
+    if (
+      selected === 'system' ||
+      selected.startsWith('~')
+    ) {
       return undefined;
     }
 
-    return themeNames.has(value as TTheme)
-      ? (value as WithSystem<TTheme, TEnableSystem>)
+    return themeNames.has(selected as TTheme)
+      ? (selected as WithSystem<TTheme, TEnableSystem>)
       : undefined;
   };
 
@@ -201,8 +184,8 @@ export default <
       ? 'dark'
       : 'light';
 
-  if (forcedTheme) {
-    updateDOM(forcedTheme);
+  if (forced) {
+    updateDOM(forced);
     return;
   }
 

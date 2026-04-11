@@ -15,12 +15,12 @@ type ThemeSwitcherProps = {
 };
 
 function ThemeSelect() {
-  const {theme, setTheme, forcedTheme, colorScheme} =
+  const {selected, setSelected, forced, system} =
     useTheme();
 
-  const disabled = Boolean(forcedTheme);
-  const value = theme ?? 'system';
-  const deviceTheme = colorScheme ?? 'dark';
+  const disabled = Boolean(forced);
+  const value = selected ?? 'system';
+  const deviceTheme = system ?? 'dark';
   const suggestedTheme =
     deviceTheme === 'dark' ? 'light' : 'dark';
   const codeClassName =
@@ -33,7 +33,7 @@ function ThemeSelect() {
         className="rounded border border-current bg-transparent px-3 py-2 text-2xl"
         value={value}
         onChange={event =>
-          setTheme(event.target.value as ThemeName)
+          setSelected(event.target.value as ThemeName)
         }
         disabled={disabled}
         aria-label="Theme"
@@ -64,7 +64,7 @@ export default function ThemeSwitcher({
   themeState,
 }: ThemeSwitcherProps) {
   return (
-    <ThemeProvider {...(themeState ?? {})}>
+    <ThemeProvider initial={themeState}>
       <ThemeSelect />
     </ThemeProvider>
   );

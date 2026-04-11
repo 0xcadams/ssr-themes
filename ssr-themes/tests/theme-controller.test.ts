@@ -21,10 +21,10 @@ describe('theme controller', () => {
     >({});
 
     expect(controller.getSnapshot()).toEqual({
-      theme: 'system',
-      forcedTheme: undefined,
-      resolvedTheme: 'dark',
-      colorScheme: 'dark',
+      selected: 'system',
+      forced: undefined,
+      resolved: 'dark',
+      system: 'dark',
       themes: ['dark', 'light', 'system'],
     });
   });
@@ -57,19 +57,22 @@ describe('theme controller', () => {
     expect(listener).toHaveBeenCalledTimes(1);
   });
 
-  test('uses the provided color scheme before start', () => {
+  test('uses the provided initial state before start', () => {
     setDeviceTheme('light');
 
     const controller = createThemeController({
-      colorScheme: 'dark',
-      selectedTheme: 'system',
+      initial: {
+        selected: 'system',
+        resolved: 'dark',
+        system: 'dark',
+      },
     });
 
     expect(controller.getSnapshot()).toEqual({
-      theme: 'system',
-      forcedTheme: undefined,
-      resolvedTheme: 'dark',
-      colorScheme: 'dark',
+      selected: 'system',
+      forced: undefined,
+      resolved: 'dark',
+      system: 'dark',
       themes: ['dark', 'light', 'system'],
     });
   });
@@ -78,7 +81,7 @@ describe('theme controller', () => {
     document.documentElement.classList.add('light');
 
     const controller = createThemeController({
-      forcedTheme: 'dark',
+      forced: 'dark',
     });
 
     controller.stop();
@@ -95,34 +98,34 @@ describe('theme controller', () => {
     ).toBe(false);
   });
 
-  test('updates snapshot and DOM when forcedTheme changes', () => {
-    setCookieValue('theme', 'dark');
+  test('updates snapshot and DOM when forced changes', () => {
+    setCookieValue('theme', 'dark~l');
 
     const controller = createThemeController({});
 
     controller.start();
-    controller.update({forcedTheme: 'light'});
+    controller.update({forced: 'light'});
 
-    expect(controller.getSnapshot().forcedTheme).toBe(
+    expect(controller.getSnapshot().forced).toBe(
       'light',
     );
-    expect(
-      controller.getSnapshot().resolvedTheme,
-    ).toBe('light');
+    expect(controller.getSnapshot().resolved).toBe(
+      'light',
+    );
     expect(
       document.documentElement.classList.contains(
         'light',
       ),
     ).toBe(true);
 
-    controller.update({forcedTheme: undefined});
+    controller.update({forced: undefined});
 
     expect(
-      controller.getSnapshot().forcedTheme,
+      controller.getSnapshot().forced,
     ).toBeUndefined();
-    expect(
-      controller.getSnapshot().resolvedTheme,
-    ).toBe('dark');
+    expect(controller.getSnapshot().resolved).toBe(
+      'dark',
+    );
     expect(
       document.documentElement.classList.contains(
         'dark',
@@ -145,10 +148,10 @@ describe('theme controller', () => {
     });
 
     expect(controller.getSnapshot()).toEqual({
-      theme: 'dark',
-      forcedTheme: undefined,
-      resolvedTheme: 'dark',
-      colorScheme: undefined,
+      selected: 'dark',
+      forced: undefined,
+      resolved: 'dark',
+      system: 'dark',
       themes: ['dark', 'light'],
     });
     expect(
@@ -166,14 +169,14 @@ describe('theme controller', () => {
     });
 
     controller.start();
-    controller.setTheme('dark');
+    controller.setSelected('dark');
 
-    expect(controller.getSnapshot().theme).toBe(
+    expect(controller.getSnapshot().selected).toBe(
       'dark',
     );
-    expect(
-      controller.getSnapshot().resolvedTheme,
-    ).toBe('dark');
+    expect(controller.getSnapshot().resolved).toBe(
+      'dark',
+    );
     expect(getCookieValue('theme')).toBe('dark~l');
   });
 });

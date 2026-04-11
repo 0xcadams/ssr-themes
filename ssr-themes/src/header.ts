@@ -1,6 +1,6 @@
 import type {
   LightOrDark,
-  ThemeCookieState,
+  ResolvedThemeState,
   ThemeOptions,
 } from './types';
 import {decodeThemeCookieValue} from './theme-cookie';
@@ -20,7 +20,7 @@ type ThemeFromCookieHeaderOptions<
   >['themes'];
 };
 
-export const themeFromCookieHeader = <
+export const parseThemeCookie = <
   TTheme extends string = LightOrDark,
   TEnableSystem extends boolean = true,
 >(
@@ -30,7 +30,7 @@ export const themeFromCookieHeader = <
     TEnableSystem
   > = {},
 ):
-  | ThemeCookieState<TTheme, TEnableSystem>
+  | ResolvedThemeState<TTheme, TEnableSystem>
   | undefined => {
   if (!cookieHeader) return undefined;
 

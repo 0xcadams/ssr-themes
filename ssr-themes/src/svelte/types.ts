@@ -22,22 +22,18 @@ export interface ThemeContext<
   TTheme extends string = LightOrDark,
   TEnableSystem extends boolean = true,
 > {
-  theme: Readable<
+  selected: Readable<
     WithSystem<TTheme, TEnableSystem> | undefined
   >;
-  forcedTheme: Readable<TTheme | undefined>;
-  resolvedTheme: Readable<
+  forced: Readable<TTheme | undefined>;
+  resolved: Readable<
     Exclude<TTheme, 'system'> | undefined
   >;
-  colorScheme: Readable<
-    TEnableSystem extends false
-      ? undefined
-      : LightOrDark | undefined
-  >;
+  system: Readable<LightOrDark | undefined>;
   themes: Readable<
     ReadonlyArray<WithSystem<TTheme, TEnableSystem>>
   >;
-  setTheme: (
+  setSelected: (
     value: SetThemeValue<TTheme, TEnableSystem>,
   ) => void;
 }

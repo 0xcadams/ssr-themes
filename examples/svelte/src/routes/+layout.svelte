@@ -14,7 +14,7 @@
   />
 </svelte:head>
 
-<ThemeProvider {...data.themeState ?? {}}>
+<ThemeProvider initial={data.themeState}>
   <div
     class="min-h-screen bg-white font-mono text-black antialiased dark:bg-black dark:text-white"
   >

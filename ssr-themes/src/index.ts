@@ -1,19 +1,19 @@
-export {initTheme} from './init-theme';
+export {createTheme} from './init-theme';
 export type {
   Attribute,
   AttributeFromOptions,
   BindThemeInput,
   CookieOptions,
+  CreatedTheme,
   EnableSystemFromOptions,
-  InitializedTheme,
   LightOrDark,
   ThemeHtmlAttributes,
-  ThemeCookieState,
   ThemeHtmlProps,
   ThemeOptions,
   ThemeProviderRuntimeProps,
   ThemeNameFromOptions,
   ThemeOptionsFromBindInput,
+  ResolvedThemeState,
   ThemeState,
   ThemeVariant,
   ThemeScriptRuntimeOptions,

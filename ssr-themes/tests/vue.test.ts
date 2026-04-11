@@ -14,7 +14,7 @@ import {
   expect,
   test,
 } from 'vitest';
-import {initTheme} from '../src';
+import {createTheme} from '../src';
 import {bindTheme} from '../src/vue';
 import {
   getCookieValue,
@@ -28,9 +28,9 @@ installThemeTestEnv();
 const wrappers: Array<VueWrapper<unknown>> = [];
 
 const createVueHarness = (
-  options?: Parameters<typeof initTheme>[0],
+  options?: Parameters<typeof createTheme>[0],
 ) => {
-  const theme = initTheme(options);
+  const theme = createTheme(options);
   const {ThemeProvider, useTheme} = bindTheme(theme);
 
   const ThemeReporter = defineComponent({
@@ -43,7 +43,9 @@ const createVueHarness = (
 
       watchEffect(() => {
         if (props.forceSetTheme) {
-          theme.setTheme(props.forceSetTheme as never);
+          theme.setSelected(
+            props.forceSetTheme as never,
+          );
         }
       });
 
@@ -51,23 +53,23 @@ const createVueHarness = (
         h('div', [
           h(
             'p',
-            {'data-testid': 'theme'},
-            theme.theme.value,
+            {'data-testid': 'selected'},
+            theme.selected.value,
           ),
           h(
             'p',
-            {'data-testid': 'forcedTheme'},
-            theme.forcedTheme.value,
+            {'data-testid': 'forced'},
+            theme.forced.value,
           ),
           h(
             'p',
-            {'data-testid': 'resolvedTheme'},
-            theme.resolvedTheme.value,
+            {'data-testid': 'resolved'},
+            theme.resolved.value,
           ),
           h(
             'p',
-            {'data-testid': 'colorScheme'},
-            theme.colorScheme.value,
+            {'data-testid': 'system'},
+            theme.system.value,
           ),
         ]);
     },
@@ -118,17 +120,13 @@ describe('vue bindings', () => {
     await nextTick();
 
     expect(
-      wrapper.get('[data-testid="theme"]').text(),
+      wrapper.get('[data-testid="selected"]').text(),
     ).toBe('system');
     expect(
-      wrapper
-        .get('[data-testid="resolvedTheme"]')
-        .text(),
+      wrapper.get('[data-testid="resolved"]').text(),
     ).toBe('dark');
     expect(
-      wrapper
-        .get('[data-testid="colorScheme"]')
-        .text(),
+      wrapper.get('[data-testid="system"]').text(),
     ).toBe('dark');
   });
 
@@ -148,25 +146,23 @@ describe('vue bindings', () => {
 
     const {renderTheme} = createVueHarness();
     const wrapper = renderTheme({
-      appliedTheme: 'light',
-      colorScheme: 'dark',
-      selectedTheme: 'light',
+      initial: {
+        selected: 'light',
+        resolved: 'light',
+        system: 'dark',
+      },
     });
 
     await nextTick();
 
     expect(
-      wrapper.get('[data-testid="theme"]').text(),
+      wrapper.get('[data-testid="selected"]').text(),
     ).toBe('light');
     expect(
-      wrapper
-        .get('[data-testid="resolvedTheme"]')
-        .text(),
+      wrapper.get('[data-testid="resolved"]').text(),
     ).toBe('light');
     expect(
-      wrapper
-        .get('[data-testid="colorScheme"]')
-        .text(),
+      wrapper.get('[data-testid="system"]').text(),
     ).toBe('dark');
   });
 
@@ -180,7 +176,7 @@ describe('vue bindings', () => {
     await nextTick();
 
     expect(
-      wrapper.get('[data-testid="theme"]').text(),
+      wrapper.get('[data-testid="selected"]').text(),
     ).toBe('dark');
     expect(getCookieValue('theme')).toBe('dark~l');
     expect(
@@ -190,7 +186,7 @@ describe('vue bindings', () => {
     ).toBe(true);
   });
 
-  test('supports custom attributes and value maps from initTheme', async () => {
+  test('supports custom attributes and value maps from createTheme', async () => {
     const {renderTheme} = createVueHarness({
       attribute: ['data-theme', 'class'],
       themes: ['light', 'dark', 'pink'],
@@ -213,13 +209,11 @@ describe('vue bindings', () => {
   });
 
   test('applies and removes a forced theme', async () => {
-    setCookieValue('theme', 'dark');
+    setCookieValue('theme', 'dark~l');
 
     const {ThemeProvider, ThemeReporter} =
       createVueHarness();
-    const forcedTheme = ref<string | undefined>(
-      'light',
-    );
+    const forced = ref<string | undefined>('light');
     const wrapper = mount(
       defineComponent({
         name: 'ForcedThemeHarness',
@@ -227,7 +221,7 @@ describe('vue bindings', () => {
           return () =>
             h(
               ThemeProvider,
-              {forcedTheme: forcedTheme.value},
+              {forced: forced.value},
               {default: () => h(ThemeReporter)},
             );
         },
@@ -239,26 +233,20 @@ describe('vue bindings', () => {
     await nextTick();
 
     expect(
-      wrapper.get('[data-testid="theme"]').text(),
+      wrapper.get('[data-testid="selected"]').text(),
     ).toBe('dark');
     expect(
-      wrapper
-        .get('[data-testid="forcedTheme"]')
-        .text(),
+      wrapper.get('[data-testid="forced"]').text(),
     ).toBe('light');
     expect(
-      wrapper
-        .get('[data-testid="resolvedTheme"]')
-        .text(),
+      wrapper.get('[data-testid="resolved"]').text(),
     ).toBe('light');
 
-    forcedTheme.value = undefined;
+    forced.value = undefined;
     await nextTick();
 
     expect(
-      wrapper
-        .get('[data-testid="forcedTheme"]')
-        .text(),
+      wrapper.get('[data-testid="forced"]').text(),
     ).toBe('');
     expect(
       document.documentElement.classList.contains(
@@ -280,12 +268,22 @@ describe('vue bindings', () => {
           return () =>
             h(
               ThemeProvider,
-              {selectedTheme: 'dark'},
+              {
+                initial: {
+                  selected: 'dark',
+                  resolved: 'dark',
+                },
+              },
               {
                 default: () =>
                   h(
                     ThemeProvider,
-                    {selectedTheme: 'light'},
+                    {
+                      initial: {
+                        selected: 'light',
+                        resolved: 'light',
+                      },
+                    },
                     {default: () => h(ThemeReporter)},
                   ),
               },
@@ -298,7 +296,7 @@ describe('vue bindings', () => {
     await nextTick();
 
     expect(
-      wrapper.get('[data-testid="theme"]').text(),
+      wrapper.get('[data-testid="selected"]').text(),
     ).toBe('dark');
   });
 

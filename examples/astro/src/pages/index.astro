@@ -2,12 +2,12 @@
 import ThemeSwitcher from '../components/theme-switcher';
 import {
   registerTheme,
-  themeFromCookieHeader,
+  parseThemeCookie,
   themeScript,
 } from '../lib/theme';
 import '../styles.css';
 
-const themeState = themeFromCookieHeader(
+const themeState = parseThemeCookie(
   Astro.request.headers.get('cookie'),
 );
 

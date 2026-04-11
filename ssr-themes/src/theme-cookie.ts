@@ -1,7 +1,7 @@
 import type {
   LightOrDark,
   LightOrDarkTuple,
-  ThemeCookieState,
+  ResolvedThemeState,
   ThemeOptions,
   ThemeState,
   ThemeVariant,
@@ -40,35 +40,7 @@ const parseColorSchemeToken = (
   return undefined;
 };
 
-const parseExplicitThemeToken = (
-  value: string,
-):
-  | {
-      colorScheme: LightOrDark;
-      theme: string;
-    }
-  | undefined => {
-  const suffix = parseColorSchemeToken(
-    value.slice(-2),
-  );
-
-  if (!suffix) {
-    return undefined;
-  }
-
-  const theme = value.slice(0, -2);
-
-  if (!theme) {
-    return undefined;
-  }
-
-  return {
-    colorScheme: suffix,
-    theme,
-  };
-};
-
-export const decodeTheme = <
+export const decodeVariant = <
   TTheme extends string = LightOrDark,
   TEnableSystem extends boolean = true,
 >(
@@ -78,7 +50,7 @@ export const decodeTheme = <
     TEnableSystem
   > = {},
 ):
-  | ThemeCookieState<TTheme, TEnableSystem>
+  | ResolvedThemeState<TTheme, TEnableSystem>
   | undefined => {
   const {
     themes,
@@ -89,120 +61,89 @@ export const decodeTheme = <
     return undefined;
   }
 
-  const compactTheme = parseColorSchemeToken(value);
+  const system = parseColorSchemeToken(
+    value.slice(-2),
+  );
 
-  if (compactTheme) {
-    if (
-      themes &&
-      !themes.includes(compactTheme as TTheme)
-    ) {
+  if (!system) {
+    return undefined;
+  }
+
+  const selected = value.slice(0, -2);
+
+  if (!selected) {
+    if (themes && !themes.includes(system as TTheme)) {
       return undefined;
     }
 
     if (enableSystem === false) {
       return {
-        selectedTheme: compactTheme as WithSystem<
+        selected: system as WithSystem<
           TTheme,
           TEnableSystem
         >,
-        appliedTheme: compactTheme as TTheme,
-        colorScheme: compactTheme,
+        resolved: system as TTheme,
+        system,
       };
     }
 
     return {
-      selectedTheme: 'system' as WithSystem<
+      selected: 'system' as WithSystem<
         TTheme,
         TEnableSystem
       >,
-      appliedTheme: compactTheme as TTheme,
-      colorScheme: compactTheme,
+      resolved: system as TTheme,
+      system,
     };
-  }
-
-  const explicitTheme = parseExplicitThemeToken(value);
-
-  if (explicitTheme) {
-    if (
-      themes &&
-      !themes.includes(explicitTheme.theme as TTheme)
-    ) {
-      return undefined;
-    }
-
-    return {
-      selectedTheme: explicitTheme.theme as WithSystem<
-        TTheme,
-        TEnableSystem
-      >,
-      appliedTheme: explicitTheme.theme as TTheme,
-      colorScheme: explicitTheme.colorScheme,
-    };
-  }
-
-  if (value.startsWith('~')) {
-    return undefined;
   }
 
   if (
-    themes &&
-    value !== 'system' &&
-    !themes.includes(value as TTheme)
+    selected === 'system' ||
+    selected.startsWith('~')
   ) {
     return undefined;
   }
 
-  if (value === 'system') {
+  if (themes && !themes.includes(selected as TTheme)) {
     return undefined;
   }
 
   return {
-    selectedTheme: value as WithSystem<
+    selected: selected as WithSystem<
       TTheme,
       TEnableSystem
     >,
-    appliedTheme: value as TTheme,
+    resolved: selected as TTheme,
+    system,
   };
 };
 
-export const encodeTheme = <
+export const encodeVariant = <
   TTheme extends string = LightOrDark,
   TEnableSystem extends boolean = true,
 >(
   themeState?: ThemeState<TTheme, TEnableSystem>,
 ) => {
-  const selectedTheme = themeState?.selectedTheme;
-  const colorScheme = themeState?.colorScheme;
+  const selected = themeState?.selected;
+  const system =
+    themeState?.system ??
+    (themeState?.resolved === 'dark' ||
+    themeState?.resolved === 'light'
+      ? themeState.resolved
+      : undefined);
 
-  if (!selectedTheme) {
+  if (!selected || !system) {
     return undefined;
   }
 
-  if (selectedTheme === 'system') {
-    const resolvedTheme =
-      colorScheme ??
-      (themeState?.appliedTheme === 'dark' ||
-      themeState?.appliedTheme === 'light'
-        ? themeState.appliedTheme
-        : undefined);
-
-    if (!resolvedTheme) {
-      return undefined;
-    }
-
-    return systemCookieValueMap[
-      resolvedTheme as LightOrDark
-    ];
+  if (selected === 'system') {
+    return systemCookieValueMap[system as LightOrDark];
   }
 
-  if (colorScheme) {
-    return `${selectedTheme}${systemCookieValueMap[colorScheme]}`;
-  }
-
-  return selectedTheme;
+  return `${selected}${systemCookieValueMap[system as LightOrDark]}`;
 };
 
-export const themeVariants = <
+export const listVariants = <
   TTheme extends string = LightOrDark,
   TEnableSystem extends boolean = true,
 >(
@@ -220,38 +161,25 @@ export const themeVariants = <
     TEnableSystem
   >[] = [];
 
-  if (options.enableSystem !== false) {
-    for (const theme of themes) {
-      variants.push({
-        value: `${theme}${systemCookieValueMap.light}`,
-        selectedTheme: theme as WithSystem<
-          TTheme,
-          TEnableSystem
-        >,
-        appliedTheme: theme,
-        colorScheme: 'light',
-      });
-      variants.push({
-        value: `${theme}${systemCookieValueMap.dark}`,
-        selectedTheme: theme as WithSystem<
-          TTheme,
-          TEnableSystem
-        >,
-        appliedTheme: theme,
-        colorScheme: 'dark',
-      });
-    }
-  } else {
-    for (const theme of themes) {
-      variants.push({
-        value: theme,
-        selectedTheme: theme as WithSystem<
-          TTheme,
-          TEnableSystem
-        >,
-        appliedTheme: theme,
-      });
-    }
+  for (const theme of themes) {
+    variants.push({
+      value: `${theme}${systemCookieValueMap.light}`,
+      selected: theme as WithSystem<
+        TTheme,
+        TEnableSystem
+      >,
+      resolved: theme,
+      system: 'light',
+    });
+    variants.push({
+      value: `${theme}${systemCookieValueMap.dark}`,
+      selected: theme as WithSystem<
+        TTheme,
+        TEnableSystem
+      >,
+      resolved: theme,
+      system: 'dark',
+    });
   }
 
   if (options.enableSystem === false) {
@@ -261,49 +189,49 @@ export const themeVariants = <
   if (themes.includes('light' as TTheme)) {
     variants.push({
       value: systemCookieValueMap.light,
-      selectedTheme: 'system' as WithSystem<
+      selected: 'system' as WithSystem<
         TTheme,
         TEnableSystem
       >,
-      appliedTheme: 'light' as TTheme,
-      colorScheme: 'light',
+      resolved: 'light' as TTheme,
+      system: 'light',
     });
   }
 
   if (themes.includes('dark' as TTheme)) {
     variants.push({
       value: systemCookieValueMap.dark,
-      selectedTheme: 'system' as WithSystem<
+      selected: 'system' as WithSystem<
         TTheme,
         TEnableSystem
       >,
-      appliedTheme: 'dark' as TTheme,
-      colorScheme: 'dark',
+      resolved: 'dark' as TTheme,
+      system: 'dark',
     });
   }
 
   return variants;
 };
 
-export const decodeThemeCookieValue = decodeTheme;
+export const decodeThemeCookieValue = decodeVariant;
 export const encodeThemeCookieValue = <
   TTheme extends string,
   TEnableSystem extends boolean = true,
 >(
-  selectedTheme:
+  selected:
     | WithSystem<TTheme, TEnableSystem>
     | undefined,
-  colorScheme?: LightOrDark,
+  system?: LightOrDark,
 ) =>
-  encodeTheme<TTheme, TEnableSystem>(
-    selectedTheme
+  encodeVariant<TTheme, TEnableSystem>(
+    selected
       ? {
-          selectedTheme,
-          appliedTheme:
-            selectedTheme === 'system'
-              ? (colorScheme as TTheme | undefined)
-              : (selectedTheme as TTheme),
-          colorScheme,
+          selected,
+          resolved:
+            selected === 'system'
+              ? (system as TTheme | undefined)
+              : (selected as TTheme),
+          system,
         }
       : undefined,
   );

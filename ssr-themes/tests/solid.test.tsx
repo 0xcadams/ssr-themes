@@ -14,7 +14,7 @@ import {
   expect,
   test,
 } from 'vitest';
-import {initTheme} from '../src';
+import {createTheme} from '../src';
 import {bindTheme} from '../src/solid';
 import {
   getCookieValue,
@@ -26,9 +26,9 @@ import {
 installThemeTestEnv();
 
 const createSolidHarness = (
-  options?: Parameters<typeof initTheme>[0],
+  options?: Parameters<typeof createTheme>[0],
 ) => {
-  const theme = initTheme(options);
+  const theme = createTheme(options);
   const {ThemeProvider, useTheme} = bindTheme(theme);
 
   const ThemeReporter = (props: {
@@ -38,22 +38,22 @@ const createSolidHarness = (
 
     createEffect(() => {
       if (props.forceSetTheme) {
-        theme.setTheme(props.forceSetTheme as never);
+        theme.setSelected(
+          props.forceSetTheme as never,
+        );
       }
     });
 
     return (
       <>
-        <p data-testid="theme">{theme.theme()}</p>
-        <p data-testid="forcedTheme">
-          {theme.forcedTheme()}
+        <p data-testid="selected">
+          {theme.selected()}
         </p>
-        <p data-testid="resolvedTheme">
-          {theme.resolvedTheme()}
+        <p data-testid="forced">{theme.forced()}</p>
+        <p data-testid="resolved">
+          {theme.resolved()}
         </p>
-        <p data-testid="colorScheme">
-          {theme.colorScheme()}
-        </p>
+        <p data-testid="system">{theme.system()}</p>
       </>
     );
   };
@@ -92,14 +92,13 @@ describe('solid bindings', () => {
 
     await waitFor(() => {
       expect(
-        screen.getByTestId('theme').textContent,
+        screen.getByTestId('selected').textContent,
       ).toBe('system');
       expect(
-        screen.getByTestId('resolvedTheme')
-          .textContent,
+        screen.getByTestId('resolved').textContent,
       ).toBe('dark');
       expect(
-        screen.getByTestId('colorScheme').textContent,
+        screen.getByTestId('system').textContent,
       ).toBe('dark');
     });
   });
@@ -120,21 +119,22 @@ describe('solid bindings', () => {
     const {renderTheme} = createSolidHarness();
 
     renderTheme({
-      appliedTheme: 'light',
-      colorScheme: 'dark',
-      selectedTheme: 'light',
+      initial: {
+        selected: 'light',
+        resolved: 'light',
+        system: 'dark',
+      },
     });
 
     await waitFor(() => {
       expect(
-        screen.getByTestId('theme').textContent,
+        screen.getByTestId('selected').textContent,
       ).toBe('light');
       expect(
-        screen.getByTestId('resolvedTheme')
-          .textContent,
+        screen.getByTestId('resolved').textContent,
       ).toBe('light');
       expect(
-        screen.getByTestId('colorScheme').textContent,
+        screen.getByTestId('system').textContent,
       ).toBe('dark');
     });
   });
@@ -146,7 +146,7 @@ describe('solid bindings', () => {
 
     await waitFor(() => {
       expect(
-        screen.getByTestId('theme').textContent,
+        screen.getByTestId('selected').textContent,
       ).toBe('dark');
       expect(getCookieValue('theme')).toBe('dark~l');
       expect(
@@ -157,7 +157,7 @@ describe('solid bindings', () => {
     });
   });
 
-  test('supports custom attributes and value maps from initTheme', async () => {
+  test('supports custom attributes and value maps from createTheme', async () => {
     const {renderTheme} = createSolidHarness({
       attribute: ['data-theme', 'class'],
       themes: ['light', 'dark', 'pink'],
@@ -187,8 +187,18 @@ describe('solid bindings', () => {
       });
 
     render(() => (
-      <ThemeProvider selectedTheme="dark">
-        <ThemeProvider selectedTheme="light">
+      <ThemeProvider
+        initial={{
+          selected: 'dark',
+          resolved: 'dark',
+        }}
+      >
+        <ThemeProvider
+          initial={{
+            selected: 'light',
+            resolved: 'light',
+          }}
+        >
           <ThemeReporter />
         </ThemeProvider>
       </ThemeProvider>
@@ -196,7 +206,7 @@ describe('solid bindings', () => {
 
     await waitFor(() => {
       expect(
-        screen.getByTestId('theme').textContent,
+        screen.getByTestId('selected').textContent,
       ).toBe('dark');
     });
   });
@@ -212,21 +222,20 @@ describe('solid bindings', () => {
   });
 
   test('supports forced theme runtime props', async () => {
-    setCookieValue('theme', 'dark');
+    setCookieValue('theme', 'dark~l');
     const {renderTheme} = createSolidHarness();
 
-    renderTheme({forcedTheme: 'light'});
+    renderTheme({forced: 'light'});
 
     await waitFor(() => {
       expect(
-        screen.getByTestId('theme').textContent,
+        screen.getByTestId('selected').textContent,
       ).toBe('dark');
       expect(
-        screen.getByTestId('forcedTheme').textContent,
+        screen.getByTestId('forced').textContent,
       ).toBe('light');
       expect(
-        screen.getByTestId('resolvedTheme')
-          .textContent,
+        screen.getByTestId('resolved').textContent,
       ).toBe('light');
     });
   });

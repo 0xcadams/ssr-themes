@@ -17,13 +17,11 @@
     children,
     cookie,
     defaultTheme,
-    disableTransitionOnChange = true,
+    disableTransition = true,
     enableColorScheme = true,
     enableSystem,
-    forcedTheme,
-    appliedTheme,
-    colorScheme,
-    selectedTheme,
+    forced,
+    initial,
     nonce,
     themes,
     valueMap,
@@ -41,18 +39,16 @@
       attribute,
       cookie,
       defaultTheme,
-      disableTransitionOnChange,
+      disableTransition,
       enableColorScheme,
       enableSystem,
-      forcedTheme,
-      colorScheme,
+      forced,
+      initial,
       nonce,
-      selectedTheme,
       themes,
       valueMap,
     }),
   });
-  void appliedTheme;
   const controller = parentTheme
     ? null
     : createThemeController<TTheme, TEnableSystem>(

@@ -37,8 +37,8 @@ const resolveThemeOptions = <
 >(
   input: TInput,
 ): BoundThemeOptions<TInput> =>
-  ('themeOptions' in input
-    ? input.themeOptions
+  ('options' in input
+    ? input.options
     : input) as BoundThemeOptions<TInput>;
 
 export const bindTheme = <
@@ -50,15 +50,13 @@ export const bindTheme = <
   const ThemeProvider = defineComponent({
     name: 'BoundThemeProvider',
     props: {
-      disableTransitionOnChange: {
+      disableTransition: {
         type: Boolean,
         default: undefined,
       },
-      appliedTheme: String,
-      forcedTheme: String,
-      colorScheme: String,
+      forced: String,
+      initial: Object,
       nonce: String,
-      selectedTheme: String,
     },
     setup(props, {slots}) {
       return () =>

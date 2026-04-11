@@ -1,4 +1,4 @@
-import {initTheme} from 'ssr-themes';
+import {createTheme} from 'ssr-themes';
 import {bindTheme} from 'ssr-themes/svelte';
 
 export const htmlAttributesPlaceholder =
@@ -9,24 +9,24 @@ export const themeScriptPlaceholder =
 
 export const themes = ['dark', 'light'] as const;
 
-const theme = initTheme({
+const theme = createTheme({
   attribute: 'class' as const,
   themes,
 });
 
 export const {
-  themeOptions,
+  options,
   registerTheme,
-  themeFromCookieHeader,
+  parseThemeCookie,
   themeScript,
 } = theme;
 
 export const {ThemeProvider, useTheme} =
-  bindTheme(themeOptions);
+  bindTheme(theme);
 
 export const getThemeState = (
   cookieHeader: string | null | undefined,
-) => themeFromCookieHeader(cookieHeader);
+) => parseThemeCookie(cookieHeader);
 
 export const renderThemeHtmlAttributes = (
   themeState?: ReturnType<typeof getThemeState>,
