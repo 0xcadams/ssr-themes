@@ -9,20 +9,8 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as LightRouteImport } from './routes/light'
-import { Route as DarkRouteImport } from './routes/dark'
 import { Route as IndexRouteImport } from './routes/index'
 
-const LightRoute = LightRouteImport.update({
-  id: '/light',
-  path: '/light',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const DarkRoute = DarkRouteImport.update({
-  id: '/dark',
-  path: '/dark',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -31,50 +19,28 @@ const IndexRoute = IndexRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/dark': typeof DarkRoute
-  '/light': typeof LightRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/dark': typeof DarkRoute
-  '/light': typeof LightRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/dark': typeof DarkRoute
-  '/light': typeof LightRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/dark' | '/light'
+  fullPaths: '/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/dark' | '/light'
-  id: '__root__' | '/' | '/dark' | '/light'
+  to: '/'
+  id: '__root__' | '/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  DarkRoute: typeof DarkRoute
-  LightRoute: typeof LightRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/light': {
-      id: '/light'
-      path: '/light'
-      fullPath: '/light'
-      preLoaderRoute: typeof LightRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/dark': {
-      id: '/dark'
-      path: '/dark'
-      fullPath: '/dark'
-      preLoaderRoute: typeof DarkRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/': {
       id: '/'
       path: '/'
@@ -87,8 +53,6 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  DarkRoute: DarkRoute,
-  LightRoute: LightRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
