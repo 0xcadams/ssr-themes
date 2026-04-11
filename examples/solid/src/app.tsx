@@ -11,7 +11,7 @@ export default function App() {
   const themeState = getThemeState();
 
   return (
-    <ThemeProvider {...(themeState ?? {})}>
+    <ThemeProvider initial={themeState}>
       <Router
         root={props => (
           <Suspense>{props.children}</Suspense>

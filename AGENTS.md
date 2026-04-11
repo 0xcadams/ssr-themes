@@ -70,7 +70,7 @@ bun --filter ssr-themes test
 bun run test:e2e
 # single unit test
 bunx vitest run ssr-themes/tests/header.test.ts
-bunx vitest run ssr-themes/tests/index.test.tsx -t "setTheme"
+bunx vitest run ssr-themes/tests/index.test.tsx -t "setSelected"
 # single Playwright test
 bunx playwright test test/system-theme.test.ts
 bunx playwright test test/system-theme.test.ts -g "should render dark theme if preferred-colorscheme is dark"

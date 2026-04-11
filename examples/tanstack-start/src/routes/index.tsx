@@ -1,14 +1,11 @@
-import {
-  Link,
-  createFileRoute,
-} from '@tanstack/react-router';
+import {createFileRoute} from '@tanstack/react-router';
 import {type ChangeEvent} from 'react';
 import {useTheme} from '../lib/theme';
 
 function IndexPage() {
-  const {theme, setTheme, colorScheme} = useTheme();
-  const value = theme ?? 'system';
-  const deviceTheme = colorScheme ?? 'dark';
+  const {selected, setSelected, system} = useTheme();
+  const value = selected ?? 'system';
+  const deviceTheme = system ?? 'dark';
   const suggestedTheme =
     deviceTheme === 'dark' ? 'light' : 'dark';
   const codeClassName =
@@ -46,7 +43,7 @@ function IndexPage() {
           onChange={(
             event: ChangeEvent<HTMLSelectElement>,
           ) =>
-            setTheme(
+            setSelected(
               event.target.value as
                 | 'light'
                 | 'dark'
@@ -72,24 +69,6 @@ function IndexPage() {
           </code>{' '}
           first.
         </p>
-
-        <div className="text-lg">
-          <Link
-            className="underline underline-offset-4"
-            to="/dark"
-          >
-            Forced Dark Page
-          </Link>
-          <span className="px-2 text-black/50 dark:text-white/50">
-            •
-          </span>
-          <Link
-            className="underline underline-offset-4"
-            to="/light"
-          >
-            Forced Light Page
-          </Link>
-        </div>
       </div>
     </div>
   );

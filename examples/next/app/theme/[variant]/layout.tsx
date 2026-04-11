@@ -5,11 +5,11 @@ import type {ReactNode} from 'react';
 import {bindTheme} from 'ssr-themes/react';
 
 import {
-  decodeTheme,
+  decodeVariant,
   registerTheme,
   theme,
   themeScript,
-  themeVariants,
+  listVariants,
 } from '../../theme';
 
 import '../../globals.css';
@@ -25,7 +25,7 @@ export const metadata: Metadata = {
 export const dynamicParams = false;
 
 export function generateStaticParams() {
-  return themeVariants().map(
+  return listVariants().map(
     (variant: {value: string}) => ({
       variant: variant.value,
     }),
@@ -42,7 +42,7 @@ export default async function ThemedLayout({
   params,
 }: ThemedLayoutProps) {
   const {variant} = await params;
-  const themeState = decodeTheme(variant);
+  const themeState = decodeVariant(variant);
 
   if (!themeState) {
     notFound();
@@ -75,7 +75,7 @@ export default async function ThemedLayout({
         >
           {themeScript()}
         </Script>
-        <ThemeProvider {...themeState}>
+        <ThemeProvider initial={themeState}>
           {children}
         </ThemeProvider>
       </body>

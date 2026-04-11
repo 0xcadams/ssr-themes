@@ -6,7 +6,6 @@ import {
   pickThemeControllerOptions,
   type ThemeController,
 } from './theme-controller';
-import {defaultThemes} from './theme-runtime';
 import type {
   LightOrDark,
   ThemeOptions,
@@ -23,25 +22,21 @@ export interface ThemeResult<
     WithSystem<TTheme, TEnableSystem>
   >;
   /** Forced theme name for the current page */
-  forcedTheme?: TTheme | undefined;
+  forced?: TTheme | undefined;
   /** Update the theme */
-  setTheme: React.Dispatch<
-    React.SetStateAction<
+  setSelected: (
+    value: React.SetStateAction<
       WithSystem<TTheme, TEnableSystem>
-    >
-  >;
+    >,
+  ) => void;
   /** Active theme name */
-  theme?:
+  selected?:
     | WithSystem<TTheme, TEnableSystem>
     | undefined;
-  /** If `enableSystem` is true and the active theme is "system", this returns whether the system preference resolved to "dark" or "light". Otherwise, identical to `theme` */
-  resolvedTheme?:
-    | Exclude<TTheme, 'system'>
-    | undefined;
-  /** If enableSystem is true, returns the System theme preference ("dark" or "light"), regardless what the active theme is */
-  colorScheme?: TEnableSystem extends false
-    ? undefined
-    : LightOrDark;
+  /** Active literal theme name applied to the document */
+  resolved?: Exclude<TTheme, 'system'> | undefined;
+  /** Current browser system preference */
+  system?: LightOrDark | undefined;
 }
 
 export interface ThemeProviderProps<
@@ -59,20 +54,21 @@ type ThemeContextValue = ThemeResult<string, boolean>;
 const ThemeContext = React.createContext<
   ThemeContextValue | undefined
 >(undefined);
-const defaultContext: ThemeContextValue = {
-  setTheme: _ => {},
-  themes: [],
-};
 
 export const useTheme = <
   TTheme extends string = LightOrDark,
   TEnableSystem extends boolean = true,
->() =>
-  (React.useContext(ThemeContext) ??
-    defaultContext) as unknown as ThemeResult<
-    TTheme,
-    TEnableSystem
-  >;
+>() => {
+  const context = React.useContext(ThemeContext);
+
+  if (!context) {
+    throw new Error(
+      'useTheme must be used within a ThemeProvider.',
+    );
+  }
+
+  return context as ThemeResult<TTheme, TEnableSystem>;
+};
 
 export const ThemeProvider = <
   TTheme extends string = LightOrDark,
@@ -99,31 +95,27 @@ const Theme = <
         attribute: props.attribute,
         cookie: props.cookie,
         defaultTheme: props.defaultTheme,
-        disableTransitionOnChange:
-          props.disableTransitionOnChange ?? true,
+        disableTransition:
+          props.disableTransition ?? true,
         enableColorScheme:
           props.enableColorScheme ?? true,
         enableSystem: props.enableSystem,
-        forcedTheme: props.forcedTheme,
-        colorScheme: props.colorScheme,
+        forced: props.forced,
+        initial: props.initial,
         nonce: props.nonce,
-        selectedTheme: props.selectedTheme,
-        themes:
-          props.themes ??
-          (defaultThemes as unknown as readonly TTheme[]),
+        themes: props.themes,
         valueMap: props.valueMap,
       }),
     [
       props.attribute,
       props.cookie,
       props.defaultTheme,
-      props.disableTransitionOnChange,
+      props.disableTransition,
       props.enableColorScheme,
       props.enableSystem,
-      props.forcedTheme,
-      props.colorScheme,
+      props.forced,
+      props.initial,
       props.nonce,
-      props.selectedTheme,
       props.themes,
       props.valueMap,
     ],
@@ -134,13 +126,12 @@ const Theme = <
   > | null>(null);
 
   if (!controllerRef.current) {
-    controllerRef.current = createThemeController<
-      TTheme,
-      TEnableSystem
-    >(controllerOptions);
+    controllerRef.current = createThemeController(
+      controllerOptions,
+    );
   }
 
-  const controller = controllerRef.current;
+  const controller = controllerRef.current!;
   const snapshot = React.useSyncExternalStore(
     controller.subscribe,
     controller.getSnapshot,
@@ -162,36 +153,26 @@ const Theme = <
   const providerValue = React.useMemo(
     () =>
       ({
-        theme: snapshot.theme,
-        setTheme:
-          controller.setTheme as React.Dispatch<
-            React.SetStateAction<
-              WithSystem<TTheme, TEnableSystem>
-            >
-          >,
-        forcedTheme: snapshot.forcedTheme,
-        resolvedTheme: snapshot.resolvedTheme,
+        selected: snapshot.selected,
+        setSelected: controller.setSelected,
+        forced: snapshot.forced,
+        resolved: snapshot.resolved,
         themes: snapshot.themes,
-        colorScheme:
-          snapshot.colorScheme as TEnableSystem extends false
-            ? undefined
-            : LightOrDark,
+        system: snapshot.system,
       }) as ThemeResult<TTheme, TEnableSystem>,
     [
       controller,
-      snapshot.colorScheme,
-      snapshot.forcedTheme,
-      snapshot.resolvedTheme,
-      snapshot.theme,
+      snapshot.forced,
+      snapshot.resolved,
+      snapshot.selected,
+      snapshot.system,
       snapshot.themes,
     ],
   );
 
   return (
     <ThemeContext.Provider
-      value={
-        providerValue as unknown as ThemeContextValue
-      }
+      value={providerValue as ThemeContextValue}
     >
       {props.children}
     </ThemeContext.Provider>

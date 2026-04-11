@@ -5,65 +5,50 @@ import {
   type ThemeResult,
 } from './react-bindings';
 import type {
+  AnyThemeOptions,
   BindThemeInput,
+  CreatedTheme,
   EnableSystemFromOptions,
   ThemeNameFromOptions,
-  ThemeOptionsFromBindInput,
   ThemeProviderRuntimeProps,
 } from './types';
 
-type BoundThemeOptions<TInput extends BindThemeInput> =
-  ThemeOptionsFromBindInput<TInput>;
-
 export interface BoundThemeProviderProps<
-  TInput extends BindThemeInput,
+  TOptions extends AnyThemeOptions,
 > extends ThemeProviderRuntimeProps<
-  ThemeNameFromOptions<BoundThemeOptions<TInput>>,
-  EnableSystemFromOptions<BoundThemeOptions<TInput>>
+  ThemeNameFromOptions<TOptions>,
+  EnableSystemFromOptions<TOptions>
 > {
   children?: React.ReactNode | undefined;
 }
 
 export interface ThemeBinding<
-  TInput extends BindThemeInput,
+  TOptions extends AnyThemeOptions,
 > {
   ThemeProvider: (
-    props: BoundThemeProviderProps<TInput>,
+    props: BoundThemeProviderProps<TOptions>,
   ) => React.JSX.Element;
   useTheme: () => ThemeResult<
-    ThemeNameFromOptions<BoundThemeOptions<TInput>>,
-    EnableSystemFromOptions<BoundThemeOptions<TInput>>
+    ThemeNameFromOptions<TOptions>,
+    EnableSystemFromOptions<TOptions>
   >;
 }
 
-const resolveThemeOptions = <
-  TInput extends BindThemeInput,
+const createThemeBinding = <
+  const TOptions extends AnyThemeOptions,
 >(
-  input: TInput,
-): BoundThemeOptions<TInput> =>
-  ('themeOptions' in input
-    ? input.themeOptions
-    : input) as BoundThemeOptions<TInput>;
-
-export const bindTheme = <
-  TInput extends BindThemeInput,
->(
-  input: TInput,
-): ThemeBinding<TInput> => {
-  const options = resolveThemeOptions(input);
-
+  options: TOptions,
+): ThemeBinding<TOptions> => {
   const ThemeProvider = (
-    props: BoundThemeProviderProps<TInput>,
+    props: BoundThemeProviderProps<TOptions>,
   ) => (
     <ThemeProviderInternal {...options} {...props} />
   );
 
   const useTheme = () =>
     useThemeInternal<
-      ThemeNameFromOptions<BoundThemeOptions<TInput>>,
-      EnableSystemFromOptions<
-        BoundThemeOptions<TInput>
-      >
+      ThemeNameFromOptions<TOptions>,
+      EnableSystemFromOptions<TOptions>
     >();
 
   return {
@@ -71,3 +56,19 @@ export const bindTheme = <
     useTheme,
   };
 };
+
+export function bindTheme<
+  const TOptions extends AnyThemeOptions,
+>(input: TOptions): ThemeBinding<TOptions>;
+
+export function bindTheme<
+  const TOptions extends AnyThemeOptions,
+>(
+  input: CreatedTheme<TOptions>,
+): ThemeBinding<TOptions>;
+
+export function bindTheme(input: BindThemeInput) {
+  return 'options' in input
+    ? createThemeBinding(input.options)
+    : createThemeBinding(input);
+}

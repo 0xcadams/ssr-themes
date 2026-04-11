@@ -8,16 +8,16 @@ import {useTheme} from '../lib/theme';
 
 type ThemeName = WithSystem<LightOrDark>;
 
-const {forcedTheme, setTheme, theme, colorScheme} =
+const {forced, setSelected, selected, system} =
   useTheme();
 const codeClassName =
   'rounded bg-black/5 px-1 py-0.5 dark:bg-white/10';
 
 const selectedTheme = computed(
-  () => theme.value ?? 'system',
+  () => selected.value ?? 'system',
 );
 const deviceTheme = computed(
-  () => colorScheme.value ?? 'dark',
+  () => system.value ?? 'dark',
 );
 const suggestedTheme = computed(() =>
   deviceTheme.value === 'dark' ? 'light' : 'dark',
@@ -26,7 +26,7 @@ const suggestedTheme = computed(() =>
 const handleChange = (event: Event) => {
   const select =
     event.currentTarget as HTMLSelectElement;
-  setTheme(select.value as ThemeName);
+  setSelected(select.value as ThemeName);
 };
 </script>
 
@@ -34,7 +34,7 @@ const handleChange = (event: Event) => {
   <select
     id="theme-selector"
     class="rounded border border-current bg-transparent px-3 py-2 text-xl"
-    :disabled="Boolean(forcedTheme)"
+    :disabled="Boolean(forced)"
     aria-label="Theme"
     data-test-id="theme-selector"
     @change="handleChange"

@@ -21,7 +21,7 @@ import {getHighlightedFrameworkSnippets} from '@/lib/shiki';
 import {ArrowUpRight} from 'lucide-react';
 
 function IndexPage() {
-  const {theme, setTheme, colorScheme} = useTheme();
+  const {selected, setSelected, system} = useTheme();
   const [mounted, setMounted] = useState(false);
   const [framework, setFramework] =
     useState<Framework>('tanstack');
@@ -80,9 +80,9 @@ function IndexPage() {
   }, [framework, mounted]);
 
   const activeTheme =
-    mounted && theme ? theme : 'system';
+    mounted && selected ? selected : 'system';
   const systemNote = mounted
-    ? colorScheme === 'dark'
+    ? system === 'dark'
       ? 'Auto dark'
       : 'Auto light'
     : 'Auto';
@@ -191,7 +191,7 @@ function IndexPage() {
                 activeTheme={activeTheme}
                 systemNote={systemNote}
                 onSelect={value => {
-                  setTheme(value);
+                  setSelected(value);
                 }}
               />
             </section>

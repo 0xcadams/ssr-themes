@@ -1,14 +1,14 @@
-import {initTheme} from 'ssr-themes';
+import {createTheme} from 'ssr-themes';
 import {bindTheme} from 'ssr-themes/react';
 
-const theme = initTheme();
+const theme = createTheme();
 
 export const {
-  themeOptions,
+  options,
   registerTheme,
-  themeFromCookieHeader,
+  parseThemeCookie,
   themeScript,
 } = theme;
 
 export const {ThemeProvider, useTheme} =
-  bindTheme(themeOptions);
+  bindTheme(theme);

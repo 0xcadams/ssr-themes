@@ -1,7 +1,10 @@
 import type {
+  AnyThemeOptions,
+  EnableSystemFromOptions,
   LightOrDark,
   LightOrDarkTuple,
-  ThemeCookieState,
+  ResolvedThemeState,
+  ThemeNameFromOptions,
   ThemeOptions,
   ThemeState,
   ThemeVariant,
@@ -15,6 +18,25 @@ type ThemeCodecOptions<
   ThemeOptions<TTheme, TEnableSystem>,
   'themes' | 'enableSystem'
 >;
+
+type DefaultThemeCodecOptions<
+  TEnableSystem extends boolean = true,
+> = ThemeCodecOptions<LightOrDark, TEnableSystem>;
+
+type AnyThemeCodecOptions = Pick<
+  AnyThemeOptions,
+  'themes' | 'enableSystem'
+>;
+
+type CustomThemeCodecOptions<
+  TTheme extends string,
+  TEnableSystem extends boolean = true,
+> = Omit<
+  ThemeCodecOptions<TTheme, TEnableSystem>,
+  'themes'
+> & {
+  themes: readonly TTheme[];
+};
 
 const defaultThemes = [
   'dark',
@@ -40,270 +62,232 @@ const parseColorSchemeToken = (
   return undefined;
 };
 
-const parseExplicitThemeToken = (
-  value: string,
-):
-  | {
-      colorScheme: LightOrDark;
-      theme: string;
-    }
-  | undefined => {
-  const suffix = parseColorSchemeToken(
-    value.slice(-2),
-  );
+export function decodeVariant(
+  value: string | undefined,
+): ResolvedThemeState<LightOrDark, true> | undefined;
 
-  if (!suffix) {
-    return undefined;
-  }
-
-  const theme = value.slice(0, -2);
-
-  if (!theme) {
-    return undefined;
-  }
-
-  return {
-    colorScheme: suffix,
-    theme,
-  };
-};
-
-export const decodeTheme = <
-  TTheme extends string = LightOrDark,
+export function decodeVariant<
   TEnableSystem extends boolean = true,
 >(
   value: string | undefined,
-  options: ThemeCodecOptions<
-    TTheme,
-    TEnableSystem
-  > = {},
+  options?: DefaultThemeCodecOptions<TEnableSystem>,
 ):
-  | ThemeCookieState<TTheme, TEnableSystem>
-  | undefined => {
-  const {
-    themes,
-    enableSystem = true as TEnableSystem,
-  } = options;
+  | ResolvedThemeState<LightOrDark, TEnableSystem>
+  | undefined;
+
+export function decodeVariant<
+  const TOptions extends CustomThemeCodecOptions<
+    string,
+    boolean
+  >,
+>(
+  value: string | undefined,
+  options: TOptions,
+):
+  | ResolvedThemeState<
+      ThemeNameFromOptions<TOptions>,
+      EnableSystemFromOptions<TOptions>
+    >
+  | undefined;
+
+export function decodeVariant<
+  TTheme extends string,
+  TEnableSystem extends boolean = true,
+>(
+  value: string | undefined,
+  options: ThemeCodecOptions<TTheme, TEnableSystem>,
+):
+  | ResolvedThemeState<TTheme, TEnableSystem>
+  | undefined;
+
+export function decodeVariant(
+  value: string | undefined,
+  options: AnyThemeCodecOptions,
+): ResolvedThemeState<string, boolean> | undefined;
+
+export function decodeVariant(
+  value: string | undefined,
+  options: AnyThemeCodecOptions = {},
+): ResolvedThemeState<string, boolean> | undefined {
+  const themeNames = options.themes ?? defaultThemes;
+  const enableSystem = options.enableSystem ?? true;
 
   if (!value) {
     return undefined;
   }
 
-  const compactTheme = parseColorSchemeToken(value);
+  const system = parseColorSchemeToken(
+    value.slice(-2),
+  );
 
-  if (compactTheme) {
-    if (
-      themes &&
-      !themes.includes(compactTheme as TTheme)
-    ) {
+  if (!system) {
+    return undefined;
+  }
+
+  const selected = value.slice(0, -2);
+
+  if (!selected) {
+    if (!themeNames.includes(system)) {
       return undefined;
     }
 
     if (enableSystem === false) {
       return {
-        selectedTheme: compactTheme as WithSystem<
-          TTheme,
-          TEnableSystem
-        >,
-        appliedTheme: compactTheme as TTheme,
-        colorScheme: compactTheme,
+        selected: system,
+        resolved: system,
+        system,
       };
     }
 
     return {
-      selectedTheme: 'system' as WithSystem<
-        TTheme,
-        TEnableSystem
-      >,
-      appliedTheme: compactTheme as TTheme,
-      colorScheme: compactTheme,
+      selected: 'system',
+      resolved: system,
+      system,
     };
-  }
-
-  const explicitTheme = parseExplicitThemeToken(value);
-
-  if (explicitTheme) {
-    if (
-      themes &&
-      !themes.includes(explicitTheme.theme as TTheme)
-    ) {
-      return undefined;
-    }
-
-    return {
-      selectedTheme: explicitTheme.theme as WithSystem<
-        TTheme,
-        TEnableSystem
-      >,
-      appliedTheme: explicitTheme.theme as TTheme,
-      colorScheme: explicitTheme.colorScheme,
-    };
-  }
-
-  if (value.startsWith('~')) {
-    return undefined;
   }
 
   if (
-    themes &&
-    value !== 'system' &&
-    !themes.includes(value as TTheme)
+    selected === 'system' ||
+    selected.startsWith('~')
   ) {
     return undefined;
   }
 
-  if (value === 'system') {
+  if (!themeNames.includes(selected)) {
     return undefined;
   }
 
   return {
-    selectedTheme: value as WithSystem<
-      TTheme,
-      TEnableSystem
-    >,
-    appliedTheme: value as TTheme,
+    selected,
+    resolved: selected,
+    system,
   };
-};
+}
 
-export const encodeTheme = <
+export const encodeVariant = <
   TTheme extends string = LightOrDark,
   TEnableSystem extends boolean = true,
 >(
   themeState?: ThemeState<TTheme, TEnableSystem>,
 ) => {
-  const selectedTheme = themeState?.selectedTheme;
-  const colorScheme = themeState?.colorScheme;
+  const selected = themeState?.selected;
+  let system = themeState?.system;
 
-  if (!selectedTheme) {
+  if (!system && themeState?.resolved === 'dark') {
+    system = 'dark';
+  } else if (
+    !system &&
+    themeState?.resolved === 'light'
+  ) {
+    system = 'light';
+  }
+
+  if (!selected || !system) {
     return undefined;
   }
 
-  if (selectedTheme === 'system') {
-    const resolvedTheme =
-      colorScheme ??
-      (themeState?.appliedTheme === 'dark' ||
-      themeState?.appliedTheme === 'light'
-        ? themeState.appliedTheme
-        : undefined);
-
-    if (!resolvedTheme) {
-      return undefined;
-    }
-
-    return systemCookieValueMap[
-      resolvedTheme as LightOrDark
-    ];
+  if (selected === 'system') {
+    return systemCookieValueMap[system];
   }
 
-  if (colorScheme) {
-    return `${selectedTheme}${systemCookieValueMap[colorScheme]}`;
-  }
-
-  return selectedTheme;
+  return `${selected}${systemCookieValueMap[system]}`;
 };
 
-export const themeVariants = <
-  TTheme extends string = LightOrDark,
+export function listVariants(): ReadonlyArray<
+  ThemeVariant<LightOrDark, true>
+>;
+
+export function listVariants<
   TEnableSystem extends boolean = true,
 >(
-  options: ThemeCodecOptions<
-    TTheme,
-    TEnableSystem
-  > = {},
+  options?: DefaultThemeCodecOptions<TEnableSystem>,
 ): ReadonlyArray<
-  ThemeVariant<TTheme, TEnableSystem>
-> => {
-  const themes = (options.themes ??
-    defaultThemes) as readonly TTheme[];
-  const variants: ThemeVariant<
-    TTheme,
-    TEnableSystem
-  >[] = [];
+  ThemeVariant<LightOrDark, TEnableSystem>
+>;
 
-  if (options.enableSystem !== false) {
-    for (const theme of themes) {
-      variants.push({
-        value: `${theme}${systemCookieValueMap.light}`,
-        selectedTheme: theme as WithSystem<
-          TTheme,
-          TEnableSystem
-        >,
-        appliedTheme: theme,
-        colorScheme: 'light',
-      });
-      variants.push({
-        value: `${theme}${systemCookieValueMap.dark}`,
-        selectedTheme: theme as WithSystem<
-          TTheme,
-          TEnableSystem
-        >,
-        appliedTheme: theme,
-        colorScheme: 'dark',
-      });
-    }
-  } else {
-    for (const theme of themes) {
-      variants.push({
-        value: theme,
-        selectedTheme: theme as WithSystem<
-          TTheme,
-          TEnableSystem
-        >,
-        appliedTheme: theme,
-      });
-    }
+export function listVariants<
+  const TOptions extends CustomThemeCodecOptions<
+    string,
+    boolean
+  >,
+>(
+  options: TOptions,
+): ReadonlyArray<
+  ThemeVariant<
+    ThemeNameFromOptions<TOptions>,
+    EnableSystemFromOptions<TOptions>
+  >
+>;
+
+export function listVariants<
+  TTheme extends string,
+  TEnableSystem extends boolean = true,
+>(
+  options: ThemeCodecOptions<TTheme, TEnableSystem>,
+): ReadonlyArray<ThemeVariant<TTheme, TEnableSystem>>;
+
+export function listVariants(
+  options: AnyThemeCodecOptions,
+): ReadonlyArray<ThemeVariant<string, boolean>>;
+
+export function listVariants(
+  options: AnyThemeCodecOptions = {},
+): ReadonlyArray<ThemeVariant<string, boolean>> {
+  const themes = options.themes ?? defaultThemes;
+  const variants: ThemeVariant<string, boolean>[] = [];
+
+  for (const theme of themes) {
+    variants.push({
+      value: `${theme}${systemCookieValueMap.light}`,
+      selected: theme,
+      resolved: theme,
+      system: 'light',
+    });
+    variants.push({
+      value: `${theme}${systemCookieValueMap.dark}`,
+      selected: theme,
+      resolved: theme,
+      system: 'dark',
+    });
   }
 
   if (options.enableSystem === false) {
     return variants;
   }
 
-  if (themes.includes('light' as TTheme)) {
+  if (themes.includes('light')) {
     variants.push({
       value: systemCookieValueMap.light,
-      selectedTheme: 'system' as WithSystem<
-        TTheme,
-        TEnableSystem
-      >,
-      appliedTheme: 'light' as TTheme,
-      colorScheme: 'light',
+      selected: 'system',
+      resolved: 'light',
+      system: 'light',
     });
   }
 
-  if (themes.includes('dark' as TTheme)) {
+  if (themes.includes('dark')) {
     variants.push({
       value: systemCookieValueMap.dark,
-      selectedTheme: 'system' as WithSystem<
-        TTheme,
-        TEnableSystem
-      >,
-      appliedTheme: 'dark' as TTheme,
-      colorScheme: 'dark',
+      selected: 'system',
+      resolved: 'dark',
+      system: 'dark',
     });
   }
 
   return variants;
-};
+}
 
-export const decodeThemeCookieValue = decodeTheme;
-export const encodeThemeCookieValue = <
-  TTheme extends string,
-  TEnableSystem extends boolean = true,
->(
-  selectedTheme:
-    | WithSystem<TTheme, TEnableSystem>
-    | undefined,
-  colorScheme?: LightOrDark,
+export const decodeThemeCookieValue = decodeVariant;
+export const encodeThemeCookieValue = (
+  selected: WithSystem<string, boolean> | undefined,
+  system?: LightOrDark,
 ) =>
-  encodeTheme<TTheme, TEnableSystem>(
-    selectedTheme
+  encodeVariant(
+    selected
       ? {
-          selectedTheme,
-          appliedTheme:
-            selectedTheme === 'system'
-              ? (colorScheme as TTheme | undefined)
-              : (selectedTheme as TTheme),
-          colorScheme,
+          selected,
+          resolved:
+            selected === 'system' ? system : selected,
+          system,
         }
       : undefined,
   );

@@ -28,7 +28,7 @@ const createController = (
   >[0] = {},
 ) => {
   const controller = createThemeController({
-    disableTransitionOnChange: false,
+    disableTransition: false,
     ...options,
   });
 
@@ -49,13 +49,13 @@ describe('svelte bindings', () => {
 
     const controller = createController();
 
-    expect(get(controller.context.theme)).toBe(
+    expect(get(controller.context.selected)).toBe(
       'system',
     );
-    expect(get(controller.context.resolvedTheme)).toBe(
+    expect(get(controller.context.resolved)).toBe(
       'dark',
     );
-    expect(get(controller.context.colorScheme)).toBe(
+    expect(get(controller.context.system)).toBe(
       'dark',
     );
     expect(get(controller.context.themes)).toEqual([
@@ -79,9 +79,11 @@ describe('svelte bindings', () => {
     const controller = createController();
 
     controller.start();
-    controller.context.setTheme('dark');
+    controller.context.setSelected('dark');
 
-    expect(get(controller.context.theme)).toBe('dark');
+    expect(get(controller.context.selected)).toBe(
+      'dark',
+    );
     expect(getCookieValue('theme')).toBe('dark~l');
     expect(
       document.documentElement.classList.contains(
@@ -94,19 +96,21 @@ describe('svelte bindings', () => {
   });
 
   test('applies and removes a forced theme', () => {
-    setCookieValue('theme', 'dark');
+    setCookieValue('theme', 'dark~l');
 
     const controller = createController({
-      forcedTheme: 'light',
+      forced: 'light',
     });
 
     controller.start();
 
-    expect(get(controller.context.theme)).toBe('dark');
-    expect(get(controller.context.forcedTheme)).toBe(
+    expect(get(controller.context.selected)).toBe(
+      'dark',
+    );
+    expect(get(controller.context.forced)).toBe(
       'light',
     );
-    expect(get(controller.context.resolvedTheme)).toBe(
+    expect(get(controller.context.resolved)).toBe(
       'light',
     );
     expect(
@@ -116,12 +120,12 @@ describe('svelte bindings', () => {
     ).toBe(true);
 
     controller.update({
-      forcedTheme: undefined,
-      disableTransitionOnChange: false,
+      forced: undefined,
+      disableTransition: false,
     });
 
     expect(
-      get(controller.context.forcedTheme),
+      get(controller.context.forced),
     ).toBeUndefined();
     expect(
       document.documentElement.classList.contains(
@@ -137,7 +141,7 @@ describe('svelte bindings', () => {
     });
 
     controller.start();
-    controller.context.setTheme('dark');
+    controller.context.setSelected('dark');
 
     expect(
       document.documentElement.getAttribute(

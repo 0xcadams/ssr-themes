@@ -13,14 +13,14 @@ import appCss from '../styles.css?url';
 import {
   registerTheme,
   ThemeProvider,
-  themeFromCookieHeader,
+  parseThemeCookie,
   themeScript,
 } from '../lib/theme';
 
 const getThemeState = createServerFn({
   method: 'GET',
 }).handler(() =>
-  themeFromCookieHeader(getRequestHeader('cookie')),
+  parseThemeCookie(getRequestHeader('cookie')),
 );
 
 function RootComponent() {
@@ -35,7 +35,7 @@ function RootComponent() {
         <HeadContent />
       </head>
       <body className="min-h-screen bg-background text-foreground antialiased">
-        <ThemeProvider {...(themeState ?? {})}>
+        <ThemeProvider initial={themeState}>
           <ScriptOnce children={themeScript()} />
           <Outlet />
 

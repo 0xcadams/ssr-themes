@@ -1,19 +1,19 @@
 import {describe, expect, it} from 'vitest';
 
-import {initTheme} from '../src/index';
+import {createTheme} from '../src/index';
 
-describe('themeFromCookieHeader', () => {
-  const defaultTheme = initTheme();
+describe('parseThemeCookie', () => {
+  const defaultTheme = createTheme();
 
   it('returns undefined when the cookie header is missing or has no matching cookie', () => {
     expect(
-      defaultTheme.themeFromCookieHeader(undefined),
+      defaultTheme.parseThemeCookie(undefined),
     ).toBeUndefined();
     expect(
-      defaultTheme.themeFromCookieHeader(null),
+      defaultTheme.parseThemeCookie(null),
     ).toBeUndefined();
     expect(
-      defaultTheme.themeFromCookieHeader(
+      defaultTheme.parseThemeCookie(
         'session=abc; mode=dark',
       ),
     ).toBeUndefined();
@@ -21,161 +21,169 @@ describe('themeFromCookieHeader', () => {
 
   it('reads the theme from the default cookie name regardless of cookie order', () => {
     expect(
-      defaultTheme.themeFromCookieHeader(
-        'session=abc; theme=dark',
+      defaultTheme.parseThemeCookie(
+        'session=abc; theme=dark~d',
       ),
     ).toEqual({
-      selectedTheme: 'dark',
-      appliedTheme: 'dark',
+      selected: 'dark',
+      resolved: 'dark',
+      system: 'dark',
     });
     expect(
-      defaultTheme.themeFromCookieHeader(
-        'theme=light; session=abc',
+      defaultTheme.parseThemeCookie(
+        'theme=light~l; session=abc',
       ),
     ).toEqual({
-      selectedTheme: 'light',
-      appliedTheme: 'light',
+      selected: 'light',
+      resolved: 'light',
+      system: 'light',
     });
   });
 
   it('trims cookie whitespace before matching the cookie name', () => {
     expect(
-      defaultTheme.themeFromCookieHeader(
-        'session=abc;   theme=dark',
+      defaultTheme.parseThemeCookie(
+        'session=abc;   theme=dark~d',
       ),
     ).toEqual({
-      selectedTheme: 'dark',
-      appliedTheme: 'dark',
+      selected: 'dark',
+      resolved: 'dark',
+      system: 'dark',
     });
   });
 
   it('supports a custom cookie name', () => {
-    const theme = initTheme({
+    const theme = createTheme({
       cookie: {name: 'color-mode'},
     });
 
     expect(
-      theme.themeFromCookieHeader(
-        'session=abc; color-mode=light',
+      theme.parseThemeCookie(
+        'session=abc; color-mode=light~l',
       ),
     ).toEqual({
-      selectedTheme: 'light',
-      appliedTheme: 'light',
+      selected: 'light',
+      resolved: 'light',
+      system: 'light',
     });
   });
 
   it('decodes URL-encoded cookie values, including encoded separators', () => {
-    const themeWithSpaces = initTheme({
+    const themeWithSpaces = createTheme({
       themes: ['solarized light'],
     });
-    const themeWithEquals = initTheme({
+    const themeWithEquals = createTheme({
       themes: ['solarized=light'],
     });
 
     expect(
-      themeWithSpaces.themeFromCookieHeader(
-        'theme=solarized%20light',
+      themeWithSpaces.parseThemeCookie(
+        'theme=solarized%20light~l',
       ),
     ).toEqual({
-      selectedTheme: 'solarized light',
-      appliedTheme: 'solarized light',
+      selected: 'solarized light',
+      resolved: 'solarized light',
+      system: 'light',
     });
     expect(
-      themeWithEquals.themeFromCookieHeader(
-        'theme=solarized%3Dlight',
+      themeWithEquals.parseThemeCookie(
+        'theme=solarized%3Dlight~d',
       ),
     ).toEqual({
-      selectedTheme: 'solarized=light',
-      appliedTheme: 'solarized=light',
+      selected: 'solarized=light',
+      resolved: 'solarized=light',
+      system: 'dark',
     });
   });
 
   it('validates cookie values against the provided theme list', () => {
-    const theme = initTheme({
+    const theme = createTheme({
       themes: ['light', 'pink'],
     });
 
     expect(
-      theme.themeFromCookieHeader('theme=pink'),
+      theme.parseThemeCookie('theme=pink~l'),
     ).toEqual({
-      selectedTheme: 'pink',
-      appliedTheme: 'pink',
+      selected: 'pink',
+      resolved: 'pink',
+      system: 'light',
     });
 
     expect(
-      theme.themeFromCookieHeader('theme=dark'),
+      theme.parseThemeCookie('theme=dark~d'),
     ).toBeUndefined();
   });
 
   it('allows system when system support is enabled, even if themes omits it', () => {
-    const theme = initTheme({
+    const theme = createTheme({
       themes: ['light', 'dark'],
     });
 
-    expect(
-      theme.themeFromCookieHeader('theme=~d'),
-    ).toEqual({
-      selectedTheme: 'system',
-      appliedTheme: 'dark',
-      colorScheme: 'dark',
-    });
+    expect(theme.parseThemeCookie('theme=~d')).toEqual(
+      {
+        selected: 'system',
+        resolved: 'dark',
+        system: 'dark',
+      },
+    );
   });
 
   it('reads compact system values from the cookie', () => {
     expect(
-      defaultTheme.themeFromCookieHeader('theme=~l'),
+      defaultTheme.parseThemeCookie('theme=~l'),
     ).toEqual({
-      selectedTheme: 'system',
-      appliedTheme: 'light',
-      colorScheme: 'light',
+      selected: 'system',
+      resolved: 'light',
+      system: 'light',
     });
   });
 
-  it('reads explicit themes with a color-scheme hint from the cookie', () => {
+  it('reads explicit themes with a system hint from the cookie', () => {
     expect(
-      defaultTheme.themeFromCookieHeader(
-        'theme=dark~l',
-      ),
+      defaultTheme.parseThemeCookie('theme=dark~l'),
     ).toEqual({
-      selectedTheme: 'dark',
-      appliedTheme: 'dark',
-      colorScheme: 'light',
+      selected: 'dark',
+      resolved: 'dark',
+      system: 'light',
     });
   });
 
   it('falls back to the resolved theme when system support is disabled', () => {
-    const theme = initTheme({
+    const theme = createTheme({
       enableSystem: false,
       themes: ['light', 'dark'],
     });
 
-    expect(
-      theme.themeFromCookieHeader('theme=~d'),
-    ).toEqual({
-      selectedTheme: 'dark',
-      appliedTheme: 'dark',
-      colorScheme: 'dark',
-    });
+    expect(theme.parseThemeCookie('theme=~d')).toEqual(
+      {
+        selected: 'dark',
+        resolved: 'dark',
+        system: 'dark',
+      },
+    );
   });
+
+  it('treats bare explicit cookie values as invalid', () => {
+    expect(
+      defaultTheme.parseThemeCookie('theme=dark'),
+    ).toBeUndefined();
+  });
+
   it('treats plain system cookie values as invalid', () => {
     expect(
-      defaultTheme.themeFromCookieHeader(
-        'theme=system',
-      ),
+      defaultTheme.parseThemeCookie('theme=system'),
     ).toBeUndefined();
   });
 
   it('returns undefined for empty cookie values', () => {
     expect(
-      defaultTheme.themeFromCookieHeader('theme='),
+      defaultTheme.parseThemeCookie('theme='),
     ).toBeUndefined();
   });
 
   it('returns undefined for malformed cookie values', () => {
     expect(
-      defaultTheme.themeFromCookieHeader(
-        'theme=%E0%A4%A',
-      ),
+      defaultTheme.parseThemeCookie('theme=%E0%A4%A'),
     ).toBeUndefined();
   });
 });

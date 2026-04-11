@@ -109,7 +109,7 @@ export const frameworks = [
     label: 'Solid',
     secondaryTitle: 'Theme switcher',
     secondaryDescription:
-      'Read theme() and call setTheme(...) from a Solid component.',
+      'Read selected() and call setSelected(...) from a Solid component.',
   },
   {
     value: 'svelte',

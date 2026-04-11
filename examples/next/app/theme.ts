@@ -1,24 +1,24 @@
-import {initTheme} from 'ssr-themes';
+import {createTheme} from 'ssr-themes';
 
-export const theme = initTheme({
+export const theme = createTheme({
   defaultTheme: 'light',
 });
 
 export const {
-  decodeTheme,
-  encodeTheme,
-  themeOptions,
+  decodeVariant,
+  encodeVariant,
+  options,
   registerTheme,
-  themeFromCookieHeader,
+  parseThemeCookie,
   themeScript,
-  themeVariants,
+  listVariants,
 } = theme;
 
 export const defaultThemeState = {
-  selectedTheme: 'light',
-  appliedTheme: 'light',
-  colorScheme: 'dark',
+  selected: 'light',
+  resolved: 'light',
+  system: 'dark',
 } as const;
 
 export const defaultThemeVariant =
-  encodeTheme(defaultThemeState) ?? 'light';
+  encodeVariant(defaultThemeState) ?? 'light~l';

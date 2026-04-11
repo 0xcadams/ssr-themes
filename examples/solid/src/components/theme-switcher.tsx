@@ -20,9 +20,9 @@ type ThemeName = (typeof options)[number]['value'];
 
 export function ThemeSwitcher() {
   const theme = useTheme();
-  const currentTheme = () => theme.theme() ?? 'system';
-  const deviceTheme = () =>
-    theme.colorScheme() ?? 'dark';
+  const currentTheme = () =>
+    theme.selected() ?? 'system';
+  const deviceTheme = () => theme.system() ?? 'dark';
   const suggestedTheme = () =>
     deviceTheme() === 'dark' ? 'light' : 'dark';
   const codeClass =
@@ -30,7 +30,7 @@ export function ThemeSwitcher() {
 
   const handleChange: JSX.CustomEventHandlersCamelCase<HTMLSelectElement>['onChange'] =
     event => {
-      theme.setTheme(
+      theme.setSelected(
         event.currentTarget.value as ThemeName,
       );
     };

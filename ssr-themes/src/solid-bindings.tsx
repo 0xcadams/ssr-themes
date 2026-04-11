@@ -11,7 +11,6 @@ import {
 import {
   createThemeController,
   pickThemeControllerOptions,
-  type ThemeControllerSetValue,
 } from './theme-controller';
 import type {
   LightOrDark,
@@ -27,11 +26,9 @@ export type ThemeSetter<
   value:
     | WithSystem<TTheme, TEnableSystem>
     | ((
-        prev:
-          | WithSystem<TTheme, TEnableSystem>
-          | undefined,
+        prev: WithSystem<TTheme, TEnableSystem>,
       ) => WithSystem<TTheme, TEnableSystem>),
-) => WithSystem<TTheme, TEnableSystem>;
+) => void;
 
 export interface ThemeResult<
   TTheme extends string = LightOrDark,
@@ -40,19 +37,15 @@ export interface ThemeResult<
   themes: Accessor<
     ReadonlyArray<WithSystem<TTheme, TEnableSystem>>
   >;
-  forcedTheme: Accessor<TTheme | undefined>;
-  setTheme: ThemeSetter<TTheme, TEnableSystem>;
-  theme: Accessor<
+  forced: Accessor<TTheme | undefined>;
+  setSelected: ThemeSetter<TTheme, TEnableSystem>;
+  selected: Accessor<
     WithSystem<TTheme, TEnableSystem> | undefined
   >;
-  resolvedTheme: Accessor<
+  resolved: Accessor<
     Exclude<TTheme, 'system'> | undefined
   >;
-  colorScheme: Accessor<
-    TEnableSystem extends false
-      ? undefined
-      : LightOrDark | undefined
-  >;
+  system: Accessor<LightOrDark | undefined>;
 }
 
 export interface ThemeProviderProps<
@@ -85,10 +78,7 @@ export const useTheme = <
     );
   }
 
-  return context as unknown as ThemeResult<
-    TTheme,
-    TEnableSystem
-  >;
+  return context as ThemeResult<TTheme, TEnableSystem>;
 };
 
 export const ThemeProvider = <
@@ -103,27 +93,15 @@ export const ThemeProvider = <
     return props.children;
   }
 
-  const controller = createThemeController<
-    TTheme,
-    TEnableSystem
-  >(pickThemeControllerOptions(props));
+  const controller = createThemeController(
+    pickThemeControllerOptions(props),
+  );
   const [snapshot, setSnapshot] = createSignal(
     controller.getSnapshot(),
   );
   const syncSnapshot = () => {
     setSnapshot(() => controller.getSnapshot());
   };
-
-  const setTheme: ThemeSetter<
-    TTheme,
-    TEnableSystem
-  > = value =>
-    controller.setTheme(
-      value as ThemeControllerSetValue<
-        TTheme,
-        TEnableSystem
-      >,
-    );
 
   createEffect(() => {
     controller.update(
@@ -145,25 +123,17 @@ export const ThemeProvider = <
     });
   });
 
-  const providerValue: ThemeResult<
-    TTheme,
-    TEnableSystem
-  > = {
-    theme: () => snapshot().theme,
-    setTheme,
-    forcedTheme: () => snapshot().forcedTheme,
-    resolvedTheme: () => snapshot().resolvedTheme,
+  const providerValue: ThemeContextValue = {
+    selected: () => snapshot().selected,
+    setSelected: controller.setSelected,
+    forced: () => snapshot().forced,
+    resolved: () => snapshot().resolved,
     themes: () => snapshot().themes,
-    colorScheme: () =>
-      snapshot()
-        .colorScheme as TEnableSystem extends false
-        ? undefined
-        : LightOrDark | undefined,
+    system: () => snapshot().system,
   };
 
   return createComponent(ThemeContext.Provider, {
-    value:
-      providerValue as unknown as ThemeContextValue,
+    value: providerValue,
     get children() {
       return props.children;
     },

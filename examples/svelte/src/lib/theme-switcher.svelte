@@ -5,7 +5,7 @@
   } from 'ssr-themes';
   import {useTheme} from '$lib/theme';
 
-  const {setTheme, theme, colorScheme} = useTheme();
+  const {setSelected, selected, system} = useTheme();
   const codeClassName =
     'rounded bg-black/5 px-1 py-0.5 dark:bg-white/10';
 
@@ -15,10 +15,12 @@
   const handleChange = (event: Event) => {
     const select =
       event.currentTarget as HTMLSelectElement;
-    setTheme(select.value as WithSystem<LightOrDark>);
+    setSelected(
+      select.value as WithSystem<LightOrDark>,
+    );
   };
 
-  $: deviceTheme = $colorScheme ?? 'dark';
+  $: deviceTheme = $system ?? 'dark';
   $: suggestedTheme =
     deviceTheme === 'dark' ? 'light' : 'dark';
 </script>
@@ -26,7 +28,7 @@
 <select
   id="theme-selector"
   class="rounded border border-current bg-transparent px-3 py-2 text-xl"
-  value={$theme ?? 'system'}
+  value={$selected ?? 'system'}
   on:change={handleChange}
   aria-label="Theme"
   data-test-id="theme-selector"

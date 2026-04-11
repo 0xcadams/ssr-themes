@@ -1,6 +1,9 @@
 import type {
+  AnyThemeOptions,
+  EnableSystemFromOptions,
   LightOrDark,
-  ThemeCookieState,
+  ResolvedThemeState,
+  ThemeNameFromOptions,
   ThemeOptions,
 } from './types';
 import {decodeThemeCookieValue} from './theme-cookie';
@@ -20,18 +23,58 @@ type ThemeFromCookieHeaderOptions<
   >['themes'];
 };
 
-export const themeFromCookieHeader = <
-  TTheme extends string = LightOrDark,
+type AnyThemeFromCookieHeaderOptions = {
+  cookieName?: string;
+} & Pick<AnyThemeOptions, 'themes' | 'enableSystem'>;
+
+export function parseThemeCookie(
+  cookieHeader: string | null | undefined,
+): ResolvedThemeState<LightOrDark, true> | undefined;
+
+export function parseThemeCookie<
+  TEnableSystem extends boolean = true,
+>(
+  cookieHeader: string | null | undefined,
+  options?: ThemeFromCookieHeaderOptions<
+    LightOrDark,
+    TEnableSystem
+  >,
+):
+  | ResolvedThemeState<LightOrDark, TEnableSystem>
+  | undefined;
+
+export function parseThemeCookie<
+  const TOptions extends ThemeFromCookieHeaderOptions<
+    string,
+    boolean
+  >,
+>(
+  cookieHeader: string | null | undefined,
+  options: TOptions,
+):
+  | ResolvedThemeState<
+      ThemeNameFromOptions<TOptions>,
+      EnableSystemFromOptions<TOptions>
+    >
+  | undefined;
+
+export function parseThemeCookie<
+  TTheme extends string,
   TEnableSystem extends boolean = true,
 >(
   cookieHeader: string | null | undefined,
   options: ThemeFromCookieHeaderOptions<
     TTheme,
     TEnableSystem
-  > = {},
+  >,
 ):
-  | ThemeCookieState<TTheme, TEnableSystem>
-  | undefined => {
+  | ResolvedThemeState<TTheme, TEnableSystem>
+  | undefined;
+
+export function parseThemeCookie(
+  cookieHeader: string | null | undefined,
+  options: AnyThemeFromCookieHeaderOptions = {},
+): ResolvedThemeState<string, boolean> | undefined {
   if (!cookieHeader) return undefined;
 
   const cookieName = options.cookieName ?? 'theme';
@@ -48,14 +91,11 @@ export const themeFromCookieHeader = <
       return undefined;
     }
 
-    return decodeThemeCookieValue<
-      TTheme,
-      TEnableSystem
-    >(value, {
+    return decodeThemeCookieValue(value, {
       enableSystem: options.enableSystem,
       themes: options.themes,
     });
   }
 
   return undefined;
-};
+}

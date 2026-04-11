@@ -6,7 +6,7 @@ import {
   setCookieValue,
   setDeviceTheme,
 } from './helpers/theme-test-env';
-import {initTheme as createTheme} from '../src/index';
+import {createTheme} from '../src/index';
 
 installThemeTestEnv();
 
@@ -23,7 +23,7 @@ describe('bootstrap script', () => {
   });
 
   test('themeScript sets the html theme', () => {
-    setCookieValue('theme', 'dark');
+    setCookieValue('theme', 'dark~l');
 
     const {themeScript} = createTheme({
       attribute: 'class',
@@ -123,13 +123,13 @@ describe('bootstrap script', () => {
     ).toBeTruthy();
   });
 
-  test('themeScript supports forcedTheme runtime overrides', () => {
+  test('themeScript supports forced runtime overrides', () => {
     const {themeScript} = createTheme({
       attribute: 'class',
       defaultTheme: 'light',
     });
     const scriptContent = themeScript({
-      forcedTheme: 'dark',
+      forced: 'dark',
     });
 
     Function(scriptContent)();

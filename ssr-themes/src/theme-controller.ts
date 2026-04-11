@@ -17,9 +17,12 @@ import {
 } from './theme-runtime';
 import type {
   Attribute,
+  EnableSystemFromOptions,
   LightOrDark,
+  ThemeNameFromOptions,
   ThemeOptions,
   ThemeScriptRuntimeOptions,
+  ThemeState,
   WithSystem,
 } from './types';
 
@@ -32,13 +35,36 @@ export interface ThemeControllerOptions<
   extends
     ThemeOptions<TTheme, TEnableSystem>,
     ThemeScriptRuntimeOptions<TTheme> {
-  colorScheme?: LightOrDark | undefined;
-  disableTransitionOnChange?: boolean | undefined;
-  selectedTheme?:
-    | WithSystem<TTheme, TEnableSystem>
+  disableTransition?: boolean | undefined;
+  initial?:
+    | ThemeState<TTheme, TEnableSystem>
     | undefined;
   nonce?: string | undefined;
 }
+
+type DefaultThemeControllerOptions<
+  TEnableSystem extends boolean = true,
+> = ThemeControllerOptions<LightOrDark, TEnableSystem>;
+
+type CustomThemeControllerOptions<
+  TTheme extends string,
+  TEnableSystem extends boolean = true,
+> = Omit<
+  ThemeControllerOptions<TTheme, TEnableSystem>,
+  'themes'
+> & {
+  themes: readonly TTheme[];
+};
+
+type ThemeControllerFromOptions<
+  TOptions extends CustomThemeControllerOptions<
+    string,
+    boolean
+  >,
+> = ThemeController<
+  ThemeNameFromOptions<TOptions>,
+  EnableSystemFromOptions<TOptions>
+>;
 
 export type ThemeControllerSetValue<
   TTheme extends string = LightOrDark,
@@ -53,12 +79,12 @@ export interface ThemeControllerSnapshot<
   TTheme extends string = LightOrDark,
   TEnableSystem extends boolean = true,
 > {
-  theme: WithSystem<TTheme, TEnableSystem> | undefined;
-  forcedTheme: TTheme | undefined;
-  resolvedTheme: Exclude<TTheme, 'system'> | undefined;
-  colorScheme: TEnableSystem extends false
-    ? undefined
-    : LightOrDark | undefined;
+  selected:
+    | WithSystem<TTheme, TEnableSystem>
+    | undefined;
+  forced: TTheme | undefined;
+  resolved: Exclude<TTheme, 'system'> | undefined;
+  system: LightOrDark | undefined;
   themes: ReadonlyArray<
     WithSystem<TTheme, TEnableSystem>
   >;
@@ -72,12 +98,12 @@ export interface ThemeController<
     TTheme,
     TEnableSystem
   >;
-  setTheme: (
+  setSelected: (
     value: ThemeControllerSetValue<
       TTheme,
       TEnableSystem
     >,
-  ) => WithSystem<TTheme, TEnableSystem>;
+  ) => void;
   start: () => void;
   stop: () => void;
   subscribe: (listener: () => void) => () => void;
@@ -111,7 +137,7 @@ type ThemeControllerOptionSource<
         TEnableSystem
       >['defaultTheme']
     | undefined;
-  disableTransitionOnChange?: boolean | undefined;
+  disableTransition?: boolean | undefined;
   enableColorScheme?: boolean | undefined;
   enableSystem?:
     | ThemeControllerOptions<
@@ -119,12 +145,11 @@ type ThemeControllerOptionSource<
         TEnableSystem
       >['enableSystem']
     | undefined;
-  forcedTheme?: TTheme | undefined;
-  colorScheme?: LightOrDark | undefined;
-  nonce?: string | undefined;
-  selectedTheme?:
-    | WithSystem<TTheme, TEnableSystem>
+  forced?: TTheme | undefined;
+  initial?:
+    | ThemeState<TTheme, TEnableSystem>
     | undefined;
+  nonce?: string | undefined;
   themes?: readonly TTheme[] | undefined;
   valueMap?:
     | ThemeControllerOptions<
@@ -143,12 +168,11 @@ type ResolvedThemeState<
   TTheme extends string,
   TEnableSystem extends boolean,
 > = {
-  appliedTheme:
+  selected:
     | WithSystem<TTheme, TEnableSystem>
     | undefined;
-  colorScheme: LightOrDark | undefined;
-  resolvedTheme: LiteralTheme<TTheme> | undefined;
-  theme: WithSystem<TTheme, TEnableSystem> | undefined;
+  resolved: LiteralTheme<TTheme> | undefined;
+  system: LightOrDark | undefined;
 };
 
 type NormalizedThemeControllerOptions<
@@ -157,7 +181,7 @@ type NormalizedThemeControllerOptions<
 > = ThemeControllerOptions<TTheme, TEnableSystem> & {
   attributes: readonly Attribute[];
   cookieName: string;
-  disableTransitionOnChange: boolean;
+  disableTransition: boolean;
   enableColorScheme: boolean;
   enableSystemValue: TEnableSystem;
   publicThemes: ReadonlyArray<
@@ -183,17 +207,36 @@ export const pickThemeControllerOptions = <
   attribute: options.attribute,
   cookie: options.cookie,
   defaultTheme: options.defaultTheme,
-  disableTransitionOnChange:
-    options.disableTransitionOnChange,
+  disableTransition: options.disableTransition,
   enableColorScheme: options.enableColorScheme,
   enableSystem: options.enableSystem,
-  forcedTheme: options.forcedTheme,
-  colorScheme: options.colorScheme,
+  forced: options.forced,
+  initial: options.initial,
   nonce: options.nonce,
-  selectedTheme: options.selectedTheme,
   themes: options.themes,
   valueMap: options.valueMap,
 });
+
+const validateThemeNames = (
+  themes: readonly string[],
+) => {
+  const invalidThemes = themes.filter(theme =>
+    theme.includes('~'),
+  );
+
+  if (invalidThemes.length === 0) {
+    return;
+  }
+
+  const quotedThemes = invalidThemes
+    .map(theme => `"${theme}"`)
+    .join(', ');
+  const plural = invalidThemes.length === 1 ? '' : 's';
+
+  throw new Error(
+    `Invalid theme name${plural} ${quotedThemes}. Theme names cannot contain "~" because ssr-themes uses values like "dark~d" and "~l" internally. Rename the theme${plural}.`,
+  );
+};
 
 const normalizeOptions = <
   TTheme extends string,
@@ -208,10 +251,14 @@ const normalizeOptions = <
   TEnableSystem
 > => {
   const themeNames = (options.themes ??
-    (defaultThemes as unknown as readonly TTheme[])) as readonly TTheme[];
+    defaultThemes) as readonly TTheme[];
   const attribute = options.attribute ?? 'class';
   const enableSystemValue = (options.enableSystem ??
     true) as TEnableSystem;
+
+  if (!isServer) {
+    validateThemeNames(themeNames);
+  }
 
   return {
     ...options,
@@ -219,8 +266,8 @@ const normalizeOptions = <
       ? attribute
       : [attribute],
     cookieName: getCookieName(options.cookie),
-    disableTransitionOnChange:
-      options.disableTransitionOnChange ?? true,
+    disableTransition:
+      options.disableTransition ?? true,
     enableColorScheme:
       options.enableColorScheme ?? true,
     enableSystemValue,
@@ -244,10 +291,15 @@ const normalizeOptions = <
 
 const getInitialSystemTheme = <TTheme extends string>(
   theme: TTheme | 'system' | undefined,
-  colorScheme?: LightOrDark,
+  system?: LightOrDark,
+  resolved?: TTheme,
 ) => {
-  if (colorScheme) {
-    return colorScheme;
+  if (system) {
+    return system;
+  }
+
+  if (resolved === 'light' || resolved === 'dark') {
+    return resolved;
   }
 
   if (!isServer) {
@@ -265,7 +317,32 @@ const getInitialSystemTheme = <TTheme extends string>(
   return undefined;
 };
 
-export const createThemeController = <
+export function createThemeController<
+  const TOptions extends CustomThemeControllerOptions<
+    string,
+    boolean
+  >,
+>(
+  initialOptions: TOptions,
+): ThemeControllerFromOptions<TOptions>;
+
+export function createThemeController<
+  TEnableSystem extends boolean = true,
+>(
+  initialOptions?: DefaultThemeControllerOptions<TEnableSystem>,
+): ThemeController<LightOrDark, TEnableSystem>;
+
+export function createThemeController<
+  TTheme extends string,
+  TEnableSystem extends boolean = true,
+>(
+  initialOptions: CustomThemeControllerOptions<
+    TTheme,
+    TEnableSystem
+  >,
+): ThemeController<TTheme, TEnableSystem>;
+
+export function createThemeController<
   TTheme extends string = LightOrDark,
   TEnableSystem extends boolean = true,
 >(
@@ -273,18 +350,36 @@ export const createThemeController = <
     TTheme,
     TEnableSystem
   >,
-): ThemeController<TTheme, TEnableSystem> => {
+): ThemeController<TTheme, TEnableSystem>;
+
+export function createThemeController(
+  initialOptions: ThemeControllerOptions<
+    string,
+    boolean
+  >,
+): ThemeController<string, boolean>;
+
+export function createThemeController<
+  TTheme extends string = LightOrDark,
+  TEnableSystem extends boolean = true,
+>(
+  initialOptions: ThemeControllerOptions<
+    TTheme,
+    TEnableSystem
+  > = {},
+): ThemeController<TTheme, TEnableSystem> {
   let options = normalizeOptions(initialOptions);
   let theme = getTheme(
     options.cookieName,
     options.resolvedDefaultTheme,
-    options.selectedTheme,
+    options.initial?.selected,
     options.themeNames,
     options.enableSystemValue,
   );
   let systemTheme = getInitialSystemTheme<TTheme>(
     theme,
-    options.colorScheme,
+    options.initial?.system,
+    options.initial?.resolved,
   );
   let snapshot: ThemeControllerSnapshot<
     TTheme,
@@ -349,17 +444,14 @@ export const createThemeController = <
       theme = nextTheme;
     }
 
-    const appliedTheme = normalizeThemeValue(
-      options.forcedTheme ?? nextTheme,
+    const selectedTheme = normalizeThemeValue(
+      options.forced ?? nextTheme,
     );
 
     return {
-      appliedTheme,
-      colorScheme: options.enableSystemValue
-        ? (systemTheme as LightOrDark | undefined)
-        : undefined,
-      resolvedTheme: resolveThemeValue(appliedTheme),
-      theme: nextTheme,
+      selected: nextTheme,
+      resolved: resolveThemeValue(selectedTheme),
+      system: systemTheme as LightOrDark | undefined,
     };
   };
 
@@ -371,10 +463,10 @@ export const createThemeController = <
     }
 
     const nextName = options.valueMap
-      ? options.valueMap[resolvedTheme as TTheme]
+      ? options.valueMap[resolvedTheme]
       : resolvedTheme;
     const restoreTransitions =
-      options.disableTransitionOnChange
+      options.disableTransition
         ? disableThemeTransitions(options.nonce)
         : null;
     const element = document.documentElement;
@@ -387,7 +479,7 @@ export const createThemeController = <
     );
     updateThemeColorScheme(
       element,
-      resolvedTheme as TTheme,
+      resolvedTheme,
       options.enableColorScheme,
     );
 
@@ -398,17 +490,14 @@ export const createThemeController = <
     const state = getResolvedState();
 
     if (started) {
-      applyResolvedTheme(state.resolvedTheme);
+      applyResolvedTheme(state.resolved);
     }
 
     snapshot = {
-      theme: state.theme,
-      forcedTheme: options.forcedTheme,
-      resolvedTheme: state.resolvedTheme,
-      colorScheme:
-        state.colorScheme as TEnableSystem extends false
-          ? undefined
-          : LightOrDark | undefined,
+      selected: state.selected,
+      forced: options.forced,
+      resolved: state.resolved,
+      system: state.system,
       themes: options.publicThemes,
     };
 
@@ -423,19 +512,17 @@ export const createThemeController = <
 
   const shouldPersistThemeState = () =>
     options.enableSystemValue &&
-    !options.forcedTheme &&
+    !options.forced &&
     theme !== undefined &&
     (theme === 'system' || hasStoredTheme());
 
   const getCookieColorScheme = ():
     | LightOrDark
     | undefined =>
-    options.enableSystemValue
-      ? ((systemTheme ??
-          (!isServer
-            ? getSystemTheme()
-            : undefined)) as LightOrDark | undefined)
-      : undefined;
+    (systemTheme ??
+      (!isServer ? getSystemTheme() : undefined)) as
+      | LightOrDark
+      | undefined;
 
   const getCookieState = (
     nextTheme:
@@ -449,12 +536,12 @@ export const createThemeController = <
     const colorScheme = getCookieColorScheme();
 
     return {
-      selectedTheme: nextTheme,
-      appliedTheme:
+      selected: nextTheme,
+      resolved:
         nextTheme === 'system'
           ? (colorScheme as TTheme | undefined)
           : (nextTheme as TTheme),
-      colorScheme,
+      system: colorScheme,
     };
   };
 
@@ -519,7 +606,7 @@ export const createThemeController = <
     };
   };
 
-  const setTheme = (
+  const setSelected = (
     value: ThemeControllerSetValue<
       TTheme,
       TEnableSystem
@@ -555,11 +642,10 @@ export const createThemeController = <
 
     if (started) {
       publish();
-      return nextTheme;
+      return;
     }
 
     publish();
-    return nextTheme;
   };
 
   const start = () => {
@@ -604,7 +690,7 @@ export const createThemeController = <
       return;
     }
 
-    if (options.forcedTheme) {
+    if (options.forced) {
       restoreStoredTheme();
     }
 
@@ -634,22 +720,24 @@ export const createThemeController = <
     if (!started) {
       systemTheme = getInitialSystemTheme<TTheme>(
         theme,
-        options.colorScheme,
+        options.initial?.system,
+        options.initial?.resolved,
       );
     }
 
     if (
       theme === undefined &&
-      options.selectedTheme !== undefined
+      options.initial?.selected !== undefined
     ) {
       theme = normalizeThemeValue(
-        options.selectedTheme,
+        options.initial.selected,
       );
 
       if (!started) {
         systemTheme = getInitialSystemTheme<TTheme>(
           theme,
-          options.colorScheme,
+          options.initial?.system,
+          options.initial?.resolved,
         );
       }
     }
@@ -668,10 +756,10 @@ export const createThemeController = <
 
   return {
     getSnapshot: () => snapshot,
-    setTheme,
+    setSelected,
     start,
     stop,
     subscribe,
     update,
   };
-};
+}

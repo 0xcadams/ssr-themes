@@ -1,37 +1,29 @@
-import {themeFromCookieHeader as parseThemeFromCookieHeader} from './header';
+import {parseThemeCookie as parseThemeCookieHeader} from './header';
 import {registerTheme as applyRegisterTheme} from './register-theme';
 import {
-  decodeTheme as parseTheme,
-  encodeTheme as serializeTheme,
-  themeVariants as listThemeVariants,
+  decodeVariant as parseVariant,
+  encodeVariant as serializeVariant,
+  listVariants as getThemeVariants,
 } from './theme-cookie';
 import {getCookieName} from './theme-runtime';
 import {themeScript as renderThemeScript} from './theme-script';
 import type {
   AnyThemeOptions,
   AttributeFromOptions,
+  CreatedTheme,
   EnableSystemFromOptions,
-  InitializedTheme,
   RegisterThemeRuntimeOptions,
   ThemeHtmlAttributes,
   ThemeHtmlProps,
   ThemeNameFromOptions,
   ThemeOptions,
   ThemeState,
-  ThemeVariant,
   ThemeScriptRuntimeOptions,
 } from './types';
 
 type BoundThemeState<
   TOptions extends AnyThemeOptions,
 > = ThemeState<
-  ThemeNameFromOptions<TOptions>,
-  EnableSystemFromOptions<TOptions>
->;
-
-type BoundThemeVariant<
-  TOptions extends AnyThemeOptions,
-> = ThemeVariant<
   ThemeNameFromOptions<TOptions>,
   EnableSystemFromOptions<TOptions>
 >;
@@ -48,20 +40,28 @@ type BoundThemeScriptRuntime<
   ThemeNameFromOptions<TOptions>
 >;
 
-export const initTheme = <
-  const TOptions extends AnyThemeOptions =
-    ThemeOptions,
+type ThemeCodecOptionsFromTheme<
+  TOptions extends AnyThemeOptions,
+> = Pick<TOptions, 'enableSystem' | 'themes'>;
+
+const defaultThemeOptions: ThemeOptions = {};
+
+const pickThemeCodecOptions = <
+  TOptions extends AnyThemeOptions,
 >(
-  options = {} as TOptions,
-): InitializedTheme<TOptions> => {
-  const codecOptions = {
-    enableSystem:
-      options.enableSystem as EnableSystemFromOptions<TOptions>,
-    themes: options.themes as ThemeOptions<
-      ThemeNameFromOptions<TOptions>,
-      EnableSystemFromOptions<TOptions>
-    >['themes'],
-  };
+  options: TOptions,
+): ThemeCodecOptionsFromTheme<TOptions> =>
+  ({
+    enableSystem: options.enableSystem,
+    themes: options.themes,
+  }) as ThemeCodecOptionsFromTheme<TOptions>;
+
+const createThemeWithOptions = <
+  const TOptions extends AnyThemeOptions,
+>(
+  options: TOptions,
+): CreatedTheme<TOptions> => {
+  const codecOptions = pickThemeCodecOptions(options);
 
   function registerTheme(
     themeState?: BoundThemeState<TOptions>,
@@ -95,60 +95,63 @@ export const initTheme = <
         AttributeFromOptions<TOptions>
       >
     | ThemeHtmlProps<AttributeFromOptions<TOptions>> {
-    const {forcedTheme, className, renderMode, style} =
+    const {forced, className, renderMode, style} =
       runtime ?? {};
 
     return applyRegisterTheme({
       ...options,
       ...(themeState ?? {}),
-      ...(forcedTheme
-        ? {appliedTheme: forcedTheme}
-        : {}),
+      ...(forced ? {resolved: forced} : {}),
       className,
       renderMode,
       style,
-    }) as
-      | string
-      | ThemeHtmlAttributes<
-          AttributeFromOptions<TOptions>
-        >
-      | ThemeHtmlProps<AttributeFromOptions<TOptions>>;
+    });
   }
 
   return {
-    themeOptions: options,
-    encodeTheme: themeState =>
-      serializeTheme<
-        ThemeNameFromOptions<TOptions>,
-        EnableSystemFromOptions<TOptions>
-      >(themeState),
-    decodeTheme: value =>
-      parseTheme<
-        ThemeNameFromOptions<TOptions>,
-        EnableSystemFromOptions<TOptions>
-      >(value, codecOptions),
-    themeVariants: () =>
-      listThemeVariants<
-        ThemeNameFromOptions<TOptions>,
-        EnableSystemFromOptions<TOptions>
-      >(codecOptions) as ReadonlyArray<
-        BoundThemeVariant<TOptions>
+    options,
+    encodeVariant: themeState =>
+      serializeVariant(themeState),
+    decodeVariant: value =>
+      parseVariant(value, codecOptions) as ReturnType<
+        CreatedTheme<TOptions>['decodeVariant']
       >,
-    themeFromCookieHeader: cookieHeader =>
-      parseThemeFromCookieHeader<
-        ThemeNameFromOptions<TOptions>,
-        EnableSystemFromOptions<TOptions>
-      >(cookieHeader, {
+    listVariants: () =>
+      getThemeVariants(codecOptions) as ReturnType<
+        CreatedTheme<TOptions>['listVariants']
+      >,
+    parseThemeCookie: cookieHeader =>
+      parseThemeCookieHeader(cookieHeader, {
         cookieName: getCookieName(options.cookie),
         ...codecOptions,
-      }),
+      }) as ReturnType<
+        CreatedTheme<TOptions>['parseThemeCookie']
+      >,
     registerTheme,
     themeScript: (
       runtime?: BoundThemeScriptRuntime<TOptions>,
     ) =>
       renderThemeScript({
         ...options,
-        forcedTheme: runtime?.forcedTheme,
+        forced: runtime?.forced,
       }),
   };
 };
+
+export function createTheme(): CreatedTheme<ThemeOptions>;
+
+export function createTheme<
+  const TOptions extends AnyThemeOptions,
+>(options: TOptions): CreatedTheme<TOptions>;
+
+export function createTheme(
+  options: AnyThemeOptions | undefined,
+): CreatedTheme<AnyThemeOptions>;
+
+export function createTheme(
+  options?: AnyThemeOptions,
+) {
+  return options
+    ? createThemeWithOptions(options)
+    : createThemeWithOptions(defaultThemeOptions);
+}

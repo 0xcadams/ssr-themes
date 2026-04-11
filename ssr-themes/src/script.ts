@@ -2,45 +2,32 @@ import type {
   LightOrDark,
   ThemeOptions,
   ThemeScriptRuntimeOptions,
-  WithSystem,
 } from './types';
 
-type ThemeScriptOptions<
-  TTheme extends string,
-  TEnableSystem extends boolean,
-> = ThemeOptions<TTheme, TEnableSystem> &
-  ThemeScriptRuntimeOptions<TTheme>;
+type ThemeScriptOptions = ThemeOptions<
+  string,
+  boolean
+> &
+  ThemeScriptRuntimeOptions<string>;
 
-export default <
-  TTheme extends string,
-  TEnableSystem extends boolean = true,
->(
+export default (
   attribute: NonNullable<
-    ThemeOptions<TTheme, TEnableSystem>['attribute']
+    ThemeOptions<string, boolean>['attribute']
   >,
   cookieName: string,
   defaultTheme: NonNullable<
-    ThemeOptions<TTheme, TEnableSystem>['defaultTheme']
+    ThemeOptions<string, boolean>['defaultTheme']
   >,
-  forcedTheme: ThemeScriptOptions<
-    TTheme,
-    TEnableSystem
-  >['forcedTheme'],
+  forced: ThemeScriptOptions['forced'],
   themes: NonNullable<
-    ThemeOptions<TTheme, TEnableSystem>['themes']
+    ThemeOptions<string, boolean>['themes']
   >,
-  valueMap: ThemeOptions<
-    TTheme,
-    TEnableSystem
-  >['valueMap'],
+  valueMap: ThemeOptions<string, boolean>['valueMap'],
   enableSystem: NonNullable<
-    ThemeOptions<TTheme, TEnableSystem>['enableSystem']
+    ThemeOptions<string, boolean>['enableSystem']
   >,
   enableColorScheme: NonNullable<
-    ThemeOptions<
-      TTheme,
-      TEnableSystem
-    >['enableColorScheme']
+    ThemeOptions<string, boolean>['enableColorScheme']
   >,
 ) => {
   const el = document.documentElement;
@@ -49,7 +36,7 @@ export default <
     : [attribute];
   const themeNames = new Set(themes);
   const themeValues: Array<{
-    theme: TTheme;
+    theme: string;
     value: string;
   }> = [];
 
@@ -80,67 +67,44 @@ export default <
 
   const decodeTheme = (
     value: string | undefined,
-  ): WithSystem<TTheme, TEnableSystem> | undefined => {
+  ): string | 'system' | undefined => {
     if (!value) {
       return undefined;
     }
 
-    const compactTheme =
-      value === '~d'
-        ? 'dark'
-        : value === '~l'
-          ? 'light'
-          : undefined;
-
-    if (compactTheme) {
-      if (!themeNames.has(compactTheme as TTheme)) {
-        return undefined;
-      }
-
-      if (!enableSystem) {
-        return compactTheme as WithSystem<
-          TTheme,
-          TEnableSystem
-        >;
-      }
-
-      return 'system' as WithSystem<
-        TTheme,
-        TEnableSystem
-      >;
-    }
-
-    if (value === 'system') {
-      if (!enableSystem) {
-        return undefined;
-      }
-
-      return 'system' as WithSystem<
-        TTheme,
-        TEnableSystem
-      >;
-    }
-
-    const explicitTheme =
-      value.endsWith('~d') || value.endsWith('~l')
-        ? value.slice(0, -2)
+    const systemTheme = value.endsWith('~d')
+      ? 'dark'
+      : value.endsWith('~l')
+        ? 'light'
         : undefined;
 
-    if (explicitTheme) {
-      return themeNames.has(explicitTheme as TTheme)
-        ? (explicitTheme as WithSystem<
-            TTheme,
-            TEnableSystem
-          >)
-        : undefined;
-    }
-
-    if (value.startsWith('~')) {
+    if (!systemTheme) {
       return undefined;
     }
 
-    return themeNames.has(value as TTheme)
-      ? (value as WithSystem<TTheme, TEnableSystem>)
+    const selected = value.slice(0, -2);
+
+    if (!selected) {
+      if (!themeNames.has(systemTheme)) {
+        return undefined;
+      }
+
+      if (!enableSystem) {
+        return systemTheme;
+      }
+
+      return 'system';
+    }
+
+    if (
+      selected === 'system' ||
+      selected.startsWith('~')
+    ) {
+      return undefined;
+    }
+
+    return themeNames.has(selected)
+      ? selected
       : undefined;
   };
 
@@ -170,7 +134,7 @@ export default <
     return undefined;
   };
 
-  function updateDOM(theme: TTheme) {
+  function updateDOM(theme: string) {
     const name = valueMap ? valueMap[theme] : theme;
     for (const attr of attributes) {
       if (attr === 'class') {
@@ -201,17 +165,17 @@ export default <
       ? 'dark'
       : 'light';
 
-  if (forcedTheme) {
-    updateDOM(forcedTheme);
+  if (forced) {
+    updateDOM(forced);
     return;
   }
 
   const getThemeOrSystem = (
-    themeName: WithSystem<TTheme, TEnableSystem>,
+    themeName: string | 'system',
   ) =>
     enableSystem && themeName === 'system'
-      ? (getBrowserTheme() as TTheme)
-      : (themeName as TTheme);
+      ? getBrowserTheme()
+      : themeName;
 
   try {
     const cookieTheme = decodeTheme(
@@ -228,11 +192,7 @@ export default <
       return;
     }
 
-    const themeName = defaultTheme as WithSystem<
-      TTheme,
-      TEnableSystem
-    >;
-    updateDOM(getThemeOrSystem(themeName));
+    updateDOM(getThemeOrSystem(defaultTheme));
   } catch {
     //
   }

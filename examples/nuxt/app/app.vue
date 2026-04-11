@@ -2,23 +2,23 @@
 import {computed} from 'vue';
 import type {
   LightOrDark,
-  ThemeCookieState,
+  ResolvedThemeState,
 } from 'ssr-themes';
 import {
   registerTheme,
-  themeFromCookieHeader,
+  parseThemeCookie,
   ThemeProvider,
   themeScript,
 } from './lib/theme';
 
 const themeState = useState<
-  ThemeCookieState<LightOrDark> | undefined
+  ResolvedThemeState<LightOrDark> | undefined
 >('theme', () => {
   if (import.meta.client) {
     return undefined;
   }
 
-  return themeFromCookieHeader(
+  return parseThemeCookie(
     useRequestHeaders(['cookie']).cookie,
   );
 });
@@ -76,7 +76,7 @@ if (import.meta.server) {
 </script>
 
 <template>
-  <ThemeProvider v-bind="themeState ?? {}">
+  <ThemeProvider :initial-state="themeState">
     <NuxtPage />
   </ThemeProvider>
 </template>

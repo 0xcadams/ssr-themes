@@ -13,12 +13,14 @@ export default createHandler(() => (
   <StartServer
     document={({assets, children, scripts}) => {
       const themeState = getThemeState();
-      const htmlProps = registerTheme(themeState);
+      const htmlProps = registerTheme(themeState, {
+        renderMode: 'html-attrs',
+      });
 
       return (
         <html
           lang="en"
-          class={htmlProps.className}
+          class={htmlProps.class}
           style={htmlProps.style}
         >
           <head>

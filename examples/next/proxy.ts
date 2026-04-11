@@ -5,16 +5,14 @@ import {
 
 import {
   defaultThemeVariant,
-  encodeTheme,
-  themeFromCookieHeader,
+  encodeVariant,
+  parseThemeCookie,
 } from './app/theme';
 
 export function proxy(request: NextRequest) {
   const variant =
-    encodeTheme(
-      themeFromCookieHeader(
-        request.headers.get('cookie'),
-      ),
+    encodeVariant(
+      parseThemeCookie(request.headers.get('cookie')),
     ) ?? defaultThemeVariant;
   const url = request.nextUrl.clone();
 

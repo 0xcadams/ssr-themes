@@ -1,10 +1,10 @@
-import {initTheme} from 'ssr-themes';
+import {createTheme} from 'ssr-themes';
 
-const theme = initTheme();
+const theme = createTheme();
 
 export const {
-  themeOptions,
+  options,
   registerTheme,
-  themeFromCookieHeader,
+  parseThemeCookie,
   themeScript,
 } = theme;

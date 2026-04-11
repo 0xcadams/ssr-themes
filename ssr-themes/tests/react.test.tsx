@@ -17,7 +17,7 @@ import {
   test,
   vi,
 } from 'vitest';
-import {initTheme} from '../src';
+import {createTheme} from '../src';
 import {bindTheme} from '../src/react';
 import {
   getCookieValue,
@@ -29,9 +29,9 @@ import {
 installThemeTestEnv();
 
 const createReactHarness = (
-  options?: Parameters<typeof initTheme>[0],
+  options?: Parameters<typeof createTheme>[0],
 ) => {
-  const theme = initTheme(options);
+  const theme = createTheme(options);
   const {ThemeProvider, useTheme} = bindTheme(theme);
 
   const ThemeReporter = ({
@@ -40,27 +40,25 @@ const createReactHarness = (
     forceSetTheme?: string;
   }) => {
     const {
-      setTheme,
-      theme,
-      forcedTheme,
-      resolvedTheme,
-      colorScheme,
+      setSelected,
+      selected,
+      forced,
+      resolved,
+      system,
     } = useTheme();
 
     React.useEffect(() => {
       if (forceSetTheme) {
-        setTheme(forceSetTheme as never);
+        setSelected(forceSetTheme as never);
       }
-    }, [forceSetTheme, setTheme]);
+    }, [forceSetTheme, setSelected]);
 
     return (
       <>
-        <p data-testid="theme">{theme}</p>
-        <p data-testid="forcedTheme">{forcedTheme}</p>
-        <p data-testid="resolvedTheme">
-          {resolvedTheme}
-        </p>
-        <p data-testid="colorScheme">{colorScheme}</p>
+        <p data-testid="selected">{selected}</p>
+        <p data-testid="forced">{forced}</p>
+        <p data-testid="resolved">{resolved}</p>
+        <p data-testid="system">{system}</p>
       </>
     );
   };
@@ -97,19 +95,19 @@ afterEach(() => {
 });
 
 describe('react bindings', () => {
-  test('infers literal theme tuples from initTheme without as const', () => {
-    const theme = initTheme({
+  test('infers literal theme tuples from createTheme without as const', () => {
+    const theme = createTheme({
       themes: ['light', 'dark', 'quartz'],
     });
     const {useTheme} = bindTheme(theme);
 
     expectTypeOf<
-      typeof theme.themeOptions.themes
+      typeof theme.options.themes
     >().toEqualTypeOf<
       readonly ['light', 'dark', 'quartz']
     >();
     expectTypeOf<
-      ReturnType<typeof useTheme>['theme']
+      ReturnType<typeof useTheme>['selected']
     >().toEqualTypeOf<
       | 'light'
       | 'dark'
@@ -128,9 +126,9 @@ describe('react bindings', () => {
       wrapper: makeWrapper(),
     });
 
-    expect(result.current.theme).toBe('system');
-    expect(result.current.colorScheme).toBe('dark');
-    expect(result.current.resolvedTheme).toBe('dark');
+    expect(result.current.selected).toBe('system');
+    expect(result.current.system).toBe('dark');
+    expect(result.current.resolved).toBe('dark');
   });
 
   test('persists the default system theme with a compact cookie value', async () => {
@@ -154,18 +152,20 @@ describe('react bindings', () => {
 
     const {result} = renderHook(() => useTheme(), {
       wrapper: makeWrapper({
-        appliedTheme: 'light',
-        colorScheme: 'dark',
-        selectedTheme: 'light',
+        initial: {
+          selected: 'light',
+          resolved: 'light',
+          system: 'dark',
+        },
       }),
     });
 
-    expect(result.current.theme).toBe('light');
-    expect(result.current.colorScheme).toBe('dark');
-    expect(result.current.resolvedTheme).toBe('light');
+    expect(result.current.selected).toBe('light');
+    expect(result.current.system).toBe('dark');
+    expect(result.current.resolved).toBe('light');
   });
 
-  test('supports custom cookie names from initTheme', async () => {
+  test('supports custom cookie names from createTheme', async () => {
     const {ThemeProvider, ThemeReporter} =
       createReactHarness({
         cookie: {name: 'color-mode'},
@@ -186,7 +186,7 @@ describe('react bindings', () => {
     });
   });
 
-  test('supports custom attributes and value maps from initTheme', async () => {
+  test('supports custom attributes and value maps from createTheme', async () => {
     const {ThemeProvider, ThemeReporter} =
       createReactHarness({
         attribute: ['data-theme', 'class'],
@@ -224,25 +224,43 @@ describe('react bindings', () => {
 
     const {result} = renderHook(() => useTheme(), {
       wrapper: ({children}) => (
-        <ThemeProvider selectedTheme="dark">
-          <ThemeProvider selectedTheme="light">
+        <ThemeProvider
+          initial={{
+            selected: 'dark',
+            resolved: 'dark',
+          }}
+        >
+          <ThemeProvider
+            initial={{
+              selected: 'light',
+              resolved: 'light',
+            }}
+          >
             {children}
           </ThemeProvider>
         </ThemeProvider>
       ),
     });
 
-    expect(result.current.theme).toBe('dark');
-    expect(result.current.resolvedTheme).toBe('dark');
+    expect(result.current.selected).toBe('dark');
+    expect(result.current.resolved).toBe('dark');
+  });
+
+  test('throws when useTheme is used outside the provider', () => {
+    const {useTheme} = createReactHarness();
+
+    expect(() => renderHook(() => useTheme())).toThrow(
+      'useTheme must be used within a ThemeProvider.',
+    );
   });
 
   test('applies and removes a forced theme', () => {
-    setCookieValue('theme', 'dark');
+    setCookieValue('theme', 'dark~l');
     const {ThemeProvider, ThemeReporter} =
       createReactHarness();
 
     const {unmount} = render(
-      <ThemeProvider forcedTheme="light">
+      <ThemeProvider forced="light">
         <ThemeReporter />
       </ThemeProvider>,
     );
@@ -267,10 +285,10 @@ describe('react bindings', () => {
       ),
     ).toBe(true);
     expect(
-      screen.getByTestId('forcedTheme').textContent,
+      screen.getByTestId('forced').textContent,
     ).toBe('');
     expect(
-      screen.getByTestId('theme').textContent,
+      screen.getByTestId('selected').textContent,
     ).toBe('dark');
   });
 
@@ -288,12 +306,12 @@ describe('react bindings', () => {
       wrapper: makeWrapper(),
     });
 
-    expect(result.current.theme).toBe('dark');
-    expect(result.current.colorScheme).toBeUndefined();
-    expect(result.current.resolvedTheme).toBe('dark');
+    expect(result.current.selected).toBe('dark');
+    expect(result.current.system).toBe('light');
+    expect(result.current.resolved).toBe('dark');
   });
 
-  test('supports setTheme updater functions', () => {
+  test('supports setSelected updater functions', () => {
     const {makeWrapper, useTheme} = createReactHarness(
       {
         defaultTheme: 'light',
@@ -310,12 +328,12 @@ describe('react bindings', () => {
     );
 
     act(() => {
-      result.current.setTheme(toggleTheme);
+      result.current.setSelected(toggleTheme);
     });
     rerender();
 
     expect(toggleTheme).toHaveBeenCalledWith('light');
-    expect(result.current.theme).toBe('dark');
-    expect(result.current.resolvedTheme).toBe('dark');
+    expect(result.current.selected).toBe('dark');
+    expect(result.current.resolved).toBe('dark');
   });
 });

@@ -4,58 +4,45 @@ import {
   ScriptOnce,
   Scripts,
   createRootRoute,
-  useMatches,
 } from '@tanstack/react-router';
 import {createServerFn} from '@tanstack/react-start';
 import {getRequestHeader} from '@tanstack/react-start/server';
-import * as React from 'react';
 import type {
   LightOrDark,
-  ThemeCookieState,
+  ResolvedThemeState,
 } from 'ssr-themes';
 import {
   ThemeProvider,
   registerTheme,
-  themeFromCookieHeader,
+  parseThemeCookie,
   themeScript,
 } from '../lib/theme';
 import appCss from '../styles.css?url';
 
-type ThemeStaticData = {
-  theme?: LightOrDark;
-};
-
 const getThemeState = createServerFn({
   method: 'GET',
 }).handler(() =>
-  themeFromCookieHeader(getRequestHeader('cookie')),
+  parseThemeCookie(getRequestHeader('cookie')),
 );
 
 function RootDocument({
   children,
-  forcedTheme,
   themeState,
 }: {
   children: React.ReactNode;
-  forcedTheme?: LightOrDark;
-  themeState?: ThemeCookieState<LightOrDark>;
+  themeState?: ResolvedThemeState<LightOrDark>;
 }) {
   return (
     <html
       suppressHydrationWarning
-      {...registerTheme(themeState, {forcedTheme})}
+      {...registerTheme(themeState)}
     >
       <head>
         <HeadContent />
       </head>
       <body className="min-h-screen bg-white text-black dark:bg-black dark:text-white antialiased font-mono">
-        <ThemeProvider
-          {...(themeState ?? {})}
-          forcedTheme={forcedTheme}
-        >
-          <ScriptOnce
-            children={themeScript({forcedTheme})}
-          />
+        <ThemeProvider initial={themeState}>
+          <ScriptOnce children={themeScript()} />
           {children}
         </ThemeProvider>
         <Scripts />
@@ -65,24 +52,9 @@ function RootDocument({
 }
 
 function RootComponent() {
-  const matches = useMatches();
   const {themeState} = Route.useLoaderData();
-  const forcedTheme = React.useMemo(() => {
-    return matches.reduce<LightOrDark | undefined>(
-      (theme, match) => {
-        const staticData = match.staticData as
-          | ThemeStaticData
-          | undefined;
-        return staticData?.theme ?? theme;
-      },
-      undefined,
-    );
-  }, [matches]);
   return (
-    <RootDocument
-      forcedTheme={forcedTheme}
-      themeState={themeState}
-    >
+    <RootDocument themeState={themeState}>
       <Outlet />
     </RootDocument>
   );
