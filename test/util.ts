@@ -41,7 +41,10 @@ export function getThemeSelector(page: Page): Locator {
 
 export async function gotoHome(page: Page) {
   await page.goto('/');
-  await getThemeSelector(page).waitFor();
+  const selector = getThemeSelector(page);
+
+  await selector.waitFor();
+  await page.waitForTimeout(1000);
 }
 
 export async function selectTheme(
