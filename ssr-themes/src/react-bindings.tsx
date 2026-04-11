@@ -5,8 +5,9 @@ import {
   createThemeController,
   pickThemeControllerOptions,
   type ThemeController,
+  type ThemeControllerOptions,
+  type ThemeControllerSetValue,
 } from './theme-controller';
-import {defaultThemes} from './theme-runtime';
 import type {
   LightOrDark,
   ThemeOptions,
@@ -68,10 +69,7 @@ export const useTheme = <
     );
   }
 
-  return context as unknown as ThemeResult<
-    TTheme,
-    TEnableSystem
-  >;
+  return context as ThemeResult<TTheme, TEnableSystem>;
 };
 
 export const ThemeProvider = <
@@ -107,9 +105,7 @@ const Theme = <
         forced: props.forced,
         initial: props.initial,
         nonce: props.nonce,
-        themes:
-          props.themes ??
-          (defaultThemes as unknown as readonly TTheme[]),
+        themes: props.themes,
         valueMap: props.valueMap,
       }),
     [
@@ -127,18 +123,20 @@ const Theme = <
     ],
   );
   const controllerRef = React.useRef<ThemeController<
-    TTheme,
-    TEnableSystem
+    string,
+    boolean
   > | null>(null);
 
   if (!controllerRef.current) {
-    controllerRef.current = createThemeController<
-      TTheme,
-      TEnableSystem
-    >(controllerOptions);
+    controllerRef.current = createThemeController(
+      controllerOptions as ThemeControllerOptions<
+        string,
+        boolean
+      >,
+    );
   }
 
-  const controller = controllerRef.current;
+  const controller = controllerRef.current!;
   const snapshot = React.useSyncExternalStore(
     controller.subscribe,
     controller.getSnapshot,
@@ -146,7 +144,12 @@ const Theme = <
   );
 
   React.useEffect(() => {
-    controller.update(controllerOptions);
+    controller.update(
+      controllerOptions as ThemeControllerOptions<
+        string,
+        boolean
+      >,
+    );
   }, [controller, controllerOptions]);
 
   React.useEffect(() => {
@@ -161,16 +164,18 @@ const Theme = <
     () =>
       ({
         selected: snapshot.selected,
-        setSelected: controller.setSelected as (
-          value: React.SetStateAction<
-            WithSystem<TTheme, TEnableSystem>
-          >,
-        ) => void,
+        setSelected: value =>
+          controller.setSelected(
+            value as ThemeControllerSetValue<
+              string,
+              boolean
+            >,
+          ),
         forced: snapshot.forced,
         resolved: snapshot.resolved,
         themes: snapshot.themes,
         system: snapshot.system,
-      }) as ThemeResult<TTheme, TEnableSystem>,
+      }) satisfies ThemeContextValue,
     [
       controller,
       snapshot.forced,
@@ -182,11 +187,7 @@ const Theme = <
   );
 
   return (
-    <ThemeContext.Provider
-      value={
-        providerValue as unknown as ThemeContextValue
-      }
-    >
+    <ThemeContext.Provider value={providerValue}>
       {props.children}
     </ThemeContext.Provider>
   );

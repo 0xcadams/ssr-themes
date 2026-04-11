@@ -15,10 +15,9 @@ describe('theme controller', () => {
   test('derives the default system snapshot', () => {
     setDeviceTheme('dark');
 
-    const controller = createThemeController<
-      'light' | 'dark',
-      boolean
-    >({});
+    const controller = createThemeController<boolean>(
+      {},
+    );
 
     expect(controller.getSnapshot()).toEqual({
       selected: 'system',
@@ -32,10 +31,7 @@ describe('theme controller', () => {
   test('persists the default system theme when started', () => {
     setDeviceTheme('dark');
 
-    const controller = createThemeController<
-      'light' | 'dark',
-      boolean
-    >({});
+    const controller = createThemeController({});
 
     controller.start();
 
@@ -45,10 +41,7 @@ describe('theme controller', () => {
   test('publishes once when started', () => {
     setDeviceTheme('dark');
 
-    const controller = createThemeController<
-      'light' | 'dark',
-      boolean
-    >({});
+    const controller = createThemeController({});
     const listener = vi.fn();
 
     controller.subscribe(listener);
@@ -136,10 +129,9 @@ describe('theme controller', () => {
   test('coerces the active theme when system support is disabled', () => {
     setDeviceTheme('dark');
 
-    const controller = createThemeController<
-      'light' | 'dark',
-      boolean
-    >({});
+    const controller = createThemeController<boolean>(
+      {},
+    );
 
     controller.start();
     controller.update({
@@ -162,9 +154,7 @@ describe('theme controller', () => {
   });
 
   test('writes explicit theme changes through the shared setter', () => {
-    const controller = createThemeController<
-      'light' | 'dark'
-    >({
+    const controller = createThemeController({
       defaultTheme: 'light',
     });
 

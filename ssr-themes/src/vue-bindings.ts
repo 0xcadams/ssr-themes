@@ -114,10 +114,7 @@ export const useTheme = <
     );
   }
 
-  return context as unknown as ThemeResult<
-    TTheme,
-    TEnableSystem
-  >;
+  return context as ThemeResult<TTheme, TEnableSystem>;
 };
 
 export const ThemeProvider = defineComponent({

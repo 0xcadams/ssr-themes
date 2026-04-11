@@ -60,15 +60,24 @@ export const createThemeController = <
       selected: derived(
         snapshotStore,
         snapshot => snapshot.selected,
-      ),
+      ) as ThemeContext<
+        TTheme,
+        TEnableSystem
+      >['selected'],
       forced: derived(
         snapshotStore,
         snapshot => snapshot.forced,
-      ),
+      ) as ThemeContext<
+        TTheme,
+        TEnableSystem
+      >['forced'],
       resolved: derived(
         snapshotStore,
         snapshot => snapshot.resolved,
-      ),
+      ) as ThemeContext<
+        TTheme,
+        TEnableSystem
+      >['resolved'],
       system: derived(
         snapshotStore,
         snapshot => snapshot.system,
@@ -76,7 +85,10 @@ export const createThemeController = <
       themes: derived(
         snapshotStore,
         snapshot => snapshot.themes,
-      ),
+      ) as ThemeContext<
+        TTheme,
+        TEnableSystem
+      >['themes'],
       setSelected,
     },
     destroy: () => {

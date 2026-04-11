@@ -16,6 +16,20 @@ type ThemeCodecOptions<
   'themes' | 'enableSystem'
 >;
 
+type DefaultThemeCodecOptions<
+  TEnableSystem extends boolean = true,
+> = ThemeCodecOptions<LightOrDark, TEnableSystem>;
+
+type CustomThemeCodecOptions<
+  TTheme extends string,
+  TEnableSystem extends boolean = true,
+> = Omit<
+  ThemeCodecOptions<TTheme, TEnableSystem>,
+  'themes'
+> & {
+  themes: readonly TTheme[];
+};
+
 const defaultThemes = [
   'dark',
   'light',
@@ -143,40 +157,44 @@ export const encodeVariant = <
   return `${selected}${systemCookieValueMap[system as LightOrDark]}`;
 };
 
-export const listVariants = <
-  TTheme extends string = LightOrDark,
+export function listVariants<
   TEnableSystem extends boolean = true,
 >(
-  options: ThemeCodecOptions<
-    TTheme,
-    TEnableSystem
-  > = {},
+  options?: DefaultThemeCodecOptions<TEnableSystem>,
 ): ReadonlyArray<
-  ThemeVariant<TTheme, TEnableSystem>
-> => {
-  const themes = (options.themes ??
-    defaultThemes) as readonly TTheme[];
-  const variants: ThemeVariant<
+  ThemeVariant<LightOrDark, TEnableSystem>
+>;
+
+export function listVariants<
+  TTheme extends string,
+  TEnableSystem extends boolean = true,
+>(
+  options: CustomThemeCodecOptions<
     TTheme,
     TEnableSystem
-  >[] = [];
+  >,
+): ReadonlyArray<ThemeVariant<TTheme, TEnableSystem>>;
+
+export function listVariants(
+  options: ThemeCodecOptions<string, boolean>,
+): ReadonlyArray<ThemeVariant<string, boolean>>;
+
+export function listVariants(
+  options: ThemeCodecOptions<string, boolean> = {},
+): ReadonlyArray<ThemeVariant<string, boolean>> {
+  const themes = options.themes ?? defaultThemes;
+  const variants: ThemeVariant<string, boolean>[] = [];
 
   for (const theme of themes) {
     variants.push({
       value: `${theme}${systemCookieValueMap.light}`,
-      selected: theme as WithSystem<
-        TTheme,
-        TEnableSystem
-      >,
+      selected: theme,
       resolved: theme,
       system: 'light',
     });
     variants.push({
       value: `${theme}${systemCookieValueMap.dark}`,
-      selected: theme as WithSystem<
-        TTheme,
-        TEnableSystem
-      >,
+      selected: theme,
       resolved: theme,
       system: 'dark',
     });
@@ -186,32 +204,26 @@ export const listVariants = <
     return variants;
   }
 
-  if (themes.includes('light' as TTheme)) {
+  if (themes.includes('light')) {
     variants.push({
       value: systemCookieValueMap.light,
-      selected: 'system' as WithSystem<
-        TTheme,
-        TEnableSystem
-      >,
-      resolved: 'light' as TTheme,
+      selected: 'system',
+      resolved: 'light',
       system: 'light',
     });
   }
 
-  if (themes.includes('dark' as TTheme)) {
+  if (themes.includes('dark')) {
     variants.push({
       value: systemCookieValueMap.dark,
-      selected: 'system' as WithSystem<
-        TTheme,
-        TEnableSystem
-      >,
-      resolved: 'dark' as TTheme,
+      selected: 'system',
+      resolved: 'dark',
       system: 'dark',
     });
   }
 
   return variants;
-};
+}
 
 export const decodeThemeCookieValue = decodeVariant;
 export const encodeThemeCookieValue = <

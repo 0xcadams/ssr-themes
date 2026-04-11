@@ -126,10 +126,7 @@ export const createTheme = <
         EnableSystemFromOptions<TOptions>
       >(value, codecOptions),
     listVariants: () =>
-      getThemeVariants<
-        ThemeNameFromOptions<TOptions>,
-        EnableSystemFromOptions<TOptions>
-      >(codecOptions) as ReadonlyArray<
+      getThemeVariants(codecOptions) as ReadonlyArray<
         BoundThemeVariant<TOptions>
       >,
     parseThemeCookie: cookieHeader =>

@@ -51,9 +51,7 @@
   });
   const controller = parentTheme
     ? null
-    : createThemeController<TTheme, TEnableSystem>(
-        getOptions(),
-      );
+    : createThemeController(getOptions());
 
   if (controller) {
     setThemeContext(controller.context);

@@ -40,6 +40,20 @@ export interface ThemeControllerOptions<
   nonce?: string | undefined;
 }
 
+type DefaultThemeControllerOptions<
+  TEnableSystem extends boolean = true,
+> = ThemeControllerOptions<LightOrDark, TEnableSystem>;
+
+type CustomThemeControllerOptions<
+  TTheme extends string,
+  TEnableSystem extends boolean = true,
+> = Omit<
+  ThemeControllerOptions<TTheme, TEnableSystem>,
+  'themes'
+> & {
+  themes: readonly TTheme[];
+};
+
 export type ThemeControllerSetValue<
   TTheme extends string = LightOrDark,
   TEnableSystem extends boolean = true,
@@ -225,7 +239,7 @@ const normalizeOptions = <
   TEnableSystem
 > => {
   const themeNames = (options.themes ??
-    (defaultThemes as unknown as readonly TTheme[])) as readonly TTheme[];
+    defaultThemes) as readonly TTheme[];
   const attribute = options.attribute ?? 'class';
   const enableSystemValue = (options.enableSystem ??
     true) as TEnableSystem;
@@ -291,15 +305,38 @@ const getInitialSystemTheme = <TTheme extends string>(
   return undefined;
 };
 
-export const createThemeController = <
+export function createThemeController<
+  TEnableSystem extends boolean = true,
+>(
+  initialOptions?: DefaultThemeControllerOptions<TEnableSystem>,
+): ThemeController<LightOrDark, TEnableSystem>;
+
+export function createThemeController<
+  TTheme extends string,
+  TEnableSystem extends boolean = true,
+>(
+  initialOptions: CustomThemeControllerOptions<
+    TTheme,
+    TEnableSystem
+  >,
+): ThemeController<TTheme, TEnableSystem>;
+
+export function createThemeController(
+  initialOptions: ThemeControllerOptions<
+    string,
+    boolean
+  >,
+): ThemeController<string, boolean>;
+
+export function createThemeController<
   TTheme extends string = LightOrDark,
   TEnableSystem extends boolean = true,
 >(
   initialOptions: ThemeControllerOptions<
     TTheme,
     TEnableSystem
-  >,
-): ThemeController<TTheme, TEnableSystem> => {
+  > = {},
+): ThemeController<TTheme, TEnableSystem> {
   let options = normalizeOptions(initialOptions);
   let theme = getTheme(
     options.cookieName,
@@ -694,4 +731,4 @@ export const createThemeController = <
     subscribe,
     update,
   };
-};
+}

@@ -15,34 +15,61 @@ type ThemeScriptOptions<
 > = ThemeOptions<TTheme, TEnableSystem> &
   ThemeScriptRuntimeOptions<TTheme>;
 
+type DefaultThemeScriptOptions<
+  TEnableSystem extends boolean = true,
+> = ThemeScriptOptions<LightOrDark, TEnableSystem>;
+
+type CustomThemeScriptOptions<
+  TTheme extends string,
+  TEnableSystem extends boolean = true,
+> = Omit<
+  ThemeScriptOptions<TTheme, TEnableSystem>,
+  'themes'
+> & {
+  themes: readonly TTheme[];
+};
+
 const inlineScriptSource = '__INLINE_THEME_SCRIPT__';
 
-export const themeScript = <
-  TTheme extends string = LightOrDark,
+export function themeScript<
   TEnableSystem extends boolean = true,
 >(
-  options: ThemeScriptOptions<
+  options?: DefaultThemeScriptOptions<TEnableSystem>,
+): string;
+
+export function themeScript<
+  TTheme extends string,
+  TEnableSystem extends boolean = true,
+>(
+  options: CustomThemeScriptOptions<
     TTheme,
     TEnableSystem
-  > = {},
-) => {
+  >,
+): string;
+
+export function themeScript(
+  options: ThemeScriptOptions<string, boolean>,
+): string;
+
+export function themeScript(
+  options: ThemeScriptOptions<string, boolean> = {},
+) {
   const {
     attribute = 'class',
     cookie,
     defaultTheme,
     enableColorScheme = true,
     forced,
-    themes = defaultThemes as unknown as readonly TTheme[],
     valueMap,
     enableSystem,
   } = options;
+  const themes = options.themes ?? defaultThemes;
 
-  const enableSystemValue = (enableSystem ??
-    true) as TEnableSystem;
-  const resolvedDefaultTheme = resolveDefaultTheme<
-    TTheme,
-    TEnableSystem
-  >(defaultTheme, enableSystemValue);
+  const enableSystemValue = enableSystem ?? true;
+  const resolvedDefaultTheme = resolveDefaultTheme(
+    defaultTheme,
+    enableSystemValue,
+  );
   const cookieName = getCookieName(cookie);
   const scriptArgs = JSON.stringify([
     attribute,
@@ -56,4 +83,4 @@ export const themeScript = <
   ]).slice(1, -1);
 
   return `(${inlineScriptSource})(${scriptArgs})`;
-};
+}

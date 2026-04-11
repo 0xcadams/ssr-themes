@@ -11,6 +11,7 @@ import {
 import {
   createThemeController,
   pickThemeControllerOptions,
+  type ThemeControllerOptions,
   type ThemeControllerSetValue,
 } from './theme-controller';
 import type {
@@ -79,10 +80,7 @@ export const useTheme = <
     );
   }
 
-  return context as unknown as ThemeResult<
-    TTheme,
-    TEnableSystem
-  >;
+  return context as ThemeResult<TTheme, TEnableSystem>;
 };
 
 export const ThemeProvider = <
@@ -97,10 +95,11 @@ export const ThemeProvider = <
     return props.children;
   }
 
-  const controller = createThemeController<
-    TTheme,
-    TEnableSystem
-  >(pickThemeControllerOptions(props));
+  const controller = createThemeController(
+    pickThemeControllerOptions(
+      props,
+    ) as ThemeControllerOptions<string, boolean>,
+  );
   const [snapshot, setSnapshot] = createSignal(
     controller.getSnapshot(),
   );
@@ -108,20 +107,11 @@ export const ThemeProvider = <
     setSnapshot(() => controller.getSnapshot());
   };
 
-  const setSelected: ThemeSetter<
-    TTheme,
-    TEnableSystem
-  > = value =>
-    controller.setSelected(
-      value as ThemeControllerSetValue<
-        TTheme,
-        TEnableSystem
-      >,
-    );
-
   createEffect(() => {
     controller.update(
-      pickThemeControllerOptions(props),
+      pickThemeControllerOptions(
+        props,
+      ) as ThemeControllerOptions<string, boolean>,
     );
     syncSnapshot();
   });
@@ -139,12 +129,15 @@ export const ThemeProvider = <
     });
   });
 
-  const providerValue: ThemeResult<
-    TTheme,
-    TEnableSystem
-  > = {
+  const providerValue: ThemeContextValue = {
     selected: () => snapshot().selected,
-    setSelected,
+    setSelected: value =>
+      controller.setSelected(
+        value as ThemeControllerSetValue<
+          string,
+          boolean
+        >,
+      ),
     forced: () => snapshot().forced,
     resolved: () => snapshot().resolved,
     themes: () => snapshot().themes,
@@ -152,8 +145,7 @@ export const ThemeProvider = <
   };
 
   return createComponent(ThemeContext.Provider, {
-    value:
-      providerValue as unknown as ThemeContextValue,
+    value: providerValue,
     get children() {
       return props.children;
     },
