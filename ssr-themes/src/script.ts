@@ -121,6 +121,20 @@ export default <
       >;
     }
 
+    const explicitTheme =
+      value.endsWith('~d') || value.endsWith('~l')
+        ? value.slice(0, -2)
+        : undefined;
+
+    if (explicitTheme) {
+      return themeNames.has(explicitTheme as TTheme)
+        ? (explicitTheme as WithSystem<
+            TTheme,
+            TEnableSystem
+          >)
+        : undefined;
+    }
+
     if (value.startsWith('~')) {
       return undefined;
     }

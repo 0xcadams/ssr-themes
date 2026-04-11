@@ -5,14 +5,14 @@ import {getRequestEvent, isServer} from 'solid-js/web';
 const theme = initTheme();
 
 export const {
-  options,
+  themeOptions,
   registerTheme,
   themeFromCookieHeader,
   themeScript,
 } = theme;
 
 export const {ThemeProvider, useTheme} =
-  bindTheme(options);
+  bindTheme(themeOptions);
 
 export const getThemeState = () => {
   const cookieHeader = isServer

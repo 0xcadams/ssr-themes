@@ -2,6 +2,7 @@ import type {
   CookieOptions,
   LightOrDark,
   LightOrDarkTuple,
+  ThemeState,
   ThemeOptions,
   WithSystem,
 } from './types';
@@ -74,7 +75,7 @@ export const formatSameSite = (
 
 export const saveToCookie = (
   cookieName: string,
-  selectedTheme: string,
+  themeState: ThemeState<string, boolean>,
   options?: CookieOptions,
 ) => {
   if (typeof document === 'undefined') {
@@ -83,10 +84,8 @@ export const saveToCookie = (
 
   try {
     const cookieValue = encodeThemeCookieValue(
-      selectedTheme,
-      selectedTheme === 'system'
-        ? getSystemTheme()
-        : undefined,
+      themeState.selectedTheme,
+      themeState.colorScheme,
     );
     if (!cookieValue) {
       return;

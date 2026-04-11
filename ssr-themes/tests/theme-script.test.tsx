@@ -60,6 +60,25 @@ describe('bootstrap script', () => {
     ).toBeTruthy();
   });
 
+  test('themeScript reads explicit themes with a color-scheme suffix', () => {
+    setCookieValue('theme', 'dark~l');
+    setDeviceTheme('light');
+
+    const {themeScript} = createTheme({
+      attribute: 'class',
+      defaultTheme: 'light',
+    });
+    const scriptContent = themeScript();
+
+    Function(scriptContent)();
+
+    expect(
+      document.documentElement.classList.contains(
+        'dark',
+      ),
+    ).toBeTruthy();
+  });
+
   test('themeScript treats compact cookies as literal themes when system is disabled', () => {
     setCookieValue('theme', '~d');
     setDeviceTheme('light');

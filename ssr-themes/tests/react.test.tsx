@@ -104,7 +104,7 @@ describe('react bindings', () => {
     const {useTheme} = bindTheme(theme);
 
     expectTypeOf<
-      typeof theme.options.themes
+      typeof theme.themeOptions.themes
     >().toEqualTypeOf<
       readonly ['light', 'dark', 'quartz']
     >();
@@ -163,7 +163,7 @@ describe('react bindings', () => {
 
     await waitFor(() => {
       expect(getCookieValue('color-mode')).toBe(
-        'light',
+        'light~l',
       );
     });
   });

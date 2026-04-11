@@ -5,7 +5,11 @@ import {
   it,
 } from 'vitest';
 
-import {initTheme, type ThemeHtmlProps} from '../src';
+import {
+  initTheme,
+  type ThemeHtmlAttributes,
+  type ThemeHtmlProps,
+} from '../src';
 
 describe('registerTheme', () => {
   it('returns JSX props by default', () => {
@@ -86,6 +90,32 @@ describe('registerTheme', () => {
     );
   });
 
+  it('returns HTML attrs in html-attrs mode', () => {
+    const {registerTheme} = initTheme({
+      attribute: ['class', 'data-theme'],
+    });
+
+    expect(
+      registerTheme(
+        {
+          selectedTheme: 'dark',
+          appliedTheme: 'dark',
+        },
+        {
+          className: 'app-shell',
+          renderMode: 'html-attrs',
+          style: {
+            '--accent': '#fff',
+          },
+        },
+      ),
+    ).toEqual({
+      'class': 'app-shell dark',
+      'data-theme': 'dark',
+      'style': '--accent:#fff;color-scheme:dark',
+    });
+  });
+
   it('escapes serialized attribute values', () => {
     const {registerTheme} = initTheme();
 
@@ -116,6 +146,15 @@ describe('registerTheme', () => {
       selectedTheme: 'dark',
       appliedTheme: 'dark',
     });
+    const htmlAttributes = registerTheme(
+      {
+        selectedTheme: 'dark',
+        appliedTheme: 'dark',
+      },
+      {
+        renderMode: 'html-attrs',
+      },
+    );
     const htmlString = registerTheme(
       {
         selectedTheme: 'dark',
@@ -141,6 +180,11 @@ describe('registerTheme', () => {
 
     expectTypeOf(jsxProps).toEqualTypeOf<
       ThemeHtmlProps<readonly ['class', 'data-theme']>
+    >();
+    expectTypeOf(htmlAttributes).toEqualTypeOf<
+      ThemeHtmlAttributes<
+        readonly ['class', 'data-theme']
+      >
     >();
     expectTypeOf(htmlString).toEqualTypeOf<string>();
     expectTypeOf(

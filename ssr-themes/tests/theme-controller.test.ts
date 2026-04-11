@@ -57,6 +57,23 @@ describe('theme controller', () => {
     expect(listener).toHaveBeenCalledTimes(1);
   });
 
+  test('uses the provided initial color scheme before start', () => {
+    setDeviceTheme('light');
+
+    const controller = createThemeController({
+      initialColorScheme: 'dark',
+      selectedTheme: 'system',
+    });
+
+    expect(controller.getSnapshot()).toEqual({
+      theme: 'system',
+      forcedTheme: undefined,
+      resolvedTheme: 'dark',
+      colorScheme: 'dark',
+      themes: ['dark', 'light', 'system'],
+    });
+  });
+
   test('does not mutate the DOM when stopped before start', () => {
     document.documentElement.classList.add('light');
 
@@ -157,6 +174,6 @@ describe('theme controller', () => {
     expect(
       controller.getSnapshot().resolvedTheme,
     ).toBe('dark');
-    expect(getCookieValue('theme')).toBe('dark');
+    expect(getCookieValue('theme')).toBe('dark~l');
   });
 });

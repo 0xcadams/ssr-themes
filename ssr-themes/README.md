@@ -41,7 +41,7 @@ import {initTheme} from 'ssr-themes';
 import {bindTheme} from 'ssr-themes/react';
 
 const {
-  options,
+  themeOptions,
   registerTheme,
   themeFromCookieHeader,
   themeScript,
@@ -50,7 +50,7 @@ const {
   attribute: 'class',
 });
 
-const {ThemeProvider} = bindTheme(options);
+const {ThemeProvider} = bindTheme(themeOptions);
 
 const themeState = themeFromCookieHeader(cookieHeader);
 
@@ -145,7 +145,7 @@ import {initTheme} from 'ssr-themes';
 const {
   decodeTheme,
   encodeTheme,
-  options,
+  themeOptions,
   registerTheme,
   themeVariants,
   themeFromCookieHeader,
@@ -157,7 +157,7 @@ const {
 });
 ```
 
-`options` is the exact typed config object passed into `initTheme()`. Inline theme arrays are inferred as tuples, so `themes: ['light', 'dark', 'quartz']` automatically becomes `'light' | 'dark' | 'quartz'` in the returned helpers and bound hooks.
+`themeOptions` is the exact typed config object passed into `initTheme()`. Inline theme arrays are inferred as tuples, so `themes: ['light', 'dark', 'quartz']` automatically becomes `'light' | 'dark' | 'quartz'` in the returned helpers and bound hooks.
 
 Stable config belongs here:
 
@@ -176,11 +176,12 @@ Use `bindTheme()` in the framework entrypoint for your app.
 ```ts
 import {bindTheme} from 'ssr-themes/react';
 
-const {ThemeProvider, useTheme} = bindTheme(options);
+const {ThemeProvider, useTheme} =
+  bindTheme(themeOptions);
 // or: bindTheme(theme)
 ```
 
-`bindTheme()` accepts either the full `initTheme()` return value or `theme.options`, and returns:
+`bindTheme()` accepts either the full `initTheme()` return value or `theme.themeOptions`, and returns:
 
 - `ThemeProvider`
 - `useTheme()`
@@ -197,6 +198,7 @@ All bindings expose the same core theme state:
 `ThemeProvider` only takes runtime props:
 
 - `selectedTheme`
+- `initialColorScheme`
 - `forcedTheme`
 - `disableTransitionOnChange`
 - `nonce`
@@ -215,8 +217,9 @@ When present, the return value has:
 
 - `selectedTheme`
 - `appliedTheme`
+- `colorScheme`
 
-The cookie stores explicit themes as-is and stores system mode in a compact form with the last resolved hint, such as `~d` or `~l`.
+The cookie stores system mode in a compact form like `~d` or `~l`, and stores explicit themes with the same color-scheme hint suffix, such as `dark~l` or `quartz~d`.
 
 ### `encodeTheme()`, `decodeTheme()`, and `themeVariants()`
 
@@ -225,14 +228,14 @@ Use these helpers when you want a stable theme key for routing or caching, such 
 ```ts
 const variant =
   encodeTheme(themeFromCookieHeader(cookieHeader)) ??
-  'light';
+  'light~d';
 
 const themeState = decodeTheme(variant);
 const variants = themeVariants();
 ```
 
-- Explicit themes serialize as-is, like `light` and `dark`
-- System mode serializes to the same compact values used in cookies, like `~l` and `~d`
+- Explicit themes include the color-scheme hint, like `light~d` and `dark~l`
+- System mode serializes to the compact values `~l` and `~d`
 - `themeVariants()` returns the finite set of pre-renderable theme variants for `generateStaticParams()`
 
 ### `registerTheme()`
@@ -244,6 +247,16 @@ const htmlProps = registerTheme({
   selectedTheme: 'dark',
   appliedTheme: 'dark',
 });
+
+const astroHtmlProps = registerTheme(
+  {
+    selectedTheme: 'dark',
+    appliedTheme: 'dark',
+  },
+  {
+    renderMode: 'html-attrs',
+  },
+);
 
 const htmlAttributes = registerTheme(
   {
@@ -257,6 +270,10 @@ const htmlAttributes = registerTheme(
 ```
 
 The first argument is theme state, usually the result of `themeFromCookieHeader()`.
+
+- Default `jsx` mode returns `{className, style, ...dataAttrs}` for JSX hosts like React.
+- `html-attrs` returns `{class, style, ...dataAttrs}` for hosts like Astro or `useHead()`.
+- `html-string` returns `class="..." style="..." data-theme="..."` for string transforms like Svelte `app.html`.
 
 The second argument is for runtime overrides only:
 

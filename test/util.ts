@@ -22,6 +22,17 @@ export const supportsForcedRoutes =
 export const usesExplicitLightDefault =
   playwrightApp === 'next';
 
+export function storedThemeValue(
+  theme: 'dark' | 'light' | 'system',
+  colorScheme: 'dark' | 'light',
+) {
+  const suffix = colorScheme === 'dark' ? '~d' : '~l';
+
+  return theme === 'system'
+    ? suffix
+    : `${theme}${suffix}`;
+}
+
 export function getThemeSelector(page: Page): Locator {
   return page.locator(
     '[data-test-id="theme-selector"]',

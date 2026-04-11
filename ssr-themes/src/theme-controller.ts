@@ -7,6 +7,7 @@ import {
   createThemeBroadcastSubscription,
   defaultThemes,
   getCookieName,
+  getCookieValue,
   getSystemTheme,
   getTheme,
   postThemeBroadcast,
@@ -31,6 +32,7 @@ export interface ThemeControllerOptions<
   extends
     ThemeOptions<TTheme, TEnableSystem>,
     ThemeScriptRuntimeOptions<TTheme> {
+  initialColorScheme?: LightOrDark | undefined;
   disableTransitionOnChange?: boolean | undefined;
   selectedTheme?:
     | WithSystem<TTheme, TEnableSystem>
@@ -118,6 +120,7 @@ type ThemeControllerOptionSource<
       >['enableSystem']
     | undefined;
   forcedTheme?: TTheme | undefined;
+  initialColorScheme?: LightOrDark | undefined;
   nonce?: string | undefined;
   selectedTheme?:
     | WithSystem<TTheme, TEnableSystem>
@@ -185,6 +188,7 @@ export const pickThemeControllerOptions = <
   enableColorScheme: options.enableColorScheme,
   enableSystem: options.enableSystem,
   forcedTheme: options.forcedTheme,
+  initialColorScheme: options.initialColorScheme,
   nonce: options.nonce,
   selectedTheme: options.selectedTheme,
   themes: options.themes,
@@ -240,19 +244,25 @@ const normalizeOptions = <
 
 const getInitialSystemTheme = <TTheme extends string>(
   theme: TTheme | 'system' | undefined,
+  initialColorScheme?: LightOrDark,
 ) => {
+  if (initialColorScheme) {
+    return initialColorScheme;
+  }
+
   if (!isServer) {
-    return getSystemTheme() as Exclude<
-      TTheme,
-      'system'
-    >;
+    return getSystemTheme();
+  }
+
+  if (theme === 'light' || theme === 'dark') {
+    return theme;
   }
 
   if (!theme || theme === 'system') {
     return undefined;
   }
 
-  return theme as Exclude<TTheme, 'system'>;
+  return undefined;
 };
 
 export const createThemeController = <
@@ -272,8 +282,10 @@ export const createThemeController = <
     options.themeNames,
     options.enableSystemValue,
   );
-  let systemTheme =
-    getInitialSystemTheme<TTheme>(theme);
+  let systemTheme = getInitialSystemTheme<TTheme>(
+    theme,
+    options.initialColorScheme,
+  );
   let snapshot: ThemeControllerSnapshot<
     TTheme,
     TEnableSystem
@@ -405,10 +417,46 @@ export const createThemeController = <
     }
   };
 
-  const shouldPersistSystemTheme = () =>
-    theme === 'system' &&
+  const hasStoredTheme = () =>
+    !isServer &&
+    getCookieValue(options.cookieName) !== undefined;
+
+  const shouldPersistThemeState = () =>
     options.enableSystemValue &&
-    !options.forcedTheme;
+    !options.forcedTheme &&
+    theme !== undefined &&
+    (theme === 'system' || hasStoredTheme());
+
+  const getCookieColorScheme = ():
+    | LightOrDark
+    | undefined =>
+    options.enableSystemValue
+      ? ((systemTheme ??
+          (!isServer
+            ? getSystemTheme()
+            : undefined)) as LightOrDark | undefined)
+      : undefined;
+
+  const getCookieState = (
+    nextTheme:
+      | WithSystem<TTheme, TEnableSystem>
+      | undefined,
+  ) => {
+    if (!nextTheme) {
+      return undefined;
+    }
+
+    const colorScheme = getCookieColorScheme();
+
+    return {
+      selectedTheme: nextTheme,
+      appliedTheme:
+        nextTheme === 'system'
+          ? (colorScheme as TTheme | undefined)
+          : (nextTheme as TTheme),
+      colorScheme,
+    };
+  };
 
   const restoreStoredTheme = () => {
     const nextTheme = normalizeThemeValue(theme);
@@ -423,14 +471,19 @@ export const createThemeController = <
   const handleSystemTheme = (
     event: MediaQueryList | MediaQueryListEvent,
   ) => {
-    systemTheme = getSystemTheme(
-      event,
-    ) as LiteralTheme<TTheme>;
+    systemTheme = getSystemTheme(event);
 
-    if (shouldPersistSystemTheme()) {
+    if (shouldPersistThemeState()) {
+      const cookieState = getCookieState(theme);
+
+      if (!cookieState) {
+        publish();
+        return;
+      }
+
       saveToCookie(
         options.cookieName,
-        'system',
+        cookieState,
         options.cookie,
       );
     }
@@ -485,11 +538,15 @@ export const createThemeController = <
     ) as WithSystem<TTheme, TEnableSystem>;
 
     theme = nextTheme;
-    saveToCookie(
-      options.cookieName,
-      nextTheme,
-      options.cookie,
-    );
+    const cookieState = getCookieState(nextTheme);
+
+    if (cookieState) {
+      saveToCookie(
+        options.cookieName,
+        cookieState,
+        options.cookie,
+      );
+    }
     postThemeBroadcast(
       broadcastChannel,
       options.cookieName,
@@ -517,18 +574,24 @@ export const createThemeController = <
     }
 
     started = true;
-    systemTheme =
-      getSystemTheme() as LiteralTheme<TTheme>;
+    systemTheme = getSystemTheme();
     cleanupSystemTheme = subscribeToSystemTheme(
       handleSystemTheme,
       false,
     );
     openBroadcastChannel();
 
-    if (shouldPersistSystemTheme()) {
+    if (shouldPersistThemeState()) {
+      const cookieState = getCookieState(theme);
+
+      if (!cookieState) {
+        publish();
+        return;
+      }
+
       saveToCookie(
         options.cookieName,
-        'system',
+        cookieState,
         options.cookie,
       );
     }
@@ -568,6 +631,13 @@ export const createThemeController = <
     options = normalizeOptions(nextOptions);
     theme = normalizeThemeValue(theme);
 
+    if (!started) {
+      systemTheme = getInitialSystemTheme<TTheme>(
+        theme,
+        options.initialColorScheme,
+      );
+    }
+
     if (
       theme === undefined &&
       options.selectedTheme !== undefined
@@ -575,6 +645,13 @@ export const createThemeController = <
       theme = normalizeThemeValue(
         options.selectedTheme,
       );
+
+      if (!started) {
+        systemTheme = getInitialSystemTheme<TTheme>(
+          theme,
+          options.initialColorScheme,
+        );
+      }
     }
 
     if (

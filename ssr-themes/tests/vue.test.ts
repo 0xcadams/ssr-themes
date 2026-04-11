@@ -155,7 +155,7 @@ describe('vue bindings', () => {
     expect(
       wrapper.get('[data-testid="theme"]').text(),
     ).toBe('dark');
-    expect(getCookieValue('theme')).toBe('dark');
+    expect(getCookieValue('theme')).toBe('dark~l');
     expect(
       document.documentElement.classList.contains(
         'dark',

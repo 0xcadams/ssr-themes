@@ -124,7 +124,7 @@ describe('solid bindings', () => {
       expect(
         screen.getByTestId('theme').textContent,
       ).toBe('dark');
-      expect(getCookieValue('theme')).toBe('dark');
+      expect(getCookieValue('theme')).toBe('dark~l');
       expect(
         document.documentElement.classList.contains(
           'dark',

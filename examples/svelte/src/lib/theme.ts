@@ -15,14 +15,14 @@ const theme = initTheme({
 });
 
 export const {
-  options,
+  themeOptions,
   registerTheme,
   themeFromCookieHeader,
   themeScript,
 } = theme;
 
 export const {ThemeProvider, useTheme} =
-  bindTheme(options);
+  bindTheme(themeOptions);
 
 export const getThemeState = (
   cookieHeader: string | null | undefined,

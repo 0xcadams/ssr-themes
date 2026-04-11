@@ -6,6 +6,7 @@ import {
   gotoHome,
   makeBrowserContext,
   selectTheme,
+  storedThemeValue,
   supportsForcedRoutes,
 } from './util';
 
@@ -17,29 +18,46 @@ test.describe('cross-tab sync via BroadcastChannel', () => {
     const context = await makeBrowserContext(browser, {
       colorScheme: 'light',
       baseURL,
-      cookies: [{name: 'theme', value: 'light'}],
+      cookies: [
+        {
+          name: 'theme',
+          value: storedThemeValue('light', 'light'),
+        },
+      ],
     });
 
     const page1 = await context.newPage();
     await gotoHome(page1);
     await checkSelectedTheme(page1, 'light');
-    await checkStoredTheme(page1, 'light');
+    await checkStoredTheme(
+      page1,
+      storedThemeValue('light', 'light'),
+    );
     await checkAppliedTheme(page1, 'light');
 
     const page2 = await context.newPage();
     await gotoHome(page2);
     await checkSelectedTheme(page2, 'light');
-    await checkStoredTheme(page2, 'light');
+    await checkStoredTheme(
+      page2,
+      storedThemeValue('light', 'light'),
+    );
     await checkAppliedTheme(page2, 'light');
 
     await selectTheme(page2, 'dark');
 
     await checkSelectedTheme(page2, 'dark');
-    await checkStoredTheme(page2, 'dark');
+    await checkStoredTheme(
+      page2,
+      storedThemeValue('dark', 'light'),
+    );
     await checkAppliedTheme(page2, 'dark');
 
     await checkSelectedTheme(page1, 'dark');
-    await checkStoredTheme(page1, 'dark');
+    await checkStoredTheme(
+      page1,
+      storedThemeValue('dark', 'light'),
+    );
     await checkAppliedTheme(page1, 'dark');
   });
 
@@ -50,19 +68,30 @@ test.describe('cross-tab sync via BroadcastChannel', () => {
     const context = await makeBrowserContext(browser, {
       colorScheme: 'dark',
       baseURL,
-      cookies: [{name: 'theme', value: 'light'}],
+      cookies: [
+        {
+          name: 'theme',
+          value: storedThemeValue('light', 'dark'),
+        },
+      ],
     });
 
     const page1 = await context.newPage();
     await gotoHome(page1);
     await checkSelectedTheme(page1, 'light');
-    await checkStoredTheme(page1, 'light');
+    await checkStoredTheme(
+      page1,
+      storedThemeValue('light', 'dark'),
+    );
     await checkAppliedTheme(page1, 'light');
 
     const page2 = await context.newPage();
     await gotoHome(page2);
     await checkSelectedTheme(page2, 'light');
-    await checkStoredTheme(page2, 'light');
+    await checkStoredTheme(
+      page2,
+      storedThemeValue('light', 'dark'),
+    );
     await checkAppliedTheme(page2, 'light');
 
     await selectTheme(page2, 'system');
@@ -88,7 +117,12 @@ test.describe('cross-tab sync via BroadcastChannel', () => {
     const context = await makeBrowserContext(browser, {
       colorScheme: 'light',
       baseURL,
-      cookies: [{name: 'theme', value: 'dark'}],
+      cookies: [
+        {
+          name: 'theme',
+          value: storedThemeValue('dark', 'light'),
+        },
+      ],
     });
 
     const page1 = await context.newPage();
@@ -102,18 +136,27 @@ test.describe('cross-tab sync via BroadcastChannel', () => {
 
     await selectTheme(page1, 'light');
     await checkSelectedTheme(page1, 'light');
-    await checkStoredTheme(page1, 'light');
+    await checkStoredTheme(
+      page1,
+      storedThemeValue('light', 'light'),
+    );
     await checkAppliedTheme(page1, 'light');
 
     await checkAppliedTheme(page2, 'dark');
-    await checkStoredTheme(page2, 'light');
+    await checkStoredTheme(
+      page2,
+      storedThemeValue('light', 'light'),
+    );
 
     await page2.goto('/');
     await gotoHome(page2);
 
     expect(page2.url()).toBe(baseURL + '/');
     await checkSelectedTheme(page2, 'light');
-    await checkStoredTheme(page2, 'light');
+    await checkStoredTheme(
+      page2,
+      storedThemeValue('light', 'light'),
+    );
     await checkAppliedTheme(page2, 'light');
   });
 });

@@ -6,6 +6,7 @@ import {
   checkStoredTheme,
   gotoHome,
   makeBrowserContext,
+  storedThemeValue,
   supportsForcedRoutes,
 } from './util';
 
@@ -24,19 +25,34 @@ test.describe('forced theme test-suite', () => {
       browser,
       baseURL,
     }) => {
+      const colorScheme =
+        storedTheme === 'dark' ? 'dark' : 'light';
       const context = await makeBrowserContext(
         browser,
         {
           baseURL,
+          colorScheme,
           cookies: [
-            {name: 'theme', value: storedTheme},
+            {
+              name: 'theme',
+              value: storedThemeValue(
+                storedTheme as 'dark' | 'light',
+                colorScheme,
+              ),
+            },
           ],
         },
       );
       const page = await context.newPage();
       await page.goto(pageUrl);
 
-      await checkStoredTheme(page, storedTheme);
+      await checkStoredTheme(
+        page,
+        storedThemeValue(
+          storedTheme as 'dark' | 'light',
+          colorScheme,
+        ),
+      );
       await checkAppliedTheme(page, expectedTheme);
     });
   }
@@ -50,19 +66,31 @@ test.describe('forced theme test-suite', () => {
   }) => {
     const context = await makeBrowserContext(browser, {
       baseURL,
-      cookies: [{name: 'theme', value: 'light'}],
+      colorScheme: 'light',
+      cookies: [
+        {
+          name: 'theme',
+          value: storedThemeValue('light', 'light'),
+        },
+      ],
     });
     const page = await context.newPage();
 
     await page.goto('/dark');
 
-    await checkStoredTheme(page, 'light');
+    await checkStoredTheme(
+      page,
+      storedThemeValue('light', 'light'),
+    );
     await checkAppliedTheme(page, 'dark');
 
     await gotoHome(page);
 
     await checkSelectedTheme(page, 'light');
-    await checkStoredTheme(page, 'light');
+    await checkStoredTheme(
+      page,
+      storedThemeValue('light', 'light'),
+    );
     await checkAppliedTheme(page, 'light');
   });
 
@@ -72,7 +100,13 @@ test.describe('forced theme test-suite', () => {
   }) => {
     const context = await makeBrowserContext(browser, {
       baseURL,
-      cookies: [{name: 'theme', value: 'light'}],
+      colorScheme: 'light',
+      cookies: [
+        {
+          name: 'theme',
+          value: storedThemeValue('light', 'light'),
+        },
+      ],
       javaScriptEnabled: false,
     });
     const page = await context.newPage();

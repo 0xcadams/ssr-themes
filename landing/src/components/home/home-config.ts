@@ -86,51 +86,51 @@ export const frameworks = [
   {
     value: 'astro',
     label: 'Astro',
-    secondaryTitle: 'React island',
+    secondaryTitle: 'Theme switcher',
     secondaryDescription:
-      'Read the cookie in .astro, pre-set <html>, and hydrate a tiny React switcher with client:load.',
+      'Bind the React island once, then call useTheme() in a tiny select.',
   },
   {
     value: 'next',
     label: 'Next.js',
-    secondaryTitle: 'RSC support',
+    secondaryTitle: 'Theme switcher',
     secondaryDescription:
-      'Read cookies on the server and hydrate the initial theme.',
+      'Bind the React client helper once, then switch themes from a client component.',
   },
   {
     value: 'nuxt',
     label: 'Nuxt',
-    secondaryTitle: 'useHead SSR',
+    secondaryTitle: 'Theme switcher',
     secondaryDescription:
-      'Read the cookie on the server, pre-set <html> with useHead(), and hydrate the Vue binding after render.',
+      'Use the Vue binding in a small select component.',
   },
   {
     value: 'solid',
     label: 'Solid',
-    secondaryTitle: 'Accessor-based UI',
+    secondaryTitle: 'Theme switcher',
     secondaryDescription:
-      'Call theme() in your route and update the cookie-backed theme with setTheme(...).',
+      'Read theme() and call setTheme(...) from a Solid component.',
   },
   {
     value: 'svelte',
     label: 'SvelteKit',
-    secondaryTitle: 'Hook-based html SSR',
+    secondaryTitle: 'Theme switcher',
     secondaryDescription:
-      'Inject html attrs and the bootstrap script via app.html + hooks.server.ts, then read theme stores from getTheme().',
+      'Use the Svelte stores from useTheme() in a tiny select.',
   },
   {
     value: 'tanstack',
     label: 'TanStack Start',
-    secondaryTitle: 'Forced theme routes',
+    secondaryTitle: 'Theme switcher',
     secondaryDescription:
-      'Use route staticData to force a theme per route.',
+      'Bind the React helper once, then call useTheme() in a route component.',
   },
   {
     value: 'other',
     label: 'Other',
-    secondaryTitle: 'SSR cookies',
+    secondaryTitle: 'Theme switcher',
     secondaryDescription:
-      'Parse a raw Cookie header and pre-set the <html> theme.',
+      'Bind the client helper once and call useTheme() anywhere.',
   },
 ] as const satisfies readonly {
   value: FrameworkId;

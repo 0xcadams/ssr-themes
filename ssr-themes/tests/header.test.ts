@@ -117,6 +117,7 @@ describe('themeFromCookieHeader', () => {
     ).toEqual({
       selectedTheme: 'system',
       appliedTheme: 'dark',
+      colorScheme: 'dark',
     });
   });
 
@@ -126,6 +127,19 @@ describe('themeFromCookieHeader', () => {
     ).toEqual({
       selectedTheme: 'system',
       appliedTheme: 'light',
+      colorScheme: 'light',
+    });
+  });
+
+  it('reads explicit themes with a color-scheme hint from the cookie', () => {
+    expect(
+      defaultTheme.themeFromCookieHeader(
+        'theme=dark~l',
+      ),
+    ).toEqual({
+      selectedTheme: 'dark',
+      appliedTheme: 'dark',
+      colorScheme: 'light',
     });
   });
 
@@ -140,6 +154,7 @@ describe('themeFromCookieHeader', () => {
     ).toEqual({
       selectedTheme: 'dark',
       appliedTheme: 'dark',
+      colorScheme: 'dark',
     });
   });
   it('treats plain system cookie values as invalid', () => {

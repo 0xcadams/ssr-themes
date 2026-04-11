@@ -60,6 +60,8 @@ export interface ThemeState<
     | undefined;
   /** Literal theme name that should be applied to html */
   appliedTheme?: TTheme | undefined;
+  /** Last known browser color-scheme hint */
+  colorScheme?: LightOrDark | undefined;
 }
 
 export interface ThemeCookieState<
@@ -70,6 +72,8 @@ export interface ThemeCookieState<
   selectedTheme: WithSystem<TTheme, TEnableSystem>;
   /** Literal theme name that should be applied to html */
   appliedTheme: TTheme;
+  /** Last known browser color-scheme hint */
+  colorScheme?: LightOrDark | undefined;
 }
 
 export interface ThemeVariant<
@@ -117,6 +121,8 @@ export interface ThemeProviderRuntimeProps<
   selectedTheme?:
     | WithSystem<TTheme, TEnableSystem>
     | undefined;
+  /** Initial browser color-scheme hint to reuse during hydration */
+  initialColorScheme?: LightOrDark | undefined;
   /** Disable all CSS transitions when switching themes */
   disableTransitionOnChange?: boolean | undefined;
   /** Nonce string to pass to the inline style elements for CSP headers */
@@ -147,6 +153,23 @@ export type ThemeHtmlProps<
   >
 >;
 
+export type ThemeHtmlAttributes<
+  TAttribute extends
+    | RegisterThemeAttribute
+    | undefined = 'class',
+> = {
+  class?: string;
+  style?: string;
+} & Partial<
+  Record<
+    Extract<
+      ThemeAttributeUnion<TAttribute>,
+      DataAttribute
+    >,
+    string
+  >
+>;
+
 export interface RegisterThemeOptions<
   TTheme extends string = LightOrDark,
   TEnableSystem extends boolean = true,
@@ -163,8 +186,12 @@ export interface RegisterThemeOptions<
     | undefined;
   /** Literal theme name to apply to the html element */
   appliedTheme?: TTheme | undefined;
-  /** Render output as JSX props or an HTML attribute string */
-  renderMode?: 'jsx' | 'html-string' | undefined;
+  /** Render output as JSX props, an HTML attrs object, or an HTML attribute string */
+  renderMode?:
+    | 'jsx'
+    | 'html-attrs'
+    | 'html-string'
+    | undefined;
   /** Same attribute config used by ThemeProvider and themeScript() */
   attribute?: TAttribute | undefined;
   /** Optional class name to merge with the theme class */
@@ -216,7 +243,7 @@ export type AttributeFromOptions<
 export interface InitializedTheme<
   TOptions extends AnyThemeOptions = AnyThemeOptions,
 > {
-  options: TOptions;
+  themeOptions: TOptions;
   encodeTheme: (
     themeState?: ThemeState<
       ThemeNameFromOptions<TOptions>,
@@ -256,6 +283,21 @@ export interface InitializedTheme<
       renderMode?: 'jsx' | undefined;
     },
   ): ThemeHtmlProps<AttributeFromOptions<TOptions>>;
+  registerTheme(
+    themeState:
+      | ThemeState<
+          ThemeNameFromOptions<TOptions>,
+          EnableSystemFromOptions<TOptions>
+        >
+      | undefined,
+    runtime: RegisterThemeRuntimeOptions<
+      ThemeNameFromOptions<TOptions>
+    > & {
+      renderMode: 'html-attrs';
+    },
+  ): ThemeHtmlAttributes<
+    AttributeFromOptions<TOptions>
+  >;
   registerTheme(
     themeState:
       | ThemeState<

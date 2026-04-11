@@ -208,18 +208,23 @@ function IndexPage() {
               />
             </div>
             <CodeSnippetCard
-              title="Usage"
+              title="SSR setup"
               description={
                 <>
-                  Drop in{' '}
+                  Read the cookie on the server,
+                  pre-render{' '}
                   <InlineCode>
-                    themeScript()
+                    registerTheme()
                   </InlineCode>{' '}
                   +{' '}
                   <InlineCode>
+                    themeScript()
+                  </InlineCode>
+                  , then hydrate{' '}
+                  <InlineCode>
                     ThemeProvider
-                  </InlineCode>{' '}
-                  to get no-flash theming.
+                  </InlineCode>
+                  .
                 </>
               }
               html={activeSnippet.primaryHtml}

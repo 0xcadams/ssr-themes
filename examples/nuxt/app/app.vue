@@ -3,7 +3,6 @@ import {computed} from 'vue';
 import type {
   LightOrDark,
   ThemeCookieState,
-  ThemeHtmlProps,
 } from 'ssr-themes';
 import {
   registerTheme,
@@ -28,41 +27,12 @@ const selectedTheme = computed(
   () => themeState.value?.selectedTheme,
 );
 
-const styleToString = (
-  style?: ThemeHtmlProps['style'],
-) => {
-  if (!style) {
-    return undefined;
-  }
-
-  const declarations = Object.entries(style)
-    .filter(([, value]) => value !== undefined)
-    .map(([key, value]) => {
-      const property = key.startsWith('--')
-        ? key
-        : key.replace(
-            /[A-Z]/g,
-            match => `-${match.toLowerCase()}`,
-          );
-
-      return `${property}: ${value}`;
-    });
-
-  return declarations.length
-    ? declarations.join('; ')
-    : undefined;
-};
-
 const htmlAttrs = computed(() => {
-  const {className, style, ...dataAttrs} =
-    registerTheme(themeState.value);
-  const styleText = styleToString(style);
-
   return {
     lang: 'en' as const,
-    ...(className ? {class: className} : {}),
-    ...(styleText ? {style: styleText} : {}),
-    ...dataAttrs,
+    ...registerTheme(themeState.value, {
+      renderMode: 'html-attrs',
+    }),
   };
 });
 
