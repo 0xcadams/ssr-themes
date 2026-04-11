@@ -18,20 +18,12 @@ import type {
   ThemeNameFromOptions,
   ThemeOptions,
   ThemeState,
-  ThemeVariant,
   ThemeScriptRuntimeOptions,
 } from './types';
 
 type BoundThemeState<
   TOptions extends AnyThemeOptions,
 > = ThemeState<
-  ThemeNameFromOptions<TOptions>,
-  EnableSystemFromOptions<TOptions>
->;
-
-type BoundThemeVariant<
-  TOptions extends AnyThemeOptions,
-> = ThemeVariant<
   ThemeNameFromOptions<TOptions>,
   EnableSystemFromOptions<TOptions>
 >;
@@ -48,20 +40,28 @@ type BoundThemeScriptRuntime<
   ThemeNameFromOptions<TOptions>
 >;
 
-export const createTheme = <
-  const TOptions extends AnyThemeOptions =
-    ThemeOptions,
+type ThemeCodecOptionsFromTheme<
+  TOptions extends AnyThemeOptions,
+> = Pick<TOptions, 'enableSystem' | 'themes'>;
+
+const defaultThemeOptions: ThemeOptions = {};
+
+const pickThemeCodecOptions = <
+  TOptions extends AnyThemeOptions,
 >(
-  options = {} as TOptions,
+  options: TOptions,
+): ThemeCodecOptionsFromTheme<TOptions> =>
+  ({
+    enableSystem: options.enableSystem,
+    themes: options.themes,
+  }) as ThemeCodecOptionsFromTheme<TOptions>;
+
+const createThemeWithOptions = <
+  const TOptions extends AnyThemeOptions,
+>(
+  options: TOptions,
 ): CreatedTheme<TOptions> => {
-  const codecOptions = {
-    enableSystem:
-      options.enableSystem as EnableSystemFromOptions<TOptions>,
-    themes: options.themes as ThemeOptions<
-      ThemeNameFromOptions<TOptions>,
-      EnableSystemFromOptions<TOptions>
-    >['themes'],
-  };
+  const codecOptions = pickThemeCodecOptions(options);
 
   function registerTheme(
     themeState?: BoundThemeState<TOptions>,
@@ -105,38 +105,28 @@ export const createTheme = <
       className,
       renderMode,
       style,
-    }) as
-      | string
-      | ThemeHtmlAttributes<
-          AttributeFromOptions<TOptions>
-        >
-      | ThemeHtmlProps<AttributeFromOptions<TOptions>>;
+    });
   }
 
   return {
     options,
     encodeVariant: themeState =>
-      serializeVariant<
-        ThemeNameFromOptions<TOptions>,
-        EnableSystemFromOptions<TOptions>
-      >(themeState),
+      serializeVariant(themeState),
     decodeVariant: value =>
-      parseVariant<
-        ThemeNameFromOptions<TOptions>,
-        EnableSystemFromOptions<TOptions>
-      >(value, codecOptions),
+      parseVariant(value, codecOptions) as ReturnType<
+        CreatedTheme<TOptions>['decodeVariant']
+      >,
     listVariants: () =>
-      getThemeVariants(codecOptions) as ReadonlyArray<
-        BoundThemeVariant<TOptions>
+      getThemeVariants(codecOptions) as ReturnType<
+        CreatedTheme<TOptions>['listVariants']
       >,
     parseThemeCookie: cookieHeader =>
-      parseThemeCookieHeader<
-        ThemeNameFromOptions<TOptions>,
-        EnableSystemFromOptions<TOptions>
-      >(cookieHeader, {
+      parseThemeCookieHeader(cookieHeader, {
         cookieName: getCookieName(options.cookie),
         ...codecOptions,
-      }),
+      }) as ReturnType<
+        CreatedTheme<TOptions>['parseThemeCookie']
+      >,
     registerTheme,
     themeScript: (
       runtime?: BoundThemeScriptRuntime<TOptions>,
@@ -147,3 +137,21 @@ export const createTheme = <
       }),
   };
 };
+
+export function createTheme(): CreatedTheme<ThemeOptions>;
+
+export function createTheme<
+  const TOptions extends AnyThemeOptions,
+>(options: TOptions): CreatedTheme<TOptions>;
+
+export function createTheme(
+  options: AnyThemeOptions | undefined,
+): CreatedTheme<AnyThemeOptions>;
+
+export function createTheme(
+  options?: AnyThemeOptions,
+) {
+  return options
+    ? createThemeWithOptions(options)
+    : createThemeWithOptions(defaultThemeOptions);
+}

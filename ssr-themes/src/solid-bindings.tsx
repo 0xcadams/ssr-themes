@@ -11,8 +11,6 @@ import {
 import {
   createThemeController,
   pickThemeControllerOptions,
-  type ThemeControllerOptions,
-  type ThemeControllerSetValue,
 } from './theme-controller';
 import type {
   LightOrDark,
@@ -96,9 +94,7 @@ export const ThemeProvider = <
   }
 
   const controller = createThemeController(
-    pickThemeControllerOptions(
-      props,
-    ) as ThemeControllerOptions<string, boolean>,
+    pickThemeControllerOptions(props),
   );
   const [snapshot, setSnapshot] = createSignal(
     controller.getSnapshot(),
@@ -109,9 +105,7 @@ export const ThemeProvider = <
 
   createEffect(() => {
     controller.update(
-      pickThemeControllerOptions(
-        props,
-      ) as ThemeControllerOptions<string, boolean>,
+      pickThemeControllerOptions(props),
     );
     syncSnapshot();
   });
@@ -131,13 +125,7 @@ export const ThemeProvider = <
 
   const providerValue: ThemeContextValue = {
     selected: () => snapshot().selected,
-    setSelected: value =>
-      controller.setSelected(
-        value as ThemeControllerSetValue<
-          string,
-          boolean
-        >,
-      ),
+    setSelected: controller.setSelected,
     forced: () => snapshot().forced,
     resolved: () => snapshot().resolved,
     themes: () => snapshot().themes,

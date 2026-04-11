@@ -101,7 +101,10 @@ export interface ThemeOptions<
     | WithSystem<TTheme, TEnableSystem>
     | undefined;
   /** HTML attribute modified based on the active theme. Accepts `class`, `data-*` (meaning any data attribute, `data-mode`, `data-color`, etc.), or an array which could include both */
-  attribute?: Attribute | Attribute[] | undefined;
+  attribute?:
+    | Attribute
+    | readonly Attribute[]
+    | undefined;
   /** Mapping of theme name to HTML attribute value. Object where key is the theme name and value is the attribute value */
   valueMap?: ThemeValueMap<TTheme> | undefined;
 }

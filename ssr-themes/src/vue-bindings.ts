@@ -17,7 +17,6 @@ import type {
 import {
   createThemeController,
   pickThemeControllerOptions,
-  type ThemeControllerSetValue,
 } from './theme-controller';
 import type {
   Attribute,
@@ -88,7 +87,7 @@ const themeProviderProps = {
   >,
   defaultTheme: String as PropType<string | undefined>,
   attribute: [String, Array] as PropType<
-    Attribute | Attribute[] | undefined
+    Attribute | readonly Attribute[] | undefined
   >,
   valueMap: Object as PropType<
     Partial<Record<string, string>> | undefined
@@ -134,32 +133,23 @@ export const ThemeProvider = defineComponent({
     const syncSnapshot = () => {
       snapshot.value = controller.getSnapshot();
     };
-    const selected = computed(
-      () => snapshot.value.selected,
-    ) as Readonly<Ref<string | undefined>>;
+    const selected: Readonly<Ref<string | undefined>> =
+      computed(() => snapshot.value.selected);
     const forced = computed(
       () => snapshot.value.forced,
     );
     const resolved = computed(
       () => snapshot.value.resolved,
     );
-    const system = computed(
-      () => snapshot.value.system,
-    ) as ComputedRef<LightOrDark | undefined>;
+    const system: ComputedRef<
+      LightOrDark | undefined
+    > = computed(() => snapshot.value.system);
     const themes = computed(
       () => snapshot.value.themes,
     );
 
-    const setSelected: ThemeSetter<
-      string,
-      boolean
-    > = value =>
-      controller.setSelected(
-        value as ThemeControllerSetValue<
-          string,
-          boolean
-        >,
-      );
+    const setSelected: ThemeSetter<string, boolean> =
+      controller.setSelected;
 
     watchEffect(() => {
       controller.update(

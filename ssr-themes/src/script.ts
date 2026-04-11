@@ -2,45 +2,32 @@ import type {
   LightOrDark,
   ThemeOptions,
   ThemeScriptRuntimeOptions,
-  WithSystem,
 } from './types';
 
-type ThemeScriptOptions<
-  TTheme extends string,
-  TEnableSystem extends boolean,
-> = ThemeOptions<TTheme, TEnableSystem> &
-  ThemeScriptRuntimeOptions<TTheme>;
+type ThemeScriptOptions = ThemeOptions<
+  string,
+  boolean
+> &
+  ThemeScriptRuntimeOptions<string>;
 
-export default <
-  TTheme extends string,
-  TEnableSystem extends boolean = true,
->(
+export default (
   attribute: NonNullable<
-    ThemeOptions<TTheme, TEnableSystem>['attribute']
+    ThemeOptions<string, boolean>['attribute']
   >,
   cookieName: string,
   defaultTheme: NonNullable<
-    ThemeOptions<TTheme, TEnableSystem>['defaultTheme']
+    ThemeOptions<string, boolean>['defaultTheme']
   >,
-  forced: ThemeScriptOptions<
-    TTheme,
-    TEnableSystem
-  >['forced'],
+  forced: ThemeScriptOptions['forced'],
   themes: NonNullable<
-    ThemeOptions<TTheme, TEnableSystem>['themes']
+    ThemeOptions<string, boolean>['themes']
   >,
-  valueMap: ThemeOptions<
-    TTheme,
-    TEnableSystem
-  >['valueMap'],
+  valueMap: ThemeOptions<string, boolean>['valueMap'],
   enableSystem: NonNullable<
-    ThemeOptions<TTheme, TEnableSystem>['enableSystem']
+    ThemeOptions<string, boolean>['enableSystem']
   >,
   enableColorScheme: NonNullable<
-    ThemeOptions<
-      TTheme,
-      TEnableSystem
-    >['enableColorScheme']
+    ThemeOptions<string, boolean>['enableColorScheme']
   >,
 ) => {
   const el = document.documentElement;
@@ -49,7 +36,7 @@ export default <
     : [attribute];
   const themeNames = new Set(themes);
   const themeValues: Array<{
-    theme: TTheme;
+    theme: string;
     value: string;
   }> = [];
 
@@ -80,7 +67,7 @@ export default <
 
   const decodeTheme = (
     value: string | undefined,
-  ): WithSystem<TTheme, TEnableSystem> | undefined => {
+  ): string | 'system' | undefined => {
     if (!value) {
       return undefined;
     }
@@ -98,21 +85,15 @@ export default <
     const selected = value.slice(0, -2);
 
     if (!selected) {
-      if (!themeNames.has(systemTheme as TTheme)) {
+      if (!themeNames.has(systemTheme)) {
         return undefined;
       }
 
       if (!enableSystem) {
-        return systemTheme as WithSystem<
-          TTheme,
-          TEnableSystem
-        >;
+        return systemTheme;
       }
 
-      return 'system' as WithSystem<
-        TTheme,
-        TEnableSystem
-      >;
+      return 'system';
     }
 
     if (
@@ -122,8 +103,8 @@ export default <
       return undefined;
     }
 
-    return themeNames.has(selected as TTheme)
-      ? (selected as WithSystem<TTheme, TEnableSystem>)
+    return themeNames.has(selected)
+      ? selected
       : undefined;
   };
 
@@ -153,7 +134,7 @@ export default <
     return undefined;
   };
 
-  function updateDOM(theme: TTheme) {
+  function updateDOM(theme: string) {
     const name = valueMap ? valueMap[theme] : theme;
     for (const attr of attributes) {
       if (attr === 'class') {
@@ -190,11 +171,11 @@ export default <
   }
 
   const getThemeOrSystem = (
-    themeName: WithSystem<TTheme, TEnableSystem>,
+    themeName: string | 'system',
   ) =>
     enableSystem && themeName === 'system'
-      ? (getBrowserTheme() as TTheme)
-      : (themeName as TTheme);
+      ? getBrowserTheme()
+      : themeName;
 
   try {
     const cookieTheme = decodeTheme(
@@ -211,11 +192,7 @@ export default <
       return;
     }
 
-    const themeName = defaultTheme as WithSystem<
-      TTheme,
-      TEnableSystem
-    >;
-    updateDOM(getThemeOrSystem(themeName));
+    updateDOM(getThemeOrSystem(defaultTheme));
   } catch {
     //
   }

@@ -1,7 +1,10 @@
 import type {
+  AnyThemeOptions,
+  EnableSystemFromOptions,
   LightOrDark,
   LightOrDarkTuple,
   ResolvedThemeState,
+  ThemeNameFromOptions,
   ThemeOptions,
   ThemeState,
   ThemeVariant,
@@ -19,6 +22,11 @@ type ThemeCodecOptions<
 type DefaultThemeCodecOptions<
   TEnableSystem extends boolean = true,
 > = ThemeCodecOptions<LightOrDark, TEnableSystem>;
+
+type AnyThemeCodecOptions = Pick<
+  AnyThemeOptions,
+  'themes' | 'enableSystem'
+>;
 
 type CustomThemeCodecOptions<
   TTheme extends string,
@@ -54,22 +62,55 @@ const parseColorSchemeToken = (
   return undefined;
 };
 
-export const decodeVariant = <
-  TTheme extends string = LightOrDark,
+export function decodeVariant(
+  value: string | undefined,
+): ResolvedThemeState<LightOrDark, true> | undefined;
+
+export function decodeVariant<
   TEnableSystem extends boolean = true,
 >(
   value: string | undefined,
-  options: ThemeCodecOptions<
-    TTheme,
-    TEnableSystem
-  > = {},
+  options?: DefaultThemeCodecOptions<TEnableSystem>,
+):
+  | ResolvedThemeState<LightOrDark, TEnableSystem>
+  | undefined;
+
+export function decodeVariant<
+  const TOptions extends CustomThemeCodecOptions<
+    string,
+    boolean
+  >,
+>(
+  value: string | undefined,
+  options: TOptions,
+):
+  | ResolvedThemeState<
+      ThemeNameFromOptions<TOptions>,
+      EnableSystemFromOptions<TOptions>
+    >
+  | undefined;
+
+export function decodeVariant<
+  TTheme extends string,
+  TEnableSystem extends boolean = true,
+>(
+  value: string | undefined,
+  options: ThemeCodecOptions<TTheme, TEnableSystem>,
 ):
   | ResolvedThemeState<TTheme, TEnableSystem>
-  | undefined => {
-  const {
-    themes,
-    enableSystem = true as TEnableSystem,
-  } = options;
+  | undefined;
+
+export function decodeVariant(
+  value: string | undefined,
+  options: AnyThemeCodecOptions,
+): ResolvedThemeState<string, boolean> | undefined;
+
+export function decodeVariant(
+  value: string | undefined,
+  options: AnyThemeCodecOptions = {},
+): ResolvedThemeState<string, boolean> | undefined {
+  const themeNames = options.themes ?? defaultThemes;
+  const enableSystem = options.enableSystem ?? true;
 
   if (!value) {
     return undefined;
@@ -86,27 +127,21 @@ export const decodeVariant = <
   const selected = value.slice(0, -2);
 
   if (!selected) {
-    if (themes && !themes.includes(system as TTheme)) {
+    if (!themeNames.includes(system)) {
       return undefined;
     }
 
     if (enableSystem === false) {
       return {
-        selected: system as WithSystem<
-          TTheme,
-          TEnableSystem
-        >,
-        resolved: system as TTheme,
+        selected: system,
+        resolved: system,
         system,
       };
     }
 
     return {
-      selected: 'system' as WithSystem<
-        TTheme,
-        TEnableSystem
-      >,
-      resolved: system as TTheme,
+      selected: 'system',
+      resolved: system,
       system,
     };
   }
@@ -118,19 +153,16 @@ export const decodeVariant = <
     return undefined;
   }
 
-  if (themes && !themes.includes(selected as TTheme)) {
+  if (!themeNames.includes(selected)) {
     return undefined;
   }
 
   return {
-    selected: selected as WithSystem<
-      TTheme,
-      TEnableSystem
-    >,
-    resolved: selected as TTheme,
+    selected,
+    resolved: selected,
     system,
   };
-};
+}
 
 export const encodeVariant = <
   TTheme extends string = LightOrDark,
@@ -139,23 +171,31 @@ export const encodeVariant = <
   themeState?: ThemeState<TTheme, TEnableSystem>,
 ) => {
   const selected = themeState?.selected;
-  const system =
-    themeState?.system ??
-    (themeState?.resolved === 'dark' ||
+  let system = themeState?.system;
+
+  if (!system && themeState?.resolved === 'dark') {
+    system = 'dark';
+  } else if (
+    !system &&
     themeState?.resolved === 'light'
-      ? themeState.resolved
-      : undefined);
+  ) {
+    system = 'light';
+  }
 
   if (!selected || !system) {
     return undefined;
   }
 
   if (selected === 'system') {
-    return systemCookieValueMap[system as LightOrDark];
+    return systemCookieValueMap[system];
   }
 
-  return `${selected}${systemCookieValueMap[system as LightOrDark]}`;
+  return `${selected}${systemCookieValueMap[system]}`;
 };
+
+export function listVariants(): ReadonlyArray<
+  ThemeVariant<LightOrDark, true>
+>;
 
 export function listVariants<
   TEnableSystem extends boolean = true,
@@ -166,21 +206,32 @@ export function listVariants<
 >;
 
 export function listVariants<
+  const TOptions extends CustomThemeCodecOptions<
+    string,
+    boolean
+  >,
+>(
+  options: TOptions,
+): ReadonlyArray<
+  ThemeVariant<
+    ThemeNameFromOptions<TOptions>,
+    EnableSystemFromOptions<TOptions>
+  >
+>;
+
+export function listVariants<
   TTheme extends string,
   TEnableSystem extends boolean = true,
 >(
-  options: CustomThemeCodecOptions<
-    TTheme,
-    TEnableSystem
-  >,
+  options: ThemeCodecOptions<TTheme, TEnableSystem>,
 ): ReadonlyArray<ThemeVariant<TTheme, TEnableSystem>>;
 
 export function listVariants(
-  options: ThemeCodecOptions<string, boolean>,
+  options: AnyThemeCodecOptions,
 ): ReadonlyArray<ThemeVariant<string, boolean>>;
 
 export function listVariants(
-  options: ThemeCodecOptions<string, boolean> = {},
+  options: AnyThemeCodecOptions = {},
 ): ReadonlyArray<ThemeVariant<string, boolean>> {
   const themes = options.themes ?? defaultThemes;
   const variants: ThemeVariant<string, boolean>[] = [];
@@ -226,23 +277,16 @@ export function listVariants(
 }
 
 export const decodeThemeCookieValue = decodeVariant;
-export const encodeThemeCookieValue = <
-  TTheme extends string,
-  TEnableSystem extends boolean = true,
->(
-  selected:
-    | WithSystem<TTheme, TEnableSystem>
-    | undefined,
+export const encodeThemeCookieValue = (
+  selected: WithSystem<string, boolean> | undefined,
   system?: LightOrDark,
 ) =>
-  encodeVariant<TTheme, TEnableSystem>(
+  encodeVariant(
     selected
       ? {
           selected,
           resolved:
-            selected === 'system'
-              ? (system as TTheme | undefined)
-              : (selected as TTheme),
+            selected === 'system' ? system : selected,
           system,
         }
       : undefined,

@@ -31,6 +31,8 @@ type CustomThemeScriptOptions<
 
 const inlineScriptSource = '__INLINE_THEME_SCRIPT__';
 
+export function themeScript(): string;
+
 export function themeScript<
   TEnableSystem extends boolean = true,
 >(
@@ -38,14 +40,11 @@ export function themeScript<
 ): string;
 
 export function themeScript<
-  TTheme extends string,
-  TEnableSystem extends boolean = true,
->(
-  options: CustomThemeScriptOptions<
-    TTheme,
-    TEnableSystem
+  const TOptions extends CustomThemeScriptOptions<
+    string,
+    boolean
   >,
-): string;
+>(options: TOptions): string;
 
 export function themeScript(
   options: ThemeScriptOptions<string, boolean>,
