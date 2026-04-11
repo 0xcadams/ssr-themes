@@ -35,5 +35,11 @@
     "**/*.jsx",
     "**/*.svelte"
   ],
-  "exclude": ["node_modules", "build", "dist", ".next"]
+  "exclude": [
+    "node_modules",
+    "build",
+    "dist",
+    ".next",
+    "tests/types"
+  ]
 }

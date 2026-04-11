@@ -17,7 +17,9 @@ import {
 } from './theme-runtime';
 import type {
   Attribute,
+  EnableSystemFromOptions,
   LightOrDark,
+  ThemeNameFromOptions,
   ThemeOptions,
   ThemeScriptRuntimeOptions,
   ThemeState,
@@ -53,6 +55,16 @@ type CustomThemeControllerOptions<
 > & {
   themes: readonly TTheme[];
 };
+
+type ThemeControllerFromOptions<
+  TOptions extends CustomThemeControllerOptions<
+    string,
+    boolean
+  >,
+> = ThemeController<
+  ThemeNameFromOptions<TOptions>,
+  EnableSystemFromOptions<TOptions>
+>;
 
 export type ThemeControllerSetValue<
   TTheme extends string = LightOrDark,
@@ -306,6 +318,15 @@ const getInitialSystemTheme = <TTheme extends string>(
 };
 
 export function createThemeController<
+  const TOptions extends CustomThemeControllerOptions<
+    string,
+    boolean
+  >,
+>(
+  initialOptions: TOptions,
+): ThemeControllerFromOptions<TOptions>;
+
+export function createThemeController<
   TEnableSystem extends boolean = true,
 >(
   initialOptions?: DefaultThemeControllerOptions<TEnableSystem>,
@@ -316,6 +337,16 @@ export function createThemeController<
   TEnableSystem extends boolean = true,
 >(
   initialOptions: CustomThemeControllerOptions<
+    TTheme,
+    TEnableSystem
+  >,
+): ThemeController<TTheme, TEnableSystem>;
+
+export function createThemeController<
+  TTheme extends string = LightOrDark,
+  TEnableSystem extends boolean = true,
+>(
+  initialOptions: ThemeControllerOptions<
     TTheme,
     TEnableSystem
   >,
@@ -432,7 +463,7 @@ export function createThemeController<
     }
 
     const nextName = options.valueMap
-      ? options.valueMap[resolvedTheme as TTheme]
+      ? options.valueMap[resolvedTheme]
       : resolvedTheme;
     const restoreTransitions =
       options.disableTransition
@@ -448,7 +479,7 @@ export function createThemeController<
     );
     updateThemeColorScheme(
       element,
-      resolvedTheme as TTheme,
+      resolvedTheme,
       options.enableColorScheme,
     );
 

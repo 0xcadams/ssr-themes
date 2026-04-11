@@ -1,0 +1,15 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "ssr-themes": ["./src/index.ts"],
+      "ssr-themes/react": ["./src/react.tsx"],
+      "ssr-themes/solid": ["./src/solid.ts"],
+      "ssr-themes/svelte": ["./src/svelte/index.ts"],
+      "ssr-themes/vue": ["./src/vue.ts"]
+    }
+  },
+  "include": ["tests/types/**/*.ts"],
+  "exclude": ["node_modules", "build", "dist", ".next"]
+}

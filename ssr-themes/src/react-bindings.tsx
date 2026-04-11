@@ -5,8 +5,6 @@ import {
   createThemeController,
   pickThemeControllerOptions,
   type ThemeController,
-  type ThemeControllerOptions,
-  type ThemeControllerSetValue,
 } from './theme-controller';
 import type {
   LightOrDark,
@@ -123,16 +121,13 @@ const Theme = <
     ],
   );
   const controllerRef = React.useRef<ThemeController<
-    string,
-    boolean
+    TTheme,
+    TEnableSystem
   > | null>(null);
 
   if (!controllerRef.current) {
     controllerRef.current = createThemeController(
-      controllerOptions as ThemeControllerOptions<
-        string,
-        boolean
-      >,
+      controllerOptions,
     );
   }
 
@@ -144,12 +139,7 @@ const Theme = <
   );
 
   React.useEffect(() => {
-    controller.update(
-      controllerOptions as ThemeControllerOptions<
-        string,
-        boolean
-      >,
-    );
+    controller.update(controllerOptions);
   }, [controller, controllerOptions]);
 
   React.useEffect(() => {
@@ -164,18 +154,12 @@ const Theme = <
     () =>
       ({
         selected: snapshot.selected,
-        setSelected: value =>
-          controller.setSelected(
-            value as ThemeControllerSetValue<
-              string,
-              boolean
-            >,
-          ),
+        setSelected: controller.setSelected,
         forced: snapshot.forced,
         resolved: snapshot.resolved,
         themes: snapshot.themes,
         system: snapshot.system,
-      }) satisfies ThemeContextValue,
+      }) as ThemeResult<TTheme, TEnableSystem>,
     [
       controller,
       snapshot.forced,
@@ -187,7 +171,9 @@ const Theme = <
   );
 
   return (
-    <ThemeContext.Provider value={providerValue}>
+    <ThemeContext.Provider
+      value={providerValue as ThemeContextValue}
+    >
       {props.children}
     </ThemeContext.Provider>
   );
