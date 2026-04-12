@@ -32,9 +32,9 @@ yarn add ssr-themes
 
 `ssr-themes` has three parts:
 
-1. `createTheme(...)` captures the shared theme config once.
-2. The returned SSR helpers (`parseThemeCookie()`, `registerTheme()`, and `themeScript()`) keep the server HTML and bootstrap script aligned.
-3. `bindTheme(...)` returns a framework-specific `ThemeProvider` and `useTheme()` that use that same config on the client.
+1. `parseThemeCookie()` and `registerTheme()` help the server pre-render the correct theme during SSR. This is optional.
+2. `themeScript()` runs before hydration on the client and makes sure the theme on `<html>` is set to the correct value (and fills in the value from the client if it's `system`).
+3. `ThemeProvider` keeps the DOM, the theme cookie, and client state in sync after mount.
 
 ```tsx
 import {createTheme} from 'ssr-themes';
