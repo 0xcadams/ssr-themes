@@ -9,6 +9,9 @@ export default defineConfig({
       include: ['tests/solid.test.tsx'],
     }),
   ],
+  test: {
+    typecheck: {},
+  },
   resolve: {
     conditions: ['development', 'browser'],
   },
