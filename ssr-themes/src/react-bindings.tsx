@@ -151,15 +151,14 @@ const Theme = <
   }, [controller]);
 
   const providerValue = React.useMemo(
-    () =>
-      ({
-        selected: snapshot.selected,
-        setSelected: controller.setSelected,
-        forced: snapshot.forced,
-        resolved: snapshot.resolved,
-        themes: snapshot.themes,
-        system: snapshot.system,
-      }) ,
+    () => ({
+      selected: snapshot.selected,
+      setSelected: controller.setSelected,
+      forced: snapshot.forced,
+      resolved: snapshot.resolved,
+      themes: snapshot.themes,
+      system: snapshot.system,
+    }),
     [
       controller,
       snapshot.forced,
@@ -171,9 +170,7 @@ const Theme = <
   );
 
   return (
-    <ThemeContext.Provider
-      value={providerValue }
-    >
+    <ThemeContext.Provider value={providerValue}>
       {props.children}
     </ThemeContext.Provider>
   );
