@@ -138,7 +138,7 @@ function IndexPage() {
           <div className="grid items-start gap-14 lg:grid-cols-[1.05fr_0.95fr] lg:gap-20">
             <section className="min-w-0 space-y-6 animate-rise animate-delay-2">
               <h1 className="font-display text-4xl leading-tight text-foreground sm:text-5xl">
-                SSR-safe theming
+                SSR-safe dark mode and theming
               </h1>
               <p className="max-w-xl text-lg text-muted-foreground">
                 Theming for apps where the theme needs
