@@ -1,9 +1,7 @@
 name: Vercel Deployment Playwright
 
 on:
-  repository_dispatch:
-    types:
-      - vercel.deployment.success
+  workflow_dispatch:
 
 jobs:
   test-deployment:
