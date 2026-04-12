@@ -159,7 +159,7 @@ const Theme = <
         resolved: snapshot.resolved,
         themes: snapshot.themes,
         system: snapshot.system,
-      }) as ThemeResult<TTheme, TEnableSystem>,
+      }) ,
     [
       controller,
       snapshot.forced,
@@ -172,7 +172,7 @@ const Theme = <
 
   return (
     <ThemeContext.Provider
-      value={providerValue as ThemeContextValue}
+      value={providerValue }
     >
       {props.children}
     </ThemeContext.Provider>

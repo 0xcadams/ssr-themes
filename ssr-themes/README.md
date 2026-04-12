@@ -2,9 +2,9 @@
 
 Theming is hard with SSR.
 
-The server is usually unaware of client theme preference. This skew between what the server defaults to and what is hydrated on the client will commonly result in a flash of the wrong content.
+The server is usually unaware of the client theme. This skew between the server default and what is hydrated on the client often results in a flash of the wrong content.
 
-`ssr-themes` keeps the server HTML, bootstrap script, and hydrated app in sync. It uses cookies to store the correct theme (and if it's set to `system`, will auto-send that preference) and has first-party bindings for React, Svelte, Vue, and more. This means:
+`ssr-themes` keeps the server HTML, bootstrap script, and hydrated app in sync. It uses cookies to store the selected theme + browser default and has first-party bindings for React, Svelte, Vue, and more. This means:
 
 - ✨ No flash on first paint
 - 🍪 Cookie-driven SSR for correct SSR markup
@@ -45,10 +45,7 @@ const {
   registerTheme,
   parseThemeCookie,
   themeScript,
-} = createTheme({
-  themes: ['light', 'dark'],
-  attribute: 'class',
-});
+} = createTheme();
 
 const {ThemeProvider} = bindTheme(options);
 
@@ -81,10 +78,10 @@ But it solves a subset of the theming problem.
 
 Its docs explicitly warn that reading `theme` before mount is hydration-unsafe, because the server does not know the current theme yet. That is a reasonable tradeoff if all you need is client-resolved theme state.
 
-`ssr-themes` is for apps that want the theme to participate in SSR. You can:
+`ssr-themes` is for apps that want the theme to participate on the server. You can:
 
 - Read the theme from the request cookie during SSR
-- Pre-render the correct `<html>` attributes on the server (and render `<select>`, etc. correctly)
+- Pre-render the correct HTML on the server (`<select>`, etc.)
 
 You don't even _need_ to use the SSR helpers. They are optional if/when you need to start rendering conditional UI based on the theme. You'll probably do this with a theme picker.
 
@@ -92,7 +89,7 @@ If you only need client-side theme state in a Next.js app, `next-themes` is a go
 
 If your SSR markup depends on the theme or you don't use Next.js, `ssr-themes` is a good fit.
 
-If you want a cache-friendly App Router setup, see the [Next.js example](https://github.com/0xcadams/ssr-themes/tree/main/examples/next). It uses `proxy.ts` plus `listVariants()` so the public `/` route stays cacheable and layouts do not read cookies.
+> Check out the [Next.js example](https://github.com/0xcadams/ssr-themes/tree/main/examples/next) for a cache-friendly App Router setup. It uses `proxy.ts` plus `listVariants()` so the public `/` route stays cacheable and layouts do not read cookies.
 
 ## Styling
 
@@ -152,7 +149,7 @@ const {
 });
 ```
 
-`options` is the exact typed config object passed into `createTheme()`. Inline theme arrays are inferred as tuples, so `themes: ['light', 'dark', 'quartz']` automatically becomes `'light' | 'dark' | 'quartz'` in the returned helpers and bound hooks.
+`options` is the exact typed config object passed into `createTheme()`.
 
 Stable config belongs here:
 
@@ -198,13 +195,13 @@ All bindings expose the same core theme state:
 
 ### `parseThemeCookie()`
 
-Use `parseThemeCookie()` during SSR to read the saved theme from a raw `Cookie` header.
+Use `parseThemeCookie()` to read the saved theme from a raw `Cookie` header.
 
 ```ts
 const initial = parseThemeCookie(cookieHeader);
 ```
 
-It returns `undefined` when the cookie is missing, empty, malformed, or not in the allowed theme list.
+It returns `undefined`when the cookie is missing, empty, malformed, or not in the allowed theme list.
 
 When present, the return value has:
 
@@ -216,7 +213,7 @@ The cookie stores system mode in a compact form like `~d` or `~l`, and stores ex
 
 ### `encodeVariant()`, `decodeVariant()`, and `listVariants()`
 
-Use these helpers when you want a stable theme key for routing or caching, such as a Next.js `proxy.ts` rewrite.
+Use these helpers when you want a stable theme key for routing or caching, like a Next.js `proxy.ts` rewrite.
 
 ```ts
 const variant =
@@ -229,7 +226,7 @@ const variants = listVariants();
 
 - Explicit themes always include the system hint, like `light~d` and `dark~l`
 - System mode serializes to the compact values `~l` and `~d`
-- `listVariants()` returns the finite set of pre-renderable theme variants for `generateStaticParams()`
+- `listVariants()` returns the finite set of pre-renderable theme variants
 
 ### `registerTheme()`
 

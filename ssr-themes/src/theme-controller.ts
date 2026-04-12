@@ -376,7 +376,7 @@ export function createThemeController<
     options.themeNames,
     options.enableSystemValue,
   );
-  let systemTheme = getInitialSystemTheme<TTheme>(
+  let systemTheme = getInitialSystemTheme(
     theme,
     options.initial?.system,
     options.initial?.resolved,
