@@ -4,7 +4,7 @@ import {
 } from 'next/server';
 
 import {
-  defaultThemeVariant,
+  defaultVariant,
   encodeVariant,
   parseThemeCookie,
 } from './app/theme';
@@ -13,7 +13,7 @@ export function proxy(request: NextRequest) {
   const variant =
     encodeVariant(
       parseThemeCookie(request.headers.get('cookie')),
-    ) ?? defaultThemeVariant;
+    ) ?? defaultVariant;
   const url = request.nextUrl.clone();
 
   url.pathname = `/theme/${encodeURIComponent(variant)}`;

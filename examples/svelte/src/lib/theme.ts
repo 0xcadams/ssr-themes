@@ -7,12 +7,7 @@ export const htmlAttributesPlaceholder =
 export const themeScriptPlaceholder =
   '%ssr-themes.script%';
 
-export const themes = ['dark', 'light'] as const;
-
-const theme = createTheme({
-  attribute: 'class' as const,
-  themes,
-});
+const theme = createTheme();
 
 export const {
   options,

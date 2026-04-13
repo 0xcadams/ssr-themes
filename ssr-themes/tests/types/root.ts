@@ -2,6 +2,7 @@ import {
   createTheme,
   type AttributeFromOptions,
   type CreatedTheme,
+  type EncodedThemeVariant,
   type EnableSystemFromOptions,
   type LightOrDark,
   type RegisterThemeRuntimeOptions,
@@ -23,6 +24,13 @@ const defaultTheme = createTheme();
 
 expectType<
   AssertEqual<
+    typeof defaultTheme.defaultVariant,
+    EncodedThemeVariant<LightOrDark, true>
+  >
+>();
+
+expectType<
+  AssertEqual<
     Parameters<typeof defaultTheme.encodeVariant>[0],
     ThemeState<LightOrDark, true> | undefined
   >
@@ -35,6 +43,16 @@ const rootTheme = createTheme({
 });
 
 type RootOptions = typeof rootTheme.options;
+
+expectType<
+  AssertEqual<
+    typeof rootTheme.defaultVariant,
+    EncodedThemeVariant<
+      'light' | 'dark' | 'quartz',
+      true
+    >
+  >
+>();
 
 expectType<
   AssertEqual<

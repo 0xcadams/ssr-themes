@@ -1,9 +1,13 @@
 import {createTheme} from 'ssr-themes';
 import {bindTheme} from 'ssr-themes/react';
 
-const theme = createTheme();
+export const theme = createTheme();
 
 export const {
+  defaultVariant,
+  decodeVariant,
+  encodeVariant,
+  listVariants,
   options,
   registerTheme,
   parseThemeCookie,

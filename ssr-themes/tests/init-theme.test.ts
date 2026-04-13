@@ -116,4 +116,23 @@ describe('createTheme helpers', () => {
       },
     ]);
   });
+
+  it('exposes a canonical default variant', () => {
+    expect(createTheme().defaultVariant).toBe('~l');
+    expect(
+      createTheme({defaultTheme: 'dark'})
+        .defaultVariant,
+    ).toBe('dark~d');
+    expect(
+      createTheme({
+        enableSystem: false,
+      }).defaultVariant,
+    ).toBe('light~l');
+    expect(
+      createTheme({
+        themes: ['light', 'dark', 'quartz'],
+        defaultTheme: 'quartz',
+      }).defaultVariant,
+    ).toBe('quartz~l');
+  });
 });

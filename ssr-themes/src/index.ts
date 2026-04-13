@@ -5,6 +5,7 @@ export type {
   BindThemeInput,
   CookieOptions,
   CreatedTheme,
+  EncodedThemeVariant,
   EnableSystemFromOptions,
   LightOrDark,
   ThemeHtmlAttributes,
