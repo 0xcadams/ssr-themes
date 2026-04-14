@@ -5,34 +5,25 @@ import {
   Scripts,
   createRootRoute,
 } from '@tanstack/react-router';
+import {createServerFn} from '@tanstack/react-start';
+import {getRequestHeader} from '@tanstack/react-start/server';
 import type {
   LightOrDark,
   ResolvedThemeState,
 } from 'ssr-themes';
 import {
   ThemeProvider,
-  decodeVariant,
-  defaultVariant,
   registerTheme,
+  parseThemeCookie,
   themeScript,
 } from '../lib/theme';
 import appCss from '../styles.css?url';
 
-const themeRoutePrefix = '/theme/';
-
-const getThemeStateFromPath = (
-  pathname: string,
-): ResolvedThemeState<LightOrDark> | undefined => {
-  if (!pathname.startsWith(themeRoutePrefix)) {
-    return decodeVariant(defaultVariant);
-  }
-
-  const variant = decodeURIComponent(
-    pathname.slice(themeRoutePrefix.length),
-  );
-
-  return decodeVariant(variant ?? defaultVariant);
-};
+const getThemeState = createServerFn({
+  method: 'GET',
+}).handler(() =>
+  parseThemeCookie(getRequestHeader('cookie')),
+);
 
 function RootDocument({
   children,
@@ -70,10 +61,8 @@ function RootComponent() {
 }
 
 export const Route = createRootRoute({
-  loader: ({location}) => ({
-    themeState: getThemeStateFromPath(
-      location.pathname,
-    ),
+  loader: async () => ({
+    themeState: await getThemeState(),
   }),
   staleTime: Infinity,
   shouldReload: false,

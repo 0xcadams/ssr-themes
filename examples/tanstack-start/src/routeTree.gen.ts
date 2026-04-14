@@ -10,43 +10,33 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as ThemeVariantRouteImport } from './routes/theme.$variant'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ThemeVariantRoute = ThemeVariantRouteImport.update({
-  id: '/theme/$variant',
-  path: '/theme/$variant',
-  getParentRoute: () => rootRouteImport,
-} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/theme/$variant': typeof ThemeVariantRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/theme/$variant': typeof ThemeVariantRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/theme/$variant': typeof ThemeVariantRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/theme/$variant'
+  fullPaths: '/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/theme/$variant'
-  id: '__root__' | '/' | '/theme/$variant'
+  to: '/'
+  id: '__root__' | '/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  ThemeVariantRoute: typeof ThemeVariantRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -58,19 +48,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/theme/$variant': {
-      id: '/theme/$variant'
-      path: '/theme/$variant'
-      fullPath: '/theme/$variant'
-      preLoaderRoute: typeof ThemeVariantRouteImport
-      parentRoute: typeof rootRouteImport
-    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  ThemeVariantRoute: ThemeVariantRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
