@@ -1,8 +1,6 @@
 import {createTheme} from 'ssr-themes';
 
-export const theme = createTheme({
-  defaultTheme: 'light',
-});
+export const theme = createTheme();
 
 export const {
   defaultVariant,
