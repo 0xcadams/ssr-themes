@@ -16,9 +16,6 @@ export type PlaywrightApp =
 export const playwrightApp = (process.env
   .PLAYWRIGHT_APP ?? 'next') as PlaywrightApp;
 
-export const usesExplicitLightDefault =
-  playwrightApp === 'next';
-
 export function storedThemeValue(
   theme: 'dark' | 'light' | 'system',
   colorScheme: 'dark' | 'light',

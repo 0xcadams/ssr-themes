@@ -84,6 +84,14 @@ export interface ThemeVariant<
   value: string;
 }
 
+export type EncodedThemeVariant<
+  TTheme extends string = LightOrDark,
+  TEnableSystem extends boolean = true,
+> =
+  | `${TTheme}~l`
+  | `${TTheme}~d`
+  | (TEnableSystem extends true ? '~l' | '~d' : never);
+
 export interface ThemeOptions<
   TTheme extends string = LightOrDark,
   TEnableSystem extends boolean = true,
@@ -96,7 +104,7 @@ export interface ThemeOptions<
   enableColorScheme?: boolean | undefined;
   /** Cookie configuration used to store theme preference */
   cookie?: CookieOptions | undefined;
-  /** Default theme name (for v0.0.12 and lower the default was light). If `enableSystem` is false, the default theme is light */
+  /** Default theme name. If `enableSystem` is false, the default theme is light */
   defaultTheme?:
     | WithSystem<TTheme, TEnableSystem>
     | undefined;
@@ -245,6 +253,10 @@ export interface CreatedTheme<
   TOptions extends AnyThemeOptions = AnyThemeOptions,
 > {
   options: TOptions;
+  defaultVariant: EncodedThemeVariant<
+    ThemeNameFromOptions<TOptions>,
+    EnableSystemFromOptions<TOptions>
+  > & {};
   encodeVariant: (
     themeState?: ThemeState<
       ThemeNameFromOptions<TOptions>,

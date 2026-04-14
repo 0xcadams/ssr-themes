@@ -535,10 +535,7 @@ export const {
   registerTheme,
   parseThemeCookie,
   themeScript,
-} = createTheme({
-  attribute: 'class',
-  themes: ['dark', 'light'],
-});
+} = createTheme();
 
 export const {ThemeProvider, useTheme} =
   bindTheme(options);

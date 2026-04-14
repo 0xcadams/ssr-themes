@@ -5,6 +5,7 @@ import {
   encodeVariant as serializeVariant,
   listVariants as getThemeVariants,
 } from './theme-cookie';
+import {resolveDefaultTheme} from './theme-runtime';
 import {getCookieName} from './theme-runtime';
 import {themeScript as renderThemeScript} from './theme-script';
 import type {
@@ -62,6 +63,26 @@ const createThemeWithOptions = <
   options: TOptions,
 ): CreatedTheme<TOptions> => {
   const codecOptions = pickThemeCodecOptions(options);
+  const resolvedDefaultTheme = resolveDefaultTheme(
+    options.defaultTheme,
+    options.enableSystem,
+  );
+  const defaultVariant = serializeVariant(
+    resolvedDefaultTheme === 'system'
+      ? {
+          selected: 'system',
+          resolved: 'light',
+          system: 'light',
+        }
+      : {
+          selected: resolvedDefaultTheme,
+          resolved: resolvedDefaultTheme,
+          system:
+            resolvedDefaultTheme === 'dark'
+              ? 'dark'
+              : 'light',
+        },
+  ) as CreatedTheme<TOptions>['defaultVariant'];
 
   function registerTheme(
     themeState?: BoundThemeState<TOptions>,
@@ -110,6 +131,7 @@ const createThemeWithOptions = <
 
   return {
     options,
+    defaultVariant,
     encodeVariant: themeState =>
       serializeVariant(themeState),
     decodeVariant: value =>
