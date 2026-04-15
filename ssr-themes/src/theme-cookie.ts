@@ -1,6 +1,7 @@
 import type {
   AnyThemeOptions,
   EnableSystemFromOptions,
+  HumanReadable,
   LightOrDark,
   LightOrDarkTuple,
   ResolvedThemeState,
@@ -64,7 +65,11 @@ const parseColorSchemeToken = (
 
 export function decodeVariant(
   value: string | undefined,
-): ResolvedThemeState<LightOrDark, true> | undefined;
+):
+  | HumanReadable<
+      ResolvedThemeState<LightOrDark, true>
+    >
+  | undefined;
 
 export function decodeVariant<
   TEnableSystem extends boolean = true,
@@ -72,7 +77,9 @@ export function decodeVariant<
   value: string | undefined,
   options?: DefaultThemeCodecOptions<TEnableSystem>,
 ):
-  | ResolvedThemeState<LightOrDark, TEnableSystem>
+  | HumanReadable<
+      ResolvedThemeState<LightOrDark, TEnableSystem>
+    >
   | undefined;
 
 export function decodeVariant<
@@ -84,9 +91,11 @@ export function decodeVariant<
   value: string | undefined,
   options: TOptions,
 ):
-  | ResolvedThemeState<
-      ThemeNameFromOptions<TOptions>,
-      EnableSystemFromOptions<TOptions>
+  | HumanReadable<
+      ResolvedThemeState<
+        ThemeNameFromOptions<TOptions>,
+        EnableSystemFromOptions<TOptions>
+      >
     >
   | undefined;
 
@@ -97,18 +106,24 @@ export function decodeVariant<
   value: string | undefined,
   options: ThemeCodecOptions<TTheme, TEnableSystem>,
 ):
-  | ResolvedThemeState<TTheme, TEnableSystem>
+  | HumanReadable<
+      ResolvedThemeState<TTheme, TEnableSystem>
+    >
   | undefined;
 
 export function decodeVariant(
   value: string | undefined,
   options: AnyThemeCodecOptions,
-): ResolvedThemeState<string, boolean> | undefined;
+):
+  | HumanReadable<ResolvedThemeState<string, boolean>>
+  | undefined;
 
 export function decodeVariant(
   value: string | undefined,
   options: AnyThemeCodecOptions = {},
-): ResolvedThemeState<string, boolean> | undefined {
+):
+  | HumanReadable<ResolvedThemeState<string, boolean>>
+  | undefined {
   const themeNames = options.themes ?? defaultThemes;
   const enableSystem = options.enableSystem ?? true;
 
@@ -194,7 +209,7 @@ export const encodeVariant = <
 };
 
 export function listVariants(): ReadonlyArray<
-  ThemeVariant<LightOrDark, true>
+  HumanReadable<ThemeVariant<LightOrDark, true>>
 >;
 
 export function listVariants<
@@ -202,7 +217,9 @@ export function listVariants<
 >(
   options?: DefaultThemeCodecOptions<TEnableSystem>,
 ): ReadonlyArray<
-  ThemeVariant<LightOrDark, TEnableSystem>
+  HumanReadable<
+    ThemeVariant<LightOrDark, TEnableSystem>
+  >
 >;
 
 export function listVariants<
@@ -213,9 +230,11 @@ export function listVariants<
 >(
   options: TOptions,
 ): ReadonlyArray<
-  ThemeVariant<
-    ThemeNameFromOptions<TOptions>,
-    EnableSystemFromOptions<TOptions>
+  HumanReadable<
+    ThemeVariant<
+      ThemeNameFromOptions<TOptions>,
+      EnableSystemFromOptions<TOptions>
+    >
   >
 >;
 
@@ -224,15 +243,21 @@ export function listVariants<
   TEnableSystem extends boolean = true,
 >(
   options: ThemeCodecOptions<TTheme, TEnableSystem>,
-): ReadonlyArray<ThemeVariant<TTheme, TEnableSystem>>;
+): ReadonlyArray<
+  HumanReadable<ThemeVariant<TTheme, TEnableSystem>>
+>;
 
 export function listVariants(
   options: AnyThemeCodecOptions,
-): ReadonlyArray<ThemeVariant<string, boolean>>;
+): ReadonlyArray<
+  HumanReadable<ThemeVariant<string, boolean>>
+>;
 
 export function listVariants(
   options: AnyThemeCodecOptions = {},
-): ReadonlyArray<ThemeVariant<string, boolean>> {
+): ReadonlyArray<
+  HumanReadable<ThemeVariant<string, boolean>>
+> {
   const themes = options.themes ?? defaultThemes;
   const variants: ThemeVariant<string, boolean>[] = [];
 

@@ -13,6 +13,7 @@ import type {
   AttributeFromOptions,
   CreatedTheme,
   EnableSystemFromOptions,
+  HumanReadable,
   RegisterThemeRuntimeOptions,
   ThemeHtmlAttributes,
   ThemeHtmlProps,
@@ -89,15 +90,17 @@ const createThemeWithOptions = <
     runtime?: BoundRegisterThemeRuntime<TOptions> & {
       renderMode?: 'jsx' | undefined;
     },
-  ): ThemeHtmlProps<AttributeFromOptions<TOptions>>;
+  ): HumanReadable<
+    ThemeHtmlProps<AttributeFromOptions<TOptions>>
+  >;
 
   function registerTheme(
     themeState: BoundThemeState<TOptions> | undefined,
     runtime: BoundRegisterThemeRuntime<TOptions> & {
       renderMode: 'html-attrs';
     },
-  ): ThemeHtmlAttributes<
-    AttributeFromOptions<TOptions>
+  ): HumanReadable<
+    ThemeHtmlAttributes<AttributeFromOptions<TOptions>>
   >;
 
   function registerTheme(
@@ -112,10 +115,14 @@ const createThemeWithOptions = <
     runtime?: BoundRegisterThemeRuntime<TOptions>,
   ):
     | string
-    | ThemeHtmlAttributes<
-        AttributeFromOptions<TOptions>
+    | HumanReadable<
+        ThemeHtmlAttributes<
+          AttributeFromOptions<TOptions>
+        >
       >
-    | ThemeHtmlProps<AttributeFromOptions<TOptions>> {
+    | HumanReadable<
+        ThemeHtmlProps<AttributeFromOptions<TOptions>>
+      > {
     const {forced, className, renderMode, style} =
       runtime ?? {};
 
@@ -126,7 +133,7 @@ const createThemeWithOptions = <
       className,
       renderMode,
       style,
-    });
+    }) as unknown as ReturnType<typeof registerTheme>;
   }
 
   return {
