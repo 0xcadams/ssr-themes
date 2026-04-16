@@ -1,7 +1,11 @@
 import {createTheme} from 'ssr-themes';
 import {bindTheme} from 'ssr-themes/react';
 
-const theme = createTheme();
+const theme = createTheme({
+  cookie: {
+    secure: true,
+  },
+});
 
 export const {
   options,

@@ -146,6 +146,9 @@ const {
   themes: ['light', 'dark', 'quartz'],
   attribute: 'class',
   defaultTheme: 'system',
+  cookie: {
+    secure: true,
+  },
 });
 ```
 
@@ -286,3 +289,7 @@ It reads the saved theme from the cookie, resolves `'system'` when needed, updat
 `themeScript()` only supports one runtime override:
 
 - `forced`
+
+## Skills
+
+The NPM package ships with [AI agent skills](./skills) to help migration from `next-themes` to `ssr-themes`.

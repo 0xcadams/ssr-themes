@@ -269,7 +269,7 @@ if (import.meta.server) {
 </script>
 
 <template>
-  <ThemeProvider :initial-state="themeState">
+  <ThemeProvider :initial="themeState">
     <NuxtPage />
   </ThemeProvider>
 </template>

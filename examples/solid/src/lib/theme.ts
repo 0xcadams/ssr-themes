@@ -2,7 +2,11 @@ import {createTheme} from 'ssr-themes';
 import {bindTheme} from 'ssr-themes/solid';
 import {getRequestEvent, isServer} from 'solid-js/web';
 
-const theme = createTheme();
+const theme = createTheme({
+  cookie: {
+    secure: true,
+  },
+});
 
 export const {
   options,

@@ -1,7 +1,11 @@
 import {createTheme} from 'ssr-themes';
 import {bindTheme} from 'ssr-themes/vue';
 
-const theme = createTheme();
+const theme = createTheme({
+  cookie: {
+    secure: true,
+  },
+});
 
 export const {
   options,
