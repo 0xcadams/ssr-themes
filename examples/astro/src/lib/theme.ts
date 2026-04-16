@@ -1,6 +1,10 @@
 import {createTheme} from 'ssr-themes';
 
-const theme = createTheme();
+const theme = createTheme({
+  cookie: {
+    secure: true,
+  },
+});
 
 export const {
   options,

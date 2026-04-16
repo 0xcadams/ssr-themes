@@ -3,6 +3,9 @@ import {bindTheme} from 'ssr-themes/react';
 
 const theme = createTheme({
   themes: ['light', 'dark', 'quartz', 'abyss'],
+  cookie: {
+    secure: true,
+  },
 });
 
 export const {

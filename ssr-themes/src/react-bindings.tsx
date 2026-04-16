@@ -131,7 +131,7 @@ const Theme = <
     );
   }
 
-  const controller = controllerRef.current!;
+  const controller = controllerRef.current;
   const snapshot = React.useSyncExternalStore(
     controller.subscribe,
     controller.getSnapshot,

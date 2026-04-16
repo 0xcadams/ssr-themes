@@ -7,7 +7,11 @@ export const htmlAttributesPlaceholder =
 export const themeScriptPlaceholder =
   '%ssr-themes.script%';
 
-const theme = createTheme();
+const theme = createTheme({
+  cookie: {
+    secure: true,
+  },
+});
 
 export const {
   options,

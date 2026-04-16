@@ -181,7 +181,7 @@
     },
     "ssr-themes": {
       "name": "ssr-themes",
-      "version": "0.2.0",
+      "version": "0.3.3",
       "devDependencies": {
         "@solidjs/testing-library": "^0.8.10",
         "@sveltejs/kit": "^2.48.0",
