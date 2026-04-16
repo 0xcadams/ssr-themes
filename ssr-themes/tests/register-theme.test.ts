@@ -10,6 +10,7 @@ import {
   type ThemeHtmlAttributes,
   type ThemeHtmlProps,
 } from '../src';
+import type {HumanReadable} from '../src/types';
 
 describe('registerTheme', () => {
   it('returns JSX props by default', () => {
@@ -178,12 +179,20 @@ describe('registerTheme', () => {
       },
     );
 
-    expectTypeOf(jsxProps).toEqualTypeOf<
-      ThemeHtmlProps<readonly ['class', 'data-theme']>
+    expectTypeOf<typeof jsxProps>().toEqualTypeOf<
+      HumanReadable<
+        ThemeHtmlProps<
+          readonly ['class', 'data-theme']
+        >
+      >
     >();
-    expectTypeOf(htmlAttributes).toEqualTypeOf<
-      ThemeHtmlAttributes<
-        readonly ['class', 'data-theme']
+    expectTypeOf<
+      typeof htmlAttributes
+    >().toEqualTypeOf<
+      HumanReadable<
+        ThemeHtmlAttributes<
+          readonly ['class', 'data-theme']
+        >
       >
     >();
     expectTypeOf(htmlString).toEqualTypeOf<string>();
