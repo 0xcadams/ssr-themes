@@ -1,4 +1,4 @@
-name: Unit - Test
+name: Validate
 
 on:
   push:
@@ -7,8 +7,8 @@ on:
     branches: [main]
 
 jobs:
-  test:
-    name: Run Unit Tests
+  validate:
+    name: Run unit, format, type, and build checks
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -23,5 +23,14 @@ jobs:
 
       - run: bun install --frozen-lockfile
 
-      - name: Run tests
+      - name: Run unit tests
         run: bun run test
+
+      - name: Run format check
+        run: bun run check-format
+
+      - name: Run type checks
+        run: bun run check-types
+
+      - name: Build workspace
+        run: bun run build
