@@ -50,6 +50,10 @@ export type WithSystem<
   ? TTheme
   : TTheme | 'system';
 
+export type HumanReadable<T> = T extends unknown
+  ? {[TKey in keyof T]: T[TKey]}
+  : never;
+
 export interface ThemeState<
   TTheme extends string = LightOrDark,
   TEnableSystem extends boolean = true,
@@ -130,7 +134,7 @@ export interface ThemeProviderRuntimeProps<
 > extends ThemeScriptRuntimeOptions<TTheme> {
   /** SSR state to reuse during hydration */
   initial?:
-    | ThemeState<TTheme, TEnableSystem>
+    | HumanReadable<ThemeState<TTheme, TEnableSystem>>
     | undefined;
   /** Disable all CSS transitions when switching themes */
   disableTransition?: boolean | undefined;
@@ -266,23 +270,29 @@ export interface CreatedTheme<
   decodeVariant: (
     value: string | undefined,
   ) =>
-    | ResolvedThemeState<
-        ThemeNameFromOptions<TOptions>,
-        EnableSystemFromOptions<TOptions>
+    | HumanReadable<
+        ResolvedThemeState<
+          ThemeNameFromOptions<TOptions>,
+          EnableSystemFromOptions<TOptions>
+        >
       >
     | undefined;
   listVariants: () => ReadonlyArray<
-    ThemeVariant<
-      ThemeNameFromOptions<TOptions>,
-      EnableSystemFromOptions<TOptions>
+    HumanReadable<
+      ThemeVariant<
+        ThemeNameFromOptions<TOptions>,
+        EnableSystemFromOptions<TOptions>
+      >
     >
   >;
   parseThemeCookie: (
     cookieHeader: string | null | undefined,
   ) =>
-    | ResolvedThemeState<
-        ThemeNameFromOptions<TOptions>,
-        EnableSystemFromOptions<TOptions>
+    | HumanReadable<
+        ResolvedThemeState<
+          ThemeNameFromOptions<TOptions>,
+          EnableSystemFromOptions<TOptions>
+        >
       >
     | undefined;
   registerTheme(
@@ -295,7 +305,9 @@ export interface CreatedTheme<
     > & {
       renderMode?: 'jsx' | undefined;
     },
-  ): ThemeHtmlProps<AttributeFromOptions<TOptions>>;
+  ): HumanReadable<
+    ThemeHtmlProps<AttributeFromOptions<TOptions>>
+  >;
   registerTheme(
     themeState:
       | ThemeState<
@@ -308,8 +320,8 @@ export interface CreatedTheme<
     > & {
       renderMode: 'html-attrs';
     },
-  ): ThemeHtmlAttributes<
-    AttributeFromOptions<TOptions>
+  ): HumanReadable<
+    ThemeHtmlAttributes<AttributeFromOptions<TOptions>>
   >;
   registerTheme(
     themeState:

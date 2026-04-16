@@ -6,6 +6,9 @@ import {theme} from './theme';
 
 const {useTheme} = bindTheme(theme);
 
+const codeClassName =
+  'rounded bg-black/5 px-1 py-0.5 dark:bg-white/10';
+
 export default function ThemeSwitcher() {
   const {selected, setSelected, forced, system} =
     useTheme();
@@ -15,8 +18,6 @@ export default function ThemeSwitcher() {
   const deviceTheme = system ?? 'dark';
   const suggestedTheme =
     deviceTheme === 'dark' ? 'light' : 'dark';
-  const codeClassName =
-    'rounded bg-black/5 px-1 py-0.5 dark:bg-white/10';
 
   return (
     <>
@@ -26,10 +27,9 @@ export default function ThemeSwitcher() {
         value={value}
         onChange={event =>
           setSelected(
-            event.target.value as
-              | 'light'
-              | 'dark'
-              | 'system',
+            event.target.value as NonNullable<
+              typeof selected
+            >,
           )
         }
         disabled={disabled}

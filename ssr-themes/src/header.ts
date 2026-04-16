@@ -1,6 +1,7 @@
 import type {
   AnyThemeOptions,
   EnableSystemFromOptions,
+  HumanReadable,
   LightOrDark,
   ResolvedThemeState,
   ThemeNameFromOptions,
@@ -29,7 +30,11 @@ type AnyThemeFromCookieHeaderOptions = {
 
 export function parseThemeCookie(
   cookieHeader: string | null | undefined,
-): ResolvedThemeState<LightOrDark, true> | undefined;
+):
+  | HumanReadable<
+      ResolvedThemeState<LightOrDark, true>
+    >
+  | undefined;
 
 export function parseThemeCookie<
   TEnableSystem extends boolean = true,
@@ -40,7 +45,9 @@ export function parseThemeCookie<
     TEnableSystem
   >,
 ):
-  | ResolvedThemeState<LightOrDark, TEnableSystem>
+  | HumanReadable<
+      ResolvedThemeState<LightOrDark, TEnableSystem>
+    >
   | undefined;
 
 export function parseThemeCookie<
@@ -52,9 +59,11 @@ export function parseThemeCookie<
   cookieHeader: string | null | undefined,
   options: TOptions,
 ):
-  | ResolvedThemeState<
-      ThemeNameFromOptions<TOptions>,
-      EnableSystemFromOptions<TOptions>
+  | HumanReadable<
+      ResolvedThemeState<
+        ThemeNameFromOptions<TOptions>,
+        EnableSystemFromOptions<TOptions>
+      >
     >
   | undefined;
 
@@ -68,13 +77,17 @@ export function parseThemeCookie<
     TEnableSystem
   >,
 ):
-  | ResolvedThemeState<TTheme, TEnableSystem>
+  | HumanReadable<
+      ResolvedThemeState<TTheme, TEnableSystem>
+    >
   | undefined;
 
 export function parseThemeCookie(
   cookieHeader: string | null | undefined,
   options: AnyThemeFromCookieHeaderOptions = {},
-): ResolvedThemeState<string, boolean> | undefined {
+):
+  | HumanReadable<ResolvedThemeState<string, boolean>>
+  | undefined {
   if (!cookieHeader) return undefined;
 
   const cookieName = options.cookieName ?? 'theme';

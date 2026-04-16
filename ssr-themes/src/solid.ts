@@ -9,6 +9,7 @@ import type {
   BindThemeInput,
   CreatedTheme,
   EnableSystemFromOptions,
+  HumanReadable,
   ThemeNameFromOptions,
   ThemeProviderRuntimeProps,
 } from './types';
@@ -28,9 +29,11 @@ export interface ThemeBinding<
   ThemeProvider: (
     props: BoundThemeProviderProps<TOptions>,
   ) => JSX.Element;
-  useTheme: () => ThemeResult<
-    ThemeNameFromOptions<TOptions>,
-    EnableSystemFromOptions<TOptions>
+  useTheme: () => HumanReadable<
+    ThemeResult<
+      ThemeNameFromOptions<TOptions>,
+      EnableSystemFromOptions<TOptions>
+    >
   >;
 }
 

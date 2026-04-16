@@ -1,15 +1,14 @@
 import type {Metadata} from 'next';
-import {notFound} from 'next/navigation';
 import Script from 'next/script';
 import type {ReactNode} from 'react';
 import {bindTheme} from 'ssr-themes/react';
 
 import {
   decodeVariant,
+  listVariants,
   registerTheme,
   theme,
   themeScript,
-  listVariants,
 } from '../../theme';
 
 import '../../globals.css';
@@ -25,11 +24,9 @@ export const metadata: Metadata = {
 export const dynamicParams = false;
 
 export function generateStaticParams() {
-  return listVariants().map(
-    (variant: {value: string}) => ({
-      variant: variant.value,
-    }),
-  );
+  return listVariants().map(variant => ({
+    variant: variant.value,
+  }));
 }
 
 type ThemedLayoutProps = {
@@ -44,29 +41,13 @@ export default async function ThemedLayout({
   const {variant} = await params;
   const themeState = decodeVariant(variant);
 
-  if (!themeState) {
-    notFound();
-  }
-
   return (
     <html
       suppressHydrationWarning
       {...registerTheme(themeState)}
     >
       <head>
-        <link
-          rel="preconnect"
-          href="https://fonts.googleapis.com"
-        />
-        <link
-          rel="preconnect"
-          href="https://fonts.gstatic.com"
-          crossOrigin="anonymous"
-        />
-        <link
-          rel="stylesheet"
-          href="https://fonts.googleapis.com/css2?family=Fira+Mono:wght@400;500;700&display=swap"
-        />
+        <HeadContent />
       </head>
       <body className="min-h-screen bg-white font-mono text-black antialiased dark:bg-black dark:text-white">
         <Script
@@ -82,3 +63,22 @@ export default async function ThemedLayout({
     </html>
   );
 }
+
+// Font helpers for the example, not related to ssr-themes.
+const HeadContent = () => (
+  <>
+    <link
+      rel="preconnect"
+      href="https://fonts.googleapis.com"
+    />
+    <link
+      rel="preconnect"
+      href="https://fonts.gstatic.com"
+      crossOrigin="anonymous"
+    />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Fira+Mono:wght@400;500;700&display=swap"
+    />
+  </>
+);
