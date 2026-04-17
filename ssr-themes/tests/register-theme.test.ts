@@ -61,9 +61,20 @@ describe('registerTheme', () => {
       ),
     ).toEqual({
       className: 'app-shell',
+      suppressHydrationWarning: true,
       style: {
         '--accent': '#fff',
       },
+    });
+  });
+
+  it('adds suppressHydrationWarning when the theme is unknown', () => {
+    const {registerTheme} = createTheme({
+      attribute: ['class', 'data-theme'],
+    });
+
+    expect(registerTheme()).toEqual({
+      suppressHydrationWarning: true,
     });
   });
 
@@ -220,6 +231,19 @@ describe('registerTheme', () => {
     });
   });
 
+  it('skips suppressHydrationWarning when system mode is resolved', () => {
+    const {registerTheme} = createTheme({
+      attribute: ['class', 'data-theme'],
+    });
+
+    expect(
+      registerTheme({
+        selected: 'system',
+        resolved: 'dark',
+      }).suppressHydrationWarning,
+    ).toBeUndefined();
+  });
+
   it('supports forced runtime overrides', () => {
     const {registerTheme} = createTheme({
       attribute: ['class', 'data-theme'],
@@ -242,5 +266,30 @@ describe('registerTheme', () => {
         colorScheme: 'dark',
       },
     });
+  });
+
+  it('does not add suppressHydrationWarning outside jsx mode', () => {
+    const {registerTheme} = createTheme();
+
+    expect(
+      registerTheme(
+        {
+          selected: 'system',
+        },
+        {
+          renderMode: 'html-attrs',
+        },
+      ),
+    ).toEqual({});
+    expect(
+      registerTheme(
+        {
+          selected: 'system',
+        },
+        {
+          renderMode: 'html-string',
+        },
+      ),
+    ).toBe('');
   });
 });

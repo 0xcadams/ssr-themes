@@ -42,10 +42,7 @@ export default async function ThemedLayout({
   const themeState = decodeVariant(variant);
 
   return (
-    <html
-      suppressHydrationWarning
-      {...registerTheme(themeState)}
-    >
+    <html {...registerTheme(themeState)}>
       <head>
         <HeadContent />
       </head>

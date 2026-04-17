@@ -33,10 +33,7 @@ function RootDocument({
   themeState?: ResolvedThemeState<LightOrDark>;
 }) {
   return (
-    <html
-      suppressHydrationWarning
-      {...registerTheme(themeState)}
-    >
+    <html {...registerTheme(themeState)}>
       <head>
         <HeadContent />
       </head>

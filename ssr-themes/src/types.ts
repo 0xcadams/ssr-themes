@@ -155,6 +155,7 @@ export type ThemeHtmlProps<
     | undefined = 'class',
 > = {
   className?: string;
+  suppressHydrationWarning?: true;
   style?: ThemeStyle;
 } & Partial<
   Record<
