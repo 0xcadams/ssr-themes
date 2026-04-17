@@ -1,5 +1,12 @@
+/**
+ * Cookie settings used to persist the selected
+ * theme.
+ *
+ * These map directly to standard cookie
+ * attributes.
+ */
 export interface CookieOptions {
-  /** Cookie name used to store theme preference */
+  /** Cookie name used to store the selected theme */
   name?: string;
   /** Cookie path attribute */
   path?: string;
@@ -11,7 +18,7 @@ export interface CookieOptions {
   sameSite?: 'lax' | 'strict' | 'none';
   /** Cookie domain attribute */
   domain?: string;
-  /** Cookie secure attribute */
+  /** Cookie Secure attribute */
   secure?: boolean;
 }
 
@@ -19,10 +26,13 @@ export type LightOrDarkTuple = readonly [
   'dark',
   'light',
 ];
+
+/** Built-in light and dark theme names. */
 export type LightOrDark = LightOrDarkTuple[number];
 
 type DataAttribute = `data-${string}`;
 
+/** HTML attribute target used to apply the active theme. */
 export type Attribute = DataAttribute | 'class';
 
 type RegisterThemeAttribute =
@@ -43,6 +53,13 @@ type ThemeValueMap<TTheme extends string> = Partial<
   Record<TTheme, string>
 >;
 
+/**
+ * Adds `'system'` to a theme union when system
+ * mode is enabled.
+ *
+ * This is used throughout the public API for
+ * selected theme values.
+ */
 export type WithSystem<
   TTheme extends string,
   TEnableSystem extends boolean = true,
@@ -54,32 +71,52 @@ export type HumanReadable<T> = T extends unknown
   ? {[TKey in keyof T]: T[TKey]}
   : never;
 
+/**
+ * Theme state used across SSR and hydration.
+ *
+ * `selected` is the stored preference.
+ * `resolved` is the concrete theme applied to
+ * the document.
+ */
 export interface ThemeState<
   TTheme extends string = LightOrDark,
   TEnableSystem extends boolean = true,
 > {
-  /** Selected theme name stored by the app */
+  /** Selected theme preference */
   selected?:
     | WithSystem<TTheme, TEnableSystem>
     | undefined;
-  /** Literal theme name that should be applied to html */
+  /** Concrete theme applied to the document */
   resolved?: TTheme | undefined;
-  /** Last known browser system theme */
+  /** Current browser system theme */
   system?: LightOrDark | undefined;
 }
 
+/**
+ * Theme state with a concrete resolved theme.
+ *
+ * This is the shape returned once a theme has
+ * been fully decoded or resolved.
+ */
 export interface ResolvedThemeState<
   TTheme extends string = LightOrDark,
   TEnableSystem extends boolean = true,
 > extends ThemeState<TTheme, TEnableSystem> {
-  /** Selected theme name stored by the app */
+  /** Selected theme preference */
   selected: WithSystem<TTheme, TEnableSystem>;
-  /** Literal theme name that should be applied to html */
+  /** Concrete theme applied to the document */
   resolved: TTheme;
-  /** Last known browser system theme */
+  /** Current browser system theme */
   system?: LightOrDark | undefined;
 }
 
+/**
+ * Resolved theme state with a stable serialized
+ * `value`.
+ *
+ * Each entry represents one pre-renderable
+ * theme variant.
+ */
 export interface ThemeVariant<
   TTheme extends string = LightOrDark,
   TEnableSystem extends boolean = true,
@@ -88,6 +125,12 @@ export interface ThemeVariant<
   value: string;
 }
 
+/**
+ * Stable serialized theme variant string.
+ *
+ * Used by `encodeVariant()`, `decodeVariant()`,
+ * and `listVariants()`.
+ */
 export type EncodedThemeVariant<
   TTheme extends string = LightOrDark,
   TEnableSystem extends boolean = true,
@@ -96,49 +139,71 @@ export type EncodedThemeVariant<
   | `${TTheme}~d`
   | (TEnableSystem extends true ? '~l' | '~d' : never);
 
+/**
+ * Shared theme configuration used by server
+ * helpers and framework bindings.
+ *
+ * Define the available themes, how the active
+ * theme is written to `<html>`, and how the
+ * selected value is persisted.
+ */
 export interface ThemeOptions<
   TTheme extends string = LightOrDark,
   TEnableSystem extends boolean = true,
 > {
-  /** List of all available theme names */
+  /** Available theme names. Defaults to light and dark */
   themes?: readonly TTheme[] | undefined;
-  /** Whether to switch between dark and light themes based on prefers-color-scheme */
+  /** Enables `'system'` as a selectable theme */
   enableSystem?: TEnableSystem | undefined;
-  /** Whether to indicate to browsers which color scheme is used */
+  /** Adds color-scheme for resolved light and dark themes */
   enableColorScheme?: boolean | undefined;
-  /** Cookie configuration used to store theme preference */
+  /** Cookie settings used to persist the selected theme */
   cookie?: CookieOptions | undefined;
-  /** Default theme name. If `enableSystem` is false, the default theme is light */
+  /** Selected theme used when no stored preference is available */
   defaultTheme?:
     | WithSystem<TTheme, TEnableSystem>
     | undefined;
-  /** HTML attribute modified based on the active theme. Accepts `class`, `data-*` (meaning any data attribute, `data-mode`, `data-color`, etc.), or an array which could include both */
+  /** HTML attribute target used to apply the active theme */
   attribute?:
     | Attribute
     | readonly Attribute[]
     | undefined;
-  /** Mapping of theme name to HTML attribute value. Object where key is the theme name and value is the attribute value */
+  /** Maps theme names to the values written to HTML attributes */
   valueMap?: ThemeValueMap<TTheme> | undefined;
 }
 
+/**
+ * Runtime overrides for `themeScript()`.
+ *
+ * These affect the current render only and do
+ * not change the shared theme config.
+ */
 export interface ThemeScriptRuntimeOptions<
   TTheme extends string = LightOrDark,
 > {
-  /** Forced theme name for the current page */
+  /** Theme forced for the current page */
   forced?: TTheme | undefined;
 }
 
+/**
+ * Runtime props accepted by framework
+ * `ThemeProvider` components.
+ *
+ * These are the per-render values layered on
+ * top of the shared config passed to
+ * `bindTheme()`.
+ */
 export interface ThemeProviderRuntimeProps<
   TTheme extends string = LightOrDark,
   TEnableSystem extends boolean = true,
 > extends ThemeScriptRuntimeOptions<TTheme> {
-  /** SSR state to reuse during hydration */
+  /** SSR theme state to reuse during hydration */
   initial?:
     | HumanReadable<ThemeState<TTheme, TEnableSystem>>
     | undefined;
-  /** Disable all CSS transitions when switching themes */
+  /** Disables CSS transitions while the theme changes */
   disableTransition?: boolean | undefined;
-  /** Nonce string to pass to the inline style elements for CSP headers */
+  /** Nonce passed to inline style elements for CSP */
   nonce?: string | undefined;
 }
 
@@ -149,6 +214,13 @@ type ThemeStyle = Record<
 
 export type {ThemeStyle};
 
+/**
+ * JSX `<html>` props returned by
+ * `registerTheme()` in `'jsx'` mode.
+ *
+ * Includes `className`, `style`, and any
+ * configured `data-*` attributes.
+ */
 export type ThemeHtmlProps<
   TAttribute extends
     | RegisterThemeAttribute
@@ -167,6 +239,13 @@ export type ThemeHtmlProps<
   >
 >;
 
+/**
+ * HTML attributes returned by `registerTheme()`
+ * in `'html-attrs'` mode.
+ *
+ * Uses HTML attribute names such as `class`
+ * instead of JSX prop names.
+ */
 export type ThemeHtmlAttributes<
   TAttribute extends
     | RegisterThemeAttribute
@@ -214,6 +293,13 @@ export interface RegisterThemeOptions<
   style?: ThemeStyle | undefined;
 }
 
+/**
+ * Runtime overrides for `registerTheme()`.
+ *
+ * Use these to force a theme for one render or
+ * to merge additional class, style, or
+ * output-mode settings.
+ */
 export interface RegisterThemeRuntimeOptions<
   TTheme extends string = LightOrDark,
 >
@@ -254,20 +340,58 @@ export type AttributeFromOptions<
   ? TAttribute
   : 'class';
 
+/**
+ * Typed theme API returned by `createTheme()`.
+ *
+ * This groups the server-side helpers that
+ * read, serialize, and pre-render theme state
+ * from one shared config.
+ */
 export interface CreatedTheme<
   TOptions extends AnyThemeOptions = AnyThemeOptions,
 > {
+  /** Exact config object passed to `createTheme()` */
   options: TOptions;
+
+  /**
+   * Returns the default serialized theme
+   * variant for this config.
+   *
+   * This is the fallback variant when no
+   * request-specific theme state is available.
+   */
   defaultVariant: EncodedThemeVariant<
     ThemeNameFromOptions<TOptions>,
     EnableSystemFromOptions<TOptions>
   > & {};
+
+  /**
+   * Serializes theme state into a stable
+   * variant string.
+   *
+   * Use this for route params, cache keys, or
+   * other pre-rendered theme variants. Returns
+   * `undefined` when there is not enough state
+   * to produce a stable value.
+   *
+   * @param themeState Theme state to serialize.
+   */
   encodeVariant: (
     themeState?: ThemeState<
       ThemeNameFromOptions<TOptions>,
       EnableSystemFromOptions<TOptions>
     >,
   ) => string | undefined;
+
+  /**
+   * Decodes a serialized theme variant into
+   * resolved theme state.
+   *
+   * Returns `undefined` for invalid or
+   * unsupported values.
+   *
+   * @param value Serialized variant value.
+   */
   decodeVariant: (
     value: string | undefined,
   ) =>
@@ -278,6 +402,14 @@ export interface CreatedTheme<
         >
       >
     | undefined;
+
+  /**
+   * Returns all valid theme variants for the
+   * current config.
+   *
+   * Use this to enumerate the finite set of SSR
+   * or cacheable theme states.
+   */
   listVariants: () => ReadonlyArray<
     HumanReadable<
       ThemeVariant<
@@ -286,6 +418,19 @@ export interface CreatedTheme<
       >
     >
   >;
+
+  /**
+   * Returns theme state from a raw `Cookie`
+   * header.
+   *
+   * Reads this theme's configured cookie and
+   * decodes the stored variant. Returns
+   * `undefined` when the cookie is missing or
+   * invalid.
+   *
+   * @param cookieHeader Raw `Cookie` header
+   * value for the current request.
+   */
   parseThemeCookie: (
     cookieHeader: string | null | undefined,
   ) =>
@@ -296,6 +441,32 @@ export interface CreatedTheme<
         >
       >
     | undefined;
+
+  /**
+   * Returns SSR attributes for `<html>` from
+   * theme state.
+   *
+   * Pass server theme state, usually from
+   * `parseThemeCookie()`, and spread the result
+   * onto `<html>`.
+   *
+   * `renderMode` controls the return value:
+   * - `'jsx'` (default) returns
+   *   `{className, style, ...dataAttrs}`
+   * - `'html-attrs'` returns
+   *   `{class, style, ...dataAttrs}`
+   * - `'html-string'` returns a serialized
+   *   attribute string
+   *
+   * Adds `color-scheme` when the resolved theme
+   * is `'light'` or `'dark'`, unless disabled.
+   *
+   * @param themeState Theme state for the
+   * current request.
+   * @param runtime Render-time overrides such
+   * as `forced`, `className`, `style`, and
+   * `renderMode`.
+   */
   registerTheme(
     themeState?: ThemeState<
       ThemeNameFromOptions<TOptions>,
@@ -337,6 +508,18 @@ export interface CreatedTheme<
       renderMode: 'html-string';
     },
   ): string;
+
+  /**
+   * Returns the inline bootstrap script that
+   * applies the theme before hydration.
+   *
+   * Render this in a `<script>` tag near the
+   * top of the document so the correct theme is
+   * applied before the app hydrates.
+   *
+   * @param runtime Runtime overrides such as
+   * `forced`.
+   */
   themeScript: (
     runtime?: ThemeScriptRuntimeOptions<
       ThemeNameFromOptions<TOptions>

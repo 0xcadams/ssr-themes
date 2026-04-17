@@ -13,8 +13,8 @@ import type {
 } from 'ssr-themes';
 import {
   ThemeProvider,
-  registerTheme,
   parseThemeCookie,
+  registerTheme,
   themeScript,
 } from '../lib/theme';
 import appCss from '../styles.css?url';

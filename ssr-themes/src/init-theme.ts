@@ -195,6 +195,18 @@ const createThemeWithOptions = <
   };
 };
 
+/**
+ * Creates a typed theme API from shared theme
+ * config.
+ *
+ * Use this once to define the themes, cookie
+ * behavior, and HTML attributes your app uses.
+ * The returned helpers share that config
+ * across SSR, hydration, and framework
+ * bindings.
+ *
+ * @param options Shared theme configuration.
+ */
 export function createTheme(): CreatedTheme<ThemeOptions>;
 
 export function createTheme<
