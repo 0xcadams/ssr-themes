@@ -169,6 +169,7 @@ bunx playwright test --list test/system-theme.test.ts
 ## Change Checklist
 
 - Update docs or examples when public library API changes.
+- Treat exported JSDoc/type hover docs as part of the public API. When exported behavior, overloads, or types change, update the canonical docs on the public signatures and interfaces, not just the implementation helpers.
 - Keep `README.md` and landing snippets aligned with behavior changes.
 - If you touch SSR or hydration behavior, verify the Next example path used by Playwright.
 - Prefer minimal, targeted edits that match existing patterns.

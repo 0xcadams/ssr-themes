@@ -30,21 +30,40 @@ export type ThemeSetter<
       ) => WithSystem<TTheme, TEnableSystem>),
 ) => void;
 
+/**
+ * Framework-specific theme state returned by
+ * `useTheme()`.
+ *
+ * Exposes the current selected theme, the
+ * resolved document theme, the current system
+ * theme, and a setter for updates.
+ */
 export interface ThemeResult<
   TTheme extends string = LightOrDark,
   TEnableSystem extends boolean = true,
 > {
+  /** All selectable theme names for this config */
   themes: Accessor<
     ReadonlyArray<WithSystem<TTheme, TEnableSystem>>
   >;
+
+  /** Theme forced for the current page, if any */
   forced: Accessor<TTheme | undefined>;
+
+  /** Updates the selected theme */
   setSelected: ThemeSetter<TTheme, TEnableSystem>;
+
+  /** Current selected theme preference */
   selected: Accessor<
     WithSystem<TTheme, TEnableSystem> | undefined
   >;
+
+  /** Current concrete theme applied to the document */
   resolved: Accessor<
     Exclude<TTheme, 'system'> | undefined
   >;
+
+  /** Current browser system theme */
   system: Accessor<LightOrDark | undefined>;
 }
 

@@ -13,29 +13,37 @@ import type {
   WithSystem,
 } from './types';
 
+/**
+ * Framework-specific theme state returned by
+ * `useTheme()`.
+ *
+ * Exposes the current selected theme, the
+ * resolved document theme, the current system
+ * theme, and a setter for updates.
+ */
 export interface ThemeResult<
   TTheme extends string = LightOrDark,
   TEnableSystem extends boolean = true,
 > {
-  /** List of all available theme names */
+  /** All selectable theme names for this config */
   themes: ReadonlyArray<
     WithSystem<TTheme, TEnableSystem>
   >;
-  /** Forced theme name for the current page */
+  /** Theme forced for the current page, if any */
   forced?: TTheme | undefined;
-  /** Update the theme */
+  /** Updates the selected theme */
   setSelected: (
     value: React.SetStateAction<
       WithSystem<TTheme, TEnableSystem>
     >,
   ) => void;
-  /** Active theme name */
+  /** Current selected theme preference */
   selected?:
     | WithSystem<TTheme, TEnableSystem>
     | undefined;
-  /** Active literal theme name applied to the document */
+  /** Current concrete theme applied to the document */
   resolved?: Exclude<TTheme, 'system'> | undefined;
-  /** Current browser system preference */
+  /** Current browser system theme */
   system?: LightOrDark | undefined;
 }
 
