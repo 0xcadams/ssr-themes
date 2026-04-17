@@ -32,7 +32,7 @@ yarn add ssr-themes
 
 `ssr-themes` has three parts:
 
-1. `parseThemeCookie()` and `registerTheme()` help the server pre-render the correct theme during SSR. This is optional.
+1. `parseThemeCookie()` and `registerTheme()` help the server pre-render the correct theme during SSR. **This is optional.**
 2. `themeScript()` runs before hydration on the client and makes sure the theme on `<html>` is set to the correct value (and fills in the value from the client if it's `system`).
 3. `ThemeProvider` keeps the DOM, the theme cookie, and client state in sync after mount.
 
@@ -49,25 +49,27 @@ const {
 
 const {ThemeProvider} = bindTheme(options);
 
-const initial = parseThemeCookie(cookieHeader);
+const App = () => {
+  // Remove `parseThemeCookie()` and `registerTheme()` to drive theme by client script only
+  // Similar to `next-themes`, this will then trigger server/client mismatch in React
+  // and you should pass `suppressHydrationWarning`
+  const initial = parseThemeCookie(cookieHeader);
 
-// `suppressHydrationWarning` tells React to ignore differences
-// between client and server. This diff happens when the theme is
-// `system` and the server doesn't know what that will resolve
-// to on the client
-<html
-  suppressHydrationWarning
-  {...registerTheme(initial)}
->
-  <head>
-    <script id="ssr-themes">{themeScript()}</script>
-  </head>
-  <body>
-    <ThemeProvider initial={initial}>
-      {children}
-    </ThemeProvider>
-  </body>
-</html>;
+  return (
+    <html {...registerTheme(initial)}>
+      <head>
+        <script id="ssr-themes">
+          {themeScript()}
+        </script>
+      </head>
+      <body>
+        <ThemeProvider initial={initial}>
+          {children}
+        </ThemeProvider>
+      </body>
+    </html>
+  );
+};
 ```
 
 ## Why not `next-themes`?

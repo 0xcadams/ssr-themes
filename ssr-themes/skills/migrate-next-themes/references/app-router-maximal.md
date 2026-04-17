@@ -77,11 +77,7 @@ export default async function RootLayout({
   const initial = parseThemeCookie(cookieHeader);
 
   return (
-    <html
-      lang="en"
-      suppressHydrationWarning
-      {...registerTheme(initial)}
-    >
+    <html lang="en" {...registerTheme(initial)}>
       <head>{/* keep existing head content */}</head>
       <body>
         <Script

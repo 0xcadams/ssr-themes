@@ -27,10 +27,7 @@ function RootComponent() {
   const {themeState} = Route.useLoaderData();
 
   return (
-    <html
-      suppressHydrationWarning
-      {...registerTheme(themeState)}
-    >
+    <html {...registerTheme(themeState)}>
       <head>
         <HeadContent />
       </head>

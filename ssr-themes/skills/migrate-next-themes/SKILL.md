@@ -70,8 +70,9 @@ that this skill supports App Router only.
   not already have one.
 - Use `createTheme(...)` for shared config.
 - Use `bindTheme(theme)` from `ssr-themes/react`.
-- Keep `suppressHydrationWarning` on `<html>` when the
-  theme mutates that element.
+- Keep `suppressHydrationWarning` on `<html>` when the migration
+  is not maximal, because the SSR markup will not be theme-aware
+  until the client script runs.
 - Preserve existing bootstrap script attributes such as
   `nonce` and `data-*` when replacing the old
   provider-managed script with an explicit Next

@@ -1,12 +1,14 @@
 import {parseThemeCookie as parseThemeCookieHeader} from './header';
 import {registerTheme as applyRegisterTheme} from './register-theme';
 import {
+  listVariants as getThemeVariants,
   decodeVariant as parseVariant,
   encodeVariant as serializeVariant,
-  listVariants as getThemeVariants,
 } from './theme-cookie';
-import {resolveDefaultTheme} from './theme-runtime';
-import {getCookieName} from './theme-runtime';
+import {
+  getCookieName,
+  resolveDefaultTheme,
+} from './theme-runtime';
 import {themeScript as renderThemeScript} from './theme-script';
 import type {
   AnyThemeOptions,
@@ -19,8 +21,8 @@ import type {
   ThemeHtmlProps,
   ThemeNameFromOptions,
   ThemeOptions,
-  ThemeState,
   ThemeScriptRuntimeOptions,
+  ThemeState,
 } from './types';
 
 type BoundThemeState<
@@ -126,14 +128,40 @@ const createThemeWithOptions = <
     const {forced, className, renderMode, style} =
       runtime ?? {};
 
-    return applyRegisterTheme({
+    const isJsx =
+      renderMode === undefined || renderMode === 'jsx';
+    const resolvedTheme =
+      forced ??
+      themeState?.resolved ??
+      (themeState?.selected === 'system'
+        ? undefined
+        : themeState?.selected);
+    const shouldSuppressHydrationWarning =
+      isJsx && resolvedTheme === undefined;
+
+    const registeredTheme = applyRegisterTheme({
       ...options,
       ...(themeState ?? {}),
       ...(forced ? {resolved: forced} : {}),
       className,
       renderMode,
       style,
-    }) as unknown as ReturnType<typeof registerTheme>;
+    });
+
+    if (!shouldSuppressHydrationWarning) {
+      return registeredTheme as unknown as ReturnType<
+        CreatedTheme<TOptions>['registerTheme']
+      >;
+    }
+
+    return {
+      ...(registeredTheme as ThemeHtmlProps<
+        AttributeFromOptions<TOptions>
+      >),
+      suppressHydrationWarning: true,
+    } as unknown as ReturnType<
+      CreatedTheme<TOptions>['registerTheme']
+    >;
   }
 
   return {

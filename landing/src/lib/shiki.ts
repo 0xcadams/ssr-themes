@@ -151,10 +151,7 @@ export default async function RootLayout({
   );
 
   return (
-    <html
-      suppressHydrationWarning
-      {...registerTheme(themeState)}
-    >
+    <html {...registerTheme(themeState)}>
       <head>
         <Script
           id="ssr-themes"
@@ -611,10 +608,7 @@ function RootComponent() {
   const {themeState} = Route.useLoaderData();
 
   return (
-    <html
-      suppressHydrationWarning
-      {...registerTheme(themeState)}
-    >
+    <html {...registerTheme(themeState)}>
       <head>
         <HeadContent />
       </head>
@@ -703,10 +697,7 @@ export function Root({
   );
 
   return (
-    <html
-      suppressHydrationWarning
-      {...registerTheme(themeState)}
-    >
+    <html {...registerTheme(themeState)}>
       <head>
         <script id="ssr-themes">{themeScript()}</script>
       </head>
