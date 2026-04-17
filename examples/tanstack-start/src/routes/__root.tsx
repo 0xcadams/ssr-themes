@@ -5,8 +5,8 @@ import {
   Scripts,
   createRootRoute,
 } from '@tanstack/react-router';
-import { createServerFn } from '@tanstack/react-start';
-import { getRequestHeader } from '@tanstack/react-start/server';
+import {createServerFn} from '@tanstack/react-start';
+import {getRequestHeader} from '@tanstack/react-start/server';
 import type {
   LightOrDark,
   ResolvedThemeState,
