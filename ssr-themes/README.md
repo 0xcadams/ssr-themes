@@ -129,42 +129,56 @@ The API has two entrypoints:
 - `createTheme()` from `ssr-themes`
 - `bindTheme()` from `ssr-themes/react`, `ssr-themes/solid`, `ssr-themes/vue`, or `ssr-themes/svelte`
 
+The core theme state uses three fields:
+
+- `selected`: the saved theme preference
+- `resolved`: the concrete theme applied to the document
+- `system`: the browser's current light/dark preference
+
 ### `createTheme()`
 
-Use `createTheme()` once to capture the shared theme config.
+Use `createTheme()` once to define the shared theme config for your app.
 
 ```ts
 import {createTheme} from 'ssr-themes';
 
-const {
-  decodeVariant,
-  encodeVariant,
-  options,
-  listVariants,
-  registerTheme,
-  parseThemeCookie,
-  themeScript,
-} = createTheme({
+const theme = createTheme({
   themes: ['light', 'dark', 'quartz'],
-  attribute: 'class',
   defaultTheme: 'system',
+  attribute: ['class', 'data-theme'],
+  valueMap: {
+    light: 'day',
+    dark: 'night',
+    quartz: 'quartz',
+  },
   cookie: {
+    name: 'theme',
     secure: true,
+    sameSite: 'lax',
   },
 });
 ```
 
-`options` is the exact typed config object passed into `createTheme()`.
+`createTheme()` accepts stable app-level config such as:
 
-Stable config belongs here:
+- `themes` - the allowed theme names
+- `defaultTheme` - the fallback selected theme when no saved preference exists
+- `enableSystem` - whether `'system'` is a selectable theme
+- `enableColorScheme` - whether to set CSS `color-scheme` for resolved `'light'` and `'dark'`
+- `attribute` - where the active theme is written on `<html>`, such as `'class'`, `'data-theme'`, or both
+- `valueMap` - maps theme names to the DOM values written to those attributes
+- `cookie` - how the selected theme is persisted, including `name`, `path`, `maxAge`, `expires`, `sameSite`, `domain`, and `secure`
 
-- `themes`
-- `defaultTheme`
-- `enableSystem`
-- `enableColorScheme`
-- `attribute`
-- `valueMap`
-- `cookie`
+It returns:
+
+- `options` - the exact config object passed to `createTheme()`
+- `defaultVariant` - the fallback serialized variant for this config
+- `encodeVariant()` - serializes theme state into a stable variant string
+- `decodeVariant()` - decodes a variant string back into resolved theme state
+- `listVariants()` - returns the finite set of valid pre-renderable variants
+- `parseThemeCookie()` - reads theme state from a raw `Cookie` header
+- `registerTheme()` - returns SSR attributes for `<html>`
+- `themeScript()` - returns the inline bootstrap script that applies the theme before hydration
 
 ### `bindTheme()`
 
@@ -174,123 +188,155 @@ Use `bindTheme()` in the framework entrypoint for your app.
 import {bindTheme} from 'ssr-themes/react';
 
 const {ThemeProvider, useTheme} = bindTheme(theme);
-// or: bindTheme(options)
+// or: bindTheme(theme.options)
 ```
 
-`bindTheme()` accepts either the full `createTheme()` return value or `theme.options`, and returns:
+`bindTheme()` accepts either:
+
+- the full object returned by `createTheme()`
+- `theme.options`
+
+It returns:
 
 - `ThemeProvider`
 - `useTheme()`
 
-All bindings expose the same core theme state:
+`ThemeProvider` only takes runtime props:
 
+- `initial` - SSR theme state to reuse during hydration
+- `forced` - force a concrete theme for the current render or page
+- `disableTransition` - disable CSS transitions while the theme changes
+- `nonce` - CSP nonce for inline style elements
+
+`useTheme()` must be used within `ThemeProvider`.
+
+All bindings expose the same conceptual state:
+
+- `themes`
 - `selected`
 - `setSelected(next)`
 - `forced`
 - `resolved`
 - `system`
-- `themes`
 
-`ThemeProvider` only takes runtime props:
+The exact shape is framework-native:
 
-- `initial`
-- `forced`
-- `disableTransition`
-- `nonce`
+- React returns plain values
+- Solid returns accessors
+- Vue returns refs and computed values
+- Svelte returns stores
 
 ### `parseThemeCookie()`
 
 Use `parseThemeCookie()` to read the saved theme from a raw `Cookie` header.
 
 ```ts
-const initial = parseThemeCookie(cookieHeader);
+const initial = theme.parseThemeCookie(cookieHeader);
 ```
 
-It returns `undefined`when the cookie is missing, empty, malformed, or not in the allowed theme list.
+It reads the cookie configured by `createTheme()` and returns resolved theme state for the current request.
 
-When present, the return value has:
+It returns `undefined` when the cookie is:
+
+- missing
+- empty
+- malformed
+- not in the allowed theme list
+
+When present, the return value includes:
 
 - `selected`
 - `resolved`
 - `system`
-
-The cookie stores system mode in a compact form like `~d` or `~l`, and stores explicit themes with the same system hint suffix, such as `dark~l` or `quartz~d`.
-
-### `encodeVariant()`, `decodeVariant()`, and `listVariants()`
-
-Use these helpers when you want a stable theme key for routing or caching, like a Next.js `proxy.ts` rewrite.
-
-```ts
-const variant =
-  encodeVariant(parseThemeCookie(cookieHeader)) ??
-  'light~l';
-
-const initial = decodeVariant(variant);
-const variants = listVariants();
-```
-
-- Explicit themes always include the system hint, like `light~d` and `dark~l`
-- System mode serializes to the compact values `~l` and `~d`
-- `listVariants()` returns the finite set of pre-renderable theme variants
 
 ### `registerTheme()`
 
 Use `registerTheme()` to pre-render the current theme on `<html>` during SSR.
 
 ```tsx
-const htmlProps = registerTheme({
-  selected: 'dark',
-  resolved: 'dark',
-});
-
-const astroHtmlProps = registerTheme(
-  {
-    selected: 'dark',
-    resolved: 'dark',
-  },
-  {
-    renderMode: 'html-attrs',
-  },
-);
-
-const htmlAttributes = registerTheme(
-  {
-    selected: 'dark',
-    resolved: 'dark',
-  },
-  {
-    renderMode: 'html-string',
-  },
-);
+<html {...theme.registerTheme(initial)} />
 ```
 
-The first argument is theme state, usually the result of `parseThemeCookie()`.
+It usually receives the result of `parseThemeCookie()` and returns one of three output shapes depending on `renderMode`:
 
-- Default `jsx` mode returns `{className, style, ...dataAttrs}` for JSX hosts like React.
-- `html-attrs` returns `{class, style, ...dataAttrs}` for hosts like Astro or `useHead()`.
-- `html-string` returns `class="..." style="..." data-theme="..."` for string transforms like Svelte `app.html`.
+- `jsx` (default) -> `{className, style, ...dataAttrs}`
+- `html-attrs` -> `{class, style, ...dataAttrs}`
+- `html-string` -> `class="..." style="..." data-theme="..."`
 
-The second argument is for runtime overrides only:
+Examples:
+
+```tsx
+const jsxProps = theme.registerTheme(initial);
+
+const htmlAttrs = theme.registerTheme(initial, {
+  renderMode: 'html-attrs',
+});
+
+const htmlString = theme.registerTheme(initial, {
+  renderMode: 'html-string',
+});
+```
+
+Runtime overrides are:
 
 - `forced`
 - `renderMode`
 - `className`
 - `style`
 
+Notes:
+
+- it applies your configured `attribute` and `valueMap`
+- it adds `color-scheme` automatically for resolved `'light'` and `'dark'` unless disabled
+- in JSX mode, it may add `suppressHydrationWarning` when SSR cannot fully resolve the theme
+
 ### `themeScript()`
 
 Use `themeScript()` to generate the inline bootstrap script that runs on the client before hydration.
 
 ```tsx
-<script id="ssr-themes">{themeScript()}</script>
-<script id="ssr-themes">{themeScript({forced})}</script>
+<script id="ssr-themes">{theme.themeScript()}</script>
+<script id="ssr-themes">
+  {theme.themeScript({forced: 'dark'})}
+</script>
 ```
 
-It reads the saved theme from the cookie, resolves `'system'` when needed, updates the `<html>` attributes, and sets `color-scheme` when appropriate.
+`themeScript()`:
+
+- reads the saved theme from the cookie
+- resolves `'system'` on the client when needed
+- updates the `<html>` attributes
+- sets `color-scheme` when appropriate
 
 `themeScript()` only supports one runtime override:
 
 - `forced`
+
+Render it near the top of the document so the correct theme is applied before the app hydrates.
+
+### Variants: `defaultVariant`, `encodeVariant()`, `decodeVariant()`, `listVariants()`
+
+These helpers are for routing, caching, and pre-rendering.
+
+```ts
+const variant =
+  theme.encodeVariant(
+    theme.parseThemeCookie(cookieHeader),
+  ) ?? theme.defaultVariant;
+
+const initial = theme.decodeVariant(variant);
+const variants = theme.listVariants();
+```
+
+- `defaultVariant` is the fallback serialized variant for the current config
+- `encodeVariant()` returns a stable string when there is enough theme state to serialize
+- `decodeVariant()` returns resolved theme state, or `undefined` for invalid values
+- `listVariants()` returns the full set of valid pre-renderable theme variants
+
+Encoded variants always include the system hint:
+
+- explicit themes: `light~l`, `light~d`, `dark~l`, `dark~d`
+- system mode: `~l`, `~d`
 
 ## Skills
 
