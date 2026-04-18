@@ -2,12 +2,12 @@
 
 Theming is hard with SSR.
 
-The server is usually unaware of the client theme. This skew between the server default and what is hydrated on the client often results in a flash of the wrong content.
+The server often isn't aware of the client theme; most libraries keep it in local storage. The skew between the server default and what is hydrated on the client often results in a flash of the wrong content.
 
-`ssr-themes` keeps the server HTML, bootstrap script, and hydrated app in sync. It uses cookies to store the selected theme + browser default and has first-party bindings for React, Svelte, Vue, and more. This means:
+`ssr-themes` keeps the SSR markup, bootstrap script, and hydrated app in sync. It uses cookies to store the selected theme + system default and has first-party bindings for React, Svelte, Vue, and more. This means:
 
-- ✨ No flash on first paint
-- 🍪 Cookie-driven SSR for correct SSR markup
+- 🍪 Perfect cookie-driven SSR markup
+- ✨ No client/server mismatch
 - 🌓 System theme support
 - 🔄 Built-in cross-tab sync
 - 🛡️ Strongly typed bindings
@@ -76,20 +76,20 @@ const App = () => {
 
 `next-themes` is popular because it makes client-side theming in React and Next.js easy.
 
-But it solves a subset of the theming problem.
+But it solves a subset of the problem.
 
 Its docs explicitly warn that reading `theme` before mount is hydration-unsafe, because the server does not know the current theme yet. That is a reasonable tradeoff if all you need is client-resolved theme state.
 
-`ssr-themes` is for apps that want the theme to participate on the server. You can:
+`ssr-themes` is for apps that want the theme to participate on the server. This means you can:
 
-- Read the theme from the request cookie during SSR
-- Pre-render the correct HTML on the server (`<select>`, etc.)
+- Read the theme and system preference from the request cookie during SSR
+- Pre-render the 100% correct HTML on the server (`<select>`, etc.)
 
-You don't even _need_ to use the SSR helpers. They are optional if/when you need to start rendering conditional UI based on the theme. You'll probably do this with a theme picker.
+But you don't even _need_ to use the SSR helpers. They are optional if/when you need to render conditional UI based on the theme. You'll probably do this with a theme picker.
 
 If you only need client-side theme state in a Next.js app, `next-themes` is a good fit.
 
-If your SSR markup depends on the theme or you don't use Next.js, `ssr-themes` is a good fit.
+If your SSR markup depends on the theme (or if you don't use Next.js), `ssr-themes` is a good fit.
 
 > Check out the [Next.js example](https://github.com/0xcadams/ssr-themes/tree/main/examples/next) for a cache-friendly App Router setup. It uses `proxy.ts` plus `listVariants()` so the public `/` route stays cacheable and layouts do not read cookies.
 
