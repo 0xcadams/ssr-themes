@@ -340,4 +340,4 @@ Encoded variants always include the system hint:
 
 ## Skills
 
-The NPM package ships with [AI agent skills](./skills) to help migration from `next-themes` to `ssr-themes`.
+The NPM package ships with [AI agent skills](https://github.com/0xcadams/ssr-themes/tree/main/ssr-themes/skills) to help migration from `next-themes` to `ssr-themes`.
