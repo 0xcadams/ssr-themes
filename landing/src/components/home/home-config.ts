@@ -1,4 +1,4 @@
-import type { FrameworkId } from '@/lib/shiki';
+import type {FrameworkId} from '@/lib/shiki';
 
 export type ThemeValue =
   | 'system'
