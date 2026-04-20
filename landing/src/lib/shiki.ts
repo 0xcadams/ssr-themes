@@ -3,6 +3,7 @@ import {codeToHtml} from 'shiki';
 export type FrameworkId =
   | 'astro'
   | 'next'
+  | 'react-router'
   | 'nuxt'
   | 'solid'
   | 'svelte'
@@ -33,7 +34,7 @@ export type HighlightedFrameworkSnippets = Record<
 >;
 
 const frameworkSnippets: FrameworkSnippets = {
-  astro: {
+  'astro': {
     primary: {
       lang: 'astro',
       code: `---
@@ -129,7 +130,7 @@ export default function ThemeSwitcher({
 }
 `,
   },
-  next: {
+  'next': {
     primary: `// app/layout.tsx
 import {headers} from 'next/headers';
 import Script from 'next/script';
@@ -151,7 +152,7 @@ export default async function RootLayout({
   );
 
   return (
-    <html {...registerTheme(themeState)}>
+    <html lang="en" {...registerTheme(themeState)}>
       <head>
         <Script
           id="ssr-themes"
@@ -211,12 +212,118 @@ export function ThemeSwitcher() {
       <option value="system">System</option>
       <option value="dark">Dark</option>
       <option value="light">Light</option>
+      </select>
+    );
+  }
+`,
+  },
+  'react-router': {
+    primary: `// app/root.tsx
+import {
+  Links,
+  Meta,
+  Outlet,
+  Scripts,
+  ScrollRestoration,
+  useRouteLoaderData,
+} from 'react-router';
+import type {Route} from './+types/root';
+import {
+  ThemeProvider,
+  parseThemeCookie,
+  registerTheme,
+  themeScript,
+} from './lib/theme';
+
+export function loader({request}: Route.LoaderArgs) {
+  return parseThemeCookie(request.headers.get('cookie'));
+}
+
+export function Layout({children}: {
+  children: React.ReactNode;
+}) {
+  const themeState = useRouteLoaderData<
+    typeof loader
+  >('root');
+
+  return (
+    <html {...registerTheme(themeState)}>
+      <head>
+        <meta charSet="utf-8" />
+        <meta
+          name="viewport"
+          content="width=device-width, initial-scale=1"
+        />
+        <Meta />
+        <Links />
+        <script
+          id="ssr-themes"
+          dangerouslySetInnerHTML={{
+            __html: themeScript(),
+          }}
+        />
+      </head>
+      <body>
+        <ThemeProvider initial={themeState}>
+          {children}
+        </ThemeProvider>
+        <ScrollRestoration />
+        <Scripts />
+      </body>
+    </html>
+  );
+}
+
+export default function App() {
+  return <Outlet />;
+}
+`,
+    secondary: `// app/lib/theme.ts
+import {createTheme} from 'ssr-themes';
+import {bindTheme} from 'ssr-themes/react';
+
+const theme = createTheme({
+  cookie: {
+    secure: true,
+  },
+});
+
+export const {
+  parseThemeCookie,
+  registerTheme,
+  themeScript,
+} = theme;
+
+export const {ThemeProvider, useTheme} =
+  bindTheme(theme);
+
+// app/components/theme-switcher.tsx
+import {useTheme} from '../lib/theme';
+
+type ThemeName =
+  | 'system'
+  | 'dark'
+  | 'light';
+
+export function ThemeSwitcher() {
+  const {selected, setSelected} = useTheme();
+
+  return (
+    <select
+      value={selected ?? 'system'}
+      onChange={event =>
+        setSelected(event.target.value as ThemeName)
+      }
+    >
+      <option value="system">System</option>
+      <option value="dark">Dark</option>
+      <option value="light">Light</option>
     </select>
   );
 }
 `,
   },
-  nuxt: {
+  'nuxt': {
     primary: {
       lang: 'vue',
       code: `<!-- app/app.vue -->
@@ -335,7 +442,7 @@ const handleChange = (event: Event) => {
 `,
     },
   },
-  solid: {
+  'solid': {
     primary: `// src/app.tsx
 import {Router} from '@solidjs/router';
 import {FileRoutes} from '@solidjs/start/router';
@@ -451,7 +558,7 @@ export function ThemeSwitcher() {
 }
 `,
   },
-  svelte: {
+  'svelte': {
     primary: {
       lang: 'svelte',
       code: `<!-- src/app.html -->
@@ -580,7 +687,7 @@ export const renderThemeScript = () =>
 `,
     },
   },
-  tanstack: {
+  'tanstack': {
     primary: `// src/routes/__root.tsx
 import {
   HeadContent,
@@ -675,7 +782,7 @@ export const Route = createFileRoute('/')({
 });
 `,
   },
-  other: {
+  'other': {
     primary: `// app/root.tsx
 import type {ReactNode} from 'react';
 import {ThemeProvider} from './theme-react';

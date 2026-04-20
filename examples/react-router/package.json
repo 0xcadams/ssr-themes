@@ -1,0 +1,32 @@
+{
+  "name": "@ssr-themes/react-router-example",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "react-router dev",
+    "build": "react-router build",
+    "check-types": "react-router typegen && tsc --noEmit -p tsconfig.json",
+    "preview": "react-router-serve ./build/server/*/index.js",
+    "clean": "rm -rf node_modules .react-router build .vercel"
+  },
+  "dependencies": {
+    "@react-router/node": "^7.14.1",
+    "@react-router/serve": "^7.14.1",
+    "@tailwindcss/vite": "^4.2.2",
+    "@vercel/react-router": "^1.2.6",
+    "react": "^19.2.4",
+    "react-dom": "^19.2.4",
+    "react-router": "^7.14.1",
+    "ssr-themes": "workspace:*",
+    "tailwindcss": "^4.2.2",
+    "isbot": "^5"
+  },
+  "devDependencies": {
+    "@react-router/dev": "^7.14.1",
+    "@types/node": "^25.5.0",
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3",
+    "typescript": "^6.0.2",
+    "vite": "^8.0.3"
+  }
+}

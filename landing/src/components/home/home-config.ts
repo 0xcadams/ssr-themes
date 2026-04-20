@@ -1,4 +1,4 @@
-import type {FrameworkId} from '@/lib/shiki';
+import type { FrameworkId } from '@/lib/shiki';
 
 export type ThemeValue =
   | 'system'
@@ -105,6 +105,13 @@ export const frameworks = [
       'Use the Vue binding in a small select component.',
   },
   {
+    value: 'react-router',
+    label: 'React Router',
+    secondaryTitle: 'Theme switcher',
+    secondaryDescription:
+      'Load theme state in the root route, then call useTheme() in a tiny route component.',
+  },
+  {
     value: 'solid',
     label: 'Solid',
     secondaryTitle: 'Theme switcher',
@@ -153,6 +160,10 @@ export const liveDemoLinks = [
   {
     href: 'https://next.ssr-themes.cadams.io',
     label: 'Next.js',
+  },
+  {
+    href: 'https://react-router.ssr-themes.cadams.io',
+    label: 'React Router',
   },
   {
     href: 'https://solid.ssr-themes.cadams.io',

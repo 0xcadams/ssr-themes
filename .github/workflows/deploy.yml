@@ -38,6 +38,9 @@ jobs:
             ssr-themes-next)
               app=next
               ;;
+            ssr-themes-react-router)
+              app=react-router
+              ;;
             ssr-themes-solid)
               app=solid
               ;;
