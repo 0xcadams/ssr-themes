@@ -7,6 +7,7 @@ const theme = createTheme({
 });
 
 export const {
+  encodeVariant,
   options,
   registerTheme,
   parseThemeCookie,

@@ -3,6 +3,7 @@ import {
   checkAppliedTheme,
   checkSelectedTheme,
   checkStoredTheme,
+  checkThemeHelperValues,
   gotoHome,
   makeBrowserContext,
   selectTheme,
@@ -44,6 +45,13 @@ test.describe('basic theming test-suite', () => {
         storedThemeValue(theme, colorScheme),
       );
       await checkAppliedTheme(page, theme);
+      await checkThemeHelperValues(page, {
+        cookieValue: storedThemeValue(
+          theme,
+          colorScheme,
+        ),
+        systemTheme: colorScheme,
+      });
     });
   }
 
@@ -85,6 +93,13 @@ test.describe('basic theming test-suite', () => {
         storedThemeValue(initialTheme, colorScheme),
       );
       await checkAppliedTheme(page, initialTheme);
+      await checkThemeHelperValues(page, {
+        cookieValue: storedThemeValue(
+          initialTheme,
+          colorScheme,
+        ),
+        systemTheme: colorScheme,
+      });
 
       await selectTheme(page, targetTheme);
 
@@ -94,6 +109,13 @@ test.describe('basic theming test-suite', () => {
         storedThemeValue(targetTheme, colorScheme),
       );
       await checkAppliedTheme(page, targetTheme);
+      await checkThemeHelperValues(page, {
+        cookieValue: storedThemeValue(
+          targetTheme,
+          colorScheme,
+        ),
+        systemTheme: colorScheme,
+      });
 
       await page.reload();
 
@@ -103,6 +125,13 @@ test.describe('basic theming test-suite', () => {
         storedThemeValue(targetTheme, colorScheme),
       );
       await checkAppliedTheme(page, targetTheme);
+      await checkThemeHelperValues(page, {
+        cookieValue: storedThemeValue(
+          targetTheme,
+          colorScheme,
+        ),
+        systemTheme: colorScheme,
+      });
     });
   }
 
@@ -134,6 +163,13 @@ test.describe('basic theming test-suite', () => {
         expectedTheme === 'dark' ? '~d' : '~l',
       );
       await checkAppliedTheme(page, expectedTheme);
+      await checkThemeHelperValues(page, {
+        cookieValue: storedThemeValue(
+          'system',
+          preferredColorScheme,
+        ),
+        systemTheme: preferredColorScheme,
+      });
     });
   }
 
@@ -164,17 +200,29 @@ test.describe('basic theming test-suite', () => {
       storedThemeValue('dark', 'light'),
     );
     await checkAppliedTheme(page, 'dark');
+    await checkThemeHelperValues(page, {
+      cookieValue: storedThemeValue('dark', 'light'),
+      systemTheme: 'light',
+    });
 
     await selectTheme(page, 'system');
 
     await checkSelectedTheme(page, 'system');
     await checkStoredTheme(page, '~l');
     await checkAppliedTheme(page, 'light');
+    await checkThemeHelperValues(page, {
+      cookieValue: storedThemeValue('system', 'light'),
+      systemTheme: 'light',
+    });
 
     await page.reload();
 
     await checkSelectedTheme(page, 'system');
     await checkStoredTheme(page, '~l');
     await checkAppliedTheme(page, 'light');
+    await checkThemeHelperValues(page, {
+      cookieValue: storedThemeValue('system', 'light'),
+      systemTheme: 'light',
+    });
   });
 });

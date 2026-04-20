@@ -4,7 +4,9 @@ import {
   checkSelectedTheme,
   checkServerRenderedTheme,
   checkStoredTheme,
+  checkThemeHelperValues,
   makeBrowserContext,
+  storedThemeValue,
 } from './util';
 
 test.describe('system theme test-suite', () => {
@@ -35,6 +37,13 @@ test.describe('system theme test-suite', () => {
         preferredColorScheme === 'dark' ? '~d' : '~l',
       );
       await checkAppliedTheme(page, expectedTheme);
+      await checkThemeHelperValues(page, {
+        cookieValue: storedThemeValue(
+          'system',
+          preferredColorScheme,
+        ),
+        systemTheme: preferredColorScheme,
+      });
 
       await page.reload();
 
@@ -44,6 +53,13 @@ test.describe('system theme test-suite', () => {
         preferredColorScheme === 'dark' ? '~d' : '~l',
       );
       await checkAppliedTheme(page, expectedTheme);
+      await checkThemeHelperValues(page, {
+        cookieValue: storedThemeValue(
+          'system',
+          preferredColorScheme,
+        ),
+        systemTheme: preferredColorScheme,
+      });
     });
   }
 

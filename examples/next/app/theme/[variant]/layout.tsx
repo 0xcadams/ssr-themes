@@ -43,9 +43,6 @@ export default async function ThemedLayout({
 
   return (
     <html {...registerTheme(themeState)}>
-      <head>
-        <HeadContent />
-      </head>
       <body className="min-h-screen bg-white font-mono text-black antialiased dark:bg-black dark:text-white">
         <Script
           id="ssr-themes"
@@ -60,22 +57,3 @@ export default async function ThemedLayout({
     </html>
   );
 }
-
-// Font helpers for the example, not related to ssr-themes.
-const HeadContent = () => (
-  <>
-    <link
-      rel="preconnect"
-      href="https://fonts.googleapis.com"
-    />
-    <link
-      rel="preconnect"
-      href="https://fonts.gstatic.com"
-      crossOrigin="anonymous"
-    />
-    <link
-      rel="stylesheet"
-      href="https://fonts.googleapis.com/css2?family=Fira+Mono:wght@400;500;700&display=swap"
-    />
-  </>
-);

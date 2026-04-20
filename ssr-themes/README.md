@@ -14,7 +14,19 @@ The server often isn't aware of the client theme; most libraries keep it in loca
 
 ![Demo of ssr-themes not flashing vs next-themes](https://raw.githubusercontent.com/0xcadams/ssr-themes/main/.github/ssr-theme.gif)
 
-See the live demo: [https://ssr-themes.cadams.io/](https://ssr-themes.cadams.io/).
+Check out the main demo: [https://ssr-themes.cadams.io/](https://ssr-themes.cadams.io/).
+
+Or browse the framework examples:
+
+| Framework      | Live demo                                                                       | Source                                                                                              |
+| -------------- | ------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
+| Next.js        | [next.ssr-themes.cadams.io](https://next.ssr-themes.cadams.io/)                 | [examples/next](https://github.com/0xcadams/ssr-themes/tree/main/examples/next)                     |
+| React Router   | [react-router.ssr-themes.cadams.io](https://react-router.ssr-themes.cadams.io/) | [examples/react-router](https://github.com/0xcadams/ssr-themes/tree/main/examples/react-router)     |
+| TanStack Start | [start.ssr-themes.cadams.io](https://start.ssr-themes.cadams.io/)               | [examples/tanstack-start](https://github.com/0xcadams/ssr-themes/tree/main/examples/tanstack-start) |
+| SolidStart     | [solid.ssr-themes.cadams.io](https://solid.ssr-themes.cadams.io/)               | [examples/solid](https://github.com/0xcadams/ssr-themes/tree/main/examples/solid)                   |
+| SvelteKit      | [svelte.ssr-themes.cadams.io](https://svelte.ssr-themes.cadams.io/)             | [examples/svelte](https://github.com/0xcadams/ssr-themes/tree/main/examples/svelte)                 |
+| Vue / Nuxt     | [vue.ssr-themes.cadams.io](https://vue.ssr-themes.cadams.io/)                   | [examples/nuxt](https://github.com/0xcadams/ssr-themes/tree/main/examples/nuxt)                     |
+| Astro          | [astro.ssr-themes.cadams.io](https://astro.ssr-themes.cadams.io/)               | [examples/astro](https://github.com/0xcadams/ssr-themes/tree/main/examples/astro)                   |
 
 ## Install
 

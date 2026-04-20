@@ -40,7 +40,9 @@
 
 :root {
   --radius: 18px;
-  --font-mono: 'Fira Mono', monospace;
+  --font-mono:
+    ui-monospace, 'SFMono-Regular', 'SF Mono', Menlo,
+    Monaco, Consolas, 'Liberation Mono', monospace;
   --background: oklch(0.98 0.02 80);
   --foreground: oklch(0.2 0.03 260);
   --card: oklch(0.99 0.015 80);
