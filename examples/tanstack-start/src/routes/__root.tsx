@@ -72,22 +72,7 @@ export const Route = createRootRoute({
       },
       {title: 'ssr-themes tanstack start example'},
     ],
-    links: [
-      {
-        rel: 'preconnect',
-        href: 'https://fonts.googleapis.com',
-      },
-      {
-        rel: 'preconnect',
-        href: 'https://fonts.gstatic.com',
-        crossOrigin: 'anonymous',
-      },
-      {
-        rel: 'stylesheet',
-        href: 'https://fonts.googleapis.com/css2?family=Fira+Mono:wght@400;500;700&display=swap',
-      },
-      {rel: 'stylesheet', href: appCss},
-    ],
+    links: [{rel: 'stylesheet', href: appCss}],
   }),
   component: RootComponent,
 });

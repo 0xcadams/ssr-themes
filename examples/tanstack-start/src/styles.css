@@ -3,5 +3,7 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 :root {
-  --font-mono: 'Fira Mono', monospace;
+  --font-mono:
+    ui-monospace, 'SFMono-Regular', 'SF Mono', Menlo,
+    Monaco, Consolas, 'Liberation Mono', monospace;
 }

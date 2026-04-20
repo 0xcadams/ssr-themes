@@ -28,9 +28,33 @@ export function storedThemeValue(
     : `${theme}${suffix}`;
 }
 
+export function oppositeTheme(
+  theme: 'dark' | 'light',
+) {
+  return theme === 'dark' ? 'light' : 'dark';
+}
+
 export function getThemeSelector(page: Page): Locator {
   return page.locator(
     '[data-test-id="theme-selector"]',
+  );
+}
+
+function getThemeCookieValue(page: Page): Locator {
+  return page.locator(
+    '[data-test-id="theme-cookie-value"]',
+  );
+}
+
+function getThemeSuggestedTheme(page: Page): Locator {
+  return page.locator(
+    '[data-test-id="theme-suggested-theme"]',
+  );
+}
+
+function getThemeSystemSetting(page: Page): Locator {
+  return page.locator(
+    '[data-test-id="theme-system-setting"]',
   );
 }
 
@@ -55,6 +79,24 @@ export async function checkSelectedTheme(
 ) {
   await expect(getThemeSelector(page)).toHaveValue(
     theme,
+  );
+}
+
+export async function checkThemeHelperValues(
+  page: Page,
+  values: {
+    cookieValue: string;
+    systemTheme: 'dark' | 'light';
+  },
+) {
+  await expect(getThemeCookieValue(page)).toHaveText(
+    values.cookieValue,
+  );
+  await expect(
+    getThemeSuggestedTheme(page),
+  ).toHaveText(oppositeTheme(values.systemTheme));
+  await expect(getThemeSystemSetting(page)).toHaveText(
+    values.systemTheme,
   );
 }
 

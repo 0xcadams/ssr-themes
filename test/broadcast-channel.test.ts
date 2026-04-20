@@ -3,6 +3,7 @@ import {
   checkAppliedTheme,
   checkSelectedTheme,
   checkStoredTheme,
+  checkThemeHelperValues,
   gotoHome,
   makeBrowserContext,
   selectTheme,
@@ -33,6 +34,10 @@ test.describe('cross-tab sync via BroadcastChannel', () => {
       storedThemeValue('light', 'light'),
     );
     await checkAppliedTheme(page1, 'light');
+    await checkThemeHelperValues(page1, {
+      cookieValue: storedThemeValue('light', 'light'),
+      systemTheme: 'light',
+    });
 
     const page2 = await context.newPage();
     await gotoHome(page2);
@@ -42,6 +47,10 @@ test.describe('cross-tab sync via BroadcastChannel', () => {
       storedThemeValue('light', 'light'),
     );
     await checkAppliedTheme(page2, 'light');
+    await checkThemeHelperValues(page2, {
+      cookieValue: storedThemeValue('light', 'light'),
+      systemTheme: 'light',
+    });
 
     await selectTheme(page2, 'dark');
 
@@ -51,6 +60,10 @@ test.describe('cross-tab sync via BroadcastChannel', () => {
       storedThemeValue('dark', 'light'),
     );
     await checkAppliedTheme(page2, 'dark');
+    await checkThemeHelperValues(page2, {
+      cookieValue: storedThemeValue('dark', 'light'),
+      systemTheme: 'light',
+    });
 
     await checkSelectedTheme(page1, 'dark');
     await checkStoredTheme(
@@ -58,6 +71,10 @@ test.describe('cross-tab sync via BroadcastChannel', () => {
       storedThemeValue('dark', 'light'),
     );
     await checkAppliedTheme(page1, 'dark');
+    await checkThemeHelperValues(page1, {
+      cookieValue: storedThemeValue('dark', 'light'),
+      systemTheme: 'light',
+    });
   });
 
   test('syncs switching back to system across tabs', async ({
@@ -83,6 +100,10 @@ test.describe('cross-tab sync via BroadcastChannel', () => {
       storedThemeValue('light', 'dark'),
     );
     await checkAppliedTheme(page1, 'light');
+    await checkThemeHelperValues(page1, {
+      cookieValue: storedThemeValue('light', 'dark'),
+      systemTheme: 'dark',
+    });
 
     const page2 = await context.newPage();
     await gotoHome(page2);
@@ -92,15 +113,27 @@ test.describe('cross-tab sync via BroadcastChannel', () => {
       storedThemeValue('light', 'dark'),
     );
     await checkAppliedTheme(page2, 'light');
+    await checkThemeHelperValues(page2, {
+      cookieValue: storedThemeValue('light', 'dark'),
+      systemTheme: 'dark',
+    });
 
     await selectTheme(page2, 'system');
 
     await checkSelectedTheme(page2, 'system');
     await checkStoredTheme(page2, '~d');
     await checkAppliedTheme(page2, 'dark');
+    await checkThemeHelperValues(page2, {
+      cookieValue: storedThemeValue('system', 'dark'),
+      systemTheme: 'dark',
+    });
 
     await checkSelectedTheme(page1, 'system');
     await checkStoredTheme(page1, '~d');
     await checkAppliedTheme(page1, 'dark');
+    await checkThemeHelperValues(page1, {
+      cookieValue: storedThemeValue('system', 'dark'),
+      systemTheme: 'dark',
+    });
   });
 });

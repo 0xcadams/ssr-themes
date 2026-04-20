@@ -8,6 +8,7 @@ const theme = createTheme({
 });
 
 export const {
+  encodeVariant,
   parseThemeCookie,
   registerTheme,
   themeScript,

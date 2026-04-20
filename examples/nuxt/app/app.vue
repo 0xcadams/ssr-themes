@@ -41,21 +41,6 @@ useHead({
         'Nuxt theme switching with SSR cookies.',
     },
   ],
-  link: [
-    {
-      rel: 'preconnect',
-      href: 'https://fonts.googleapis.com',
-    },
-    {
-      rel: 'preconnect',
-      href: 'https://fonts.gstatic.com',
-      crossorigin: 'anonymous',
-    },
-    {
-      rel: 'stylesheet',
-      href: 'https://fonts.googleapis.com/css2?family=Fira+Mono:wght@400;500;700&display=swap',
-    },
-  ],
   bodyAttrs: {
     class:
       'min-h-screen bg-white font-mono text-black antialiased dark:bg-black dark:text-white',
