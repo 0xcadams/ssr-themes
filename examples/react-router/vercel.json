@@ -1,0 +1,5 @@
+{
+  "name": "ssr-themes-react-router",
+  "installCommand": "bun install --cwd ../..",
+  "buildCommand": "bun --cwd ../.. --filter ssr-themes build && bun run build"
+}

@@ -205,6 +205,7 @@ function IndexPage() {
                   setFramework(value);
                 }}
                 options={frameworks}
+                mobileLayout="grid"
               />
             </div>
             <CodeSnippetCard

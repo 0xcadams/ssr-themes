@@ -9,6 +9,7 @@ export type PlaywrightApp =
   | 'astro'
   | 'next'
   | 'nuxt'
+  | 'react-router'
   | 'solid'
   | 'svelte'
   | 'tanstack-start';
