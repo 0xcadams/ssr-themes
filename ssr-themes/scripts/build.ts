@@ -1,5 +1,6 @@
 import {spawn} from 'node:child_process';
-import {rm} from 'node:fs/promises';
+import {mkdtemp, readFile, rm} from 'node:fs/promises';
+import {tmpdir} from 'node:os';
 import {dirname, resolve} from 'node:path';
 import {fileURLToPath} from 'node:url';
 
@@ -77,6 +78,51 @@ const buildVite = async (
   });
 };
 
+const checkDeclarationPortability = async () => {
+  const outDir = await mkdtemp(
+    resolve(tmpdir(), 'ssr-themes-declarations-'),
+  );
+
+  try {
+    await run([
+      'x',
+      'tsc',
+      'tests/types/declaration-portability.ts',
+      '--ignoreConfig',
+      '--declaration',
+      '--emitDeclarationOnly',
+      '--rootDir',
+      'tests/types',
+      '--outDir',
+      outDir,
+      '--module',
+      'esnext',
+      '--moduleResolution',
+      'bundler',
+      '--target',
+      'es2022',
+      '--strict',
+      '--skipLibCheck',
+      '--jsx',
+      'react-jsx',
+      '--esModuleInterop',
+    ]);
+
+    const declaration = await readFile(
+      resolve(outDir, 'declaration-portability.d.ts'),
+      'utf8',
+    );
+
+    if (/import\([^)]*dist\//.test(declaration)) {
+      throw new Error(
+        'Consumer declarations reference internal dist files.',
+      );
+    }
+  } finally {
+    await rm(outDir, {force: true, recursive: true});
+  }
+};
+
 const main = async () => {
   await run(['x', 'svelte-kit', 'sync']);
   await rm(resolve(packageRoot, 'dist'), {
@@ -99,6 +145,8 @@ const main = async () => {
       '-o',
       'dist/svelte',
     ]);
+
+    await checkDeclarationPortability();
   } finally {
     await removeGeneratedDeclarations();
   }

@@ -14,6 +14,11 @@ import type {
   ThemeProviderRuntimeProps,
 } from './types';
 
+export type {
+  ThemeResult,
+  ThemeSetter,
+} from './vue-bindings';
+
 /**
  * Runtime props for a bound `ThemeProvider`.
  *

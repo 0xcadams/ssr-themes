@@ -207,12 +207,11 @@ export interface ThemeProviderRuntimeProps<
   nonce?: string | undefined;
 }
 
-type ThemeStyle = Record<
+/** CSS properties merged into the SSR `<html>` style. */
+export type ThemeStyle = Record<
   string,
   string | number | undefined
 >;
-
-export type {ThemeStyle};
 
 /**
  * JSX `<html>` props returned by
