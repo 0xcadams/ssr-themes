@@ -18,6 +18,7 @@ export type {
   ThemeState,
   ThemeVariant,
   ThemeScriptRuntimeOptions,
+  ThemeStyle,
   RegisterThemeRuntimeOptions,
   WithSystem,
 } from './types';

@@ -14,6 +14,8 @@ import type {
   ThemeProviderRuntimeProps,
 } from './types';
 
+export type {ThemeResult} from './react-bindings';
+
 /**
  * Runtime props for a bound `ThemeProvider`.
  *

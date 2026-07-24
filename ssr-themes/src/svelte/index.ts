@@ -12,6 +12,11 @@ import type {
   ThemeProviderRuntimeProps,
 } from '../types';
 
+export type {
+  SetThemeValue,
+  ThemeContext,
+} from './types.js';
+
 /**
  * Runtime props for a bound `ThemeProvider`.
  *
